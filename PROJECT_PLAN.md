@@ -21,11 +21,11 @@ This document outlines the roadmap for the development of the E-commerce system,
 *   [x] **System Hardening**:
     *   [x] **Global Exception Handling**: `@ControllerAdvice`, Custom Exceptions.
     *   [x] **Input Validation**: JSR-303 annotations (`@NotNull`, `@Size`) on DTOs.
-*   [ ] **Advanced Security (Current Focus)**:
+*   [x] **Advanced Security (Current Focus)**:
     *   Refine JWT implementation (Refresh Tokens).
     *   Role-Based Access Control (RBAC) audit.
     *   CORS & CSRF configuration.
-*   [ ] **Phase 1 Review**:
+*   [x] **Phase 1 Review**:
     *   Verify all core APIs and Security mechanisms.
     *   Ensure database data integrity.
 
