@@ -1,0 +1,144 @@
+package com.minzetsu.ecommerce.notification.service.impl;
+
+import com.minzetsu.ecommerce.common.utils.PageableUtils;
+import com.minzetsu.ecommerce.notification.dto.filter.NotificationFilter;
+import com.minzetsu.ecommerce.notification.dto.request.NotificationCreateRequest;
+import com.minzetsu.ecommerce.notification.dto.request.NotificationUpdateRequest;
+import com.minzetsu.ecommerce.notification.dto.response.NotificationResponse;
+import com.minzetsu.ecommerce.notification.entity.Notification;
+import com.minzetsu.ecommerce.notification.entity.NotificationType;
+import com.minzetsu.ecommerce.notification.mapper.NotificationMapper;
+import com.minzetsu.ecommerce.notification.repository.NotificationRepository;
+import com.minzetsu.ecommerce.notification.repository.NotificationSpecification;
+import com.minzetsu.ecommerce.notification.service.NotificationService;
+import com.minzetsu.ecommerce.user.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class NotificationServiceImpl implements NotificationService {
+
+    private final NotificationRepository notificationRepository;
+    private final NotificationMapper notificationMapper;
+    private final UserService userService;
+    @Value("${admin-endpoint}")
+    private String adminEndpoint;
+    @Value("${user-endpoint}")
+    private String userEndpoint;
+
+    void existsById(Long id) {
+        if (!notificationRepository.existsById(id)) {
+            throw new RuntimeException("Notification not found with id: " + id);
+        }
+    }
+
+    private static final Map<String, String> ENDPOINT_MAPPING = Map.of(
+            "ORDER", "orders",
+            "PAYMENT", "orders",
+            "REVIEW", "reviews/product",
+            "VOUCHER", "vouchers"
+    );
+
+    private String resolveEndpoint(NotificationType type, String referenceType) {
+        if (referenceType == null || referenceType.isBlank()) {
+            return ENDPOINT_MAPPING.getOrDefault(type.name(), "");
+        }
+        return ENDPOINT_MAPPING.getOrDefault(referenceType.toUpperCase(), referenceType.toLowerCase().trim() + "s");
+    }
+
+    private NotificationResponse toResponse(Notification notification) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        String baseEndpoint = isAdmin ? adminEndpoint : userEndpoint;
+        NotificationType type = notification.getType();
+
+        String endpoint = resolveEndpoint(type, notification.getReferenceType());
+
+        String url = "";
+        if (!endpoint.isBlank() && notification.getReferenceId() != null) {
+            url = String.format("%s/%s/%d", baseEndpoint, endpoint, notification.getReferenceId());
+        }
+
+        NotificationResponse response = notificationMapper.toResponse(notification);
+        response.setReferenceUrl(url);
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public NotificationResponse createNotificationResponse(NotificationCreateRequest request, Long userId) {
+        if (userId != null) {
+            request.setUserId(userId);
+        }
+        Notification notification = notificationMapper.toEntity(request);
+        notification.setUser(userService.getUserById(userId));
+        return toResponse(notificationRepository.save(notification));
+    }
+
+    @Override
+    @Transactional
+    public NotificationResponse updateNotificationResponse(NotificationUpdateRequest request, Long id) {
+        Notification existingNotification = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
+        notificationMapper.updateEntity(existingNotification, request);
+        return toResponse(notificationRepository.save(existingNotification));
+    }
+
+    @Override
+    @Transactional
+    public void updateNotificationReadStatus(Long id, Boolean isRead) {
+        existsById(id);
+        notificationRepository.updateIsReadById(id, isRead);
+    }
+
+    @Override
+    @Transactional
+    public void updateNotificationHiddenStatus(Long id, Boolean isHidden) {
+        existsById(id);
+        notificationRepository.updateIsHiddenById(id, isHidden);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<NotificationResponse> getNotificationResponsesByUserId(Long userId) {
+        return notificationRepository.findByUserId(userId).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<NotificationResponse> searchNotificationResponses(NotificationFilter filter, Pageable pageable) {
+        return PageableUtils.search(
+                filter,
+                pageable,
+                notificationRepository,
+                NotificationSpecification.filter(filter),
+                this::toResponse
+        );
+    }
+
+    @Override
+    @Transactional
+    public void updateAllNotificationsReadStatusByUserId(Long userId, Boolean isRead) {
+        notificationRepository.updateIsReadByUserId(userId, isRead);
+    }
+
+    @Override
+    @Transactional
+    public void updateAllNotificationsHiddenStatusByUserId(Long userId, Boolean isHidden) {
+        notificationRepository.updateIsHiddenByUserId(userId, isHidden);
+    }
+}

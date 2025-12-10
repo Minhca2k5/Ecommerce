@@ -1,0 +1,1250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <!-- =========================
+         v2-001 ROLES
+         ========================= -->
+    <changeSet id="v2-001-seed-roles" author="minh">
+        <insert tableName="roles">
+            <column name="id" valueNumeric="1"/>
+            <column name="name" value="ROLE_USER"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="id" valueNumeric="2"/>
+            <column name="name" value="ROLE_ADMIN"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="id" valueNumeric="3"/>
+            <column name="name" value="ROLE_MANAGER"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="roles">
+                <where>id IN (1,2,3)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-002 USERS
+         ========================= -->
+    <changeSet id="v2-002-seed-users" author="minh">
+        <!-- Mật khẩu là cùng 1 hash bcrypt (vd: "admin123") -->
+        <insert tableName="users">
+            <column name="id" valueNumeric="1"/>
+            <column name="username" value="admin"/>
+            <column name="email" value="admin@example.com"/>
+            <column name="password"
+                    value="$2a$12$dyBIlz6Tt27ZRIbdR7gCjuF04SWyewzyOowrJW15cyTZ8/KbUncEa"/>
+            <column name="full_name" value="System Administrator"/>
+            <column name="phone" value="0123456789"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="users">
+            <column name="id" valueNumeric="2"/>
+            <column name="username" value="john"/>
+            <column name="email" value="john@example.com"/>
+            <column name="password"
+                    value="$2a$12$2Bx7Dn0ayHV3yRUI4ALpYuDDfFJ5xt7dhXAinZMCjtqQ9Rtln7Slm"/>
+            <column name="full_name" value="John Doe"/>
+            <column name="phone" value="0988123123"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="users">
+            <column name="id" valueNumeric="3"/>
+            <column name="username" value="alice"/>
+            <column name="email" value="alice@example.com"/>
+            <column name="password"
+                    value="$2a$12$duF.MI2l92NmBQDkn3pZkuCkLEWTye0J8W8btgjZ9jUgrNUneMEcC"/>
+            <column name="full_name" value="Alice Nguyen"/>
+            <column name="phone" value="0988456789"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="users">
+            <column name="id" valueNumeric="4"/>
+            <column name="username" value="bob"/>
+            <column name="email" value="bob@example.com"/>
+            <column name="password"
+                    value="$2a$12$58YbJR6laEZrLavBrtbLbeZbjPSQPV5LXeubcIJT6QTshags0pbPu"/>
+            <column name="full_name" value="Bob Tran"/>
+            <column name="phone" value="0912345678"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="users">
+            <column name="id" valueNumeric="5"/>
+            <column name="username" value="charlie"/>
+            <column name="email" value="charlie@example.com"/>
+            <column name="password"
+                    value="$2a$12$kKBCwJgL4VmmnQ5aK5M8Kuo9UxGlgbBztI2I83g0ZQvR4wQHwi2aq"/>
+            <column name="full_name" value="Charlie Pham"/>
+            <column name="phone" value="0933666888"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="users">
+            <column name="id" valueNumeric="6"/>
+            <column name="username" value="david"/>
+            <column name="email" value="david@example.com"/>
+            <column name="password"
+                    value="$2a$12$WbR5mX9bpcrLfAMzx5LnqeI8eJfJVf1iR1njZu6wUpks/H4I8P97i"/>
+            <column name="full_name" value="David Le"/>
+            <column name="phone" value="0977555444"/>
+            <column name="enabled" valueBoolean="true"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="users">
+                <where>id IN (1,2,3,4,5,6)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-003 USER_ROLES
+         ========================= -->
+    <changeSet id="v2-003-seed-user-roles" author="minh">
+        <!-- admin có cả ROLE_ADMIN và ROLE_USER -->
+        <insert tableName="user_roles">
+            <column name="user_id" valueNumeric="1"/>
+            <column name="role_id" valueNumeric="2"/>
+        </insert>
+        <insert tableName="user_roles">
+            <column name="user_id" valueNumeric="1"/>
+            <column name="role_id" valueNumeric="1"/>
+        </insert>
+
+        <!-- các user còn lại có ROLE_USER -->
+        <insert tableName="user_roles">
+            <column name="user_id" valueNumeric="2"/>
+            <column name="role_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="user_roles">
+            <column name="user_id" valueNumeric="3"/>
+            <column name="role_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="user_roles">
+            <column name="user_id" valueNumeric="4"/>
+            <column name="role_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="user_roles">
+            <column name="user_id" valueNumeric="5"/>
+            <column name="role_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="user_roles">
+            <column name="user_id" valueNumeric="6"/>
+            <column name="role_id" valueNumeric="1"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="user_roles">
+                <where>user_id IN (1,2,3,4,5,6)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-004 CATEGORIES
+         ========================= -->
+    <changeSet id="v2-004-seed-categories" author="minh">
+        <!-- root -->
+        <insert tableName="categories">
+            <column name="id" valueNumeric="1"/>
+            <column name="name" value="Electronics"/>
+            <column name="slug" value="electronics"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" valueNumeric="2"/>
+            <column name="name" value="Books"/>
+            <column name="slug" value="books"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" valueNumeric="3"/>
+            <column name="name" value="Fashion"/>
+            <column name="slug" value="fashion"/>
+        </insert>
+
+        <!-- children -->
+        <insert tableName="categories">
+            <column name="id" valueNumeric="4"/>
+            <column name="name" value="Laptops"/>
+            <column name="slug" value="laptops"/>
+            <column name="parent_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" valueNumeric="5"/>
+            <column name="name" value="Smartphones"/>
+            <column name="slug" value="smartphones"/>
+            <column name="parent_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" valueNumeric="6"/>
+            <column name="name" value="Men Clothing"/>
+            <column name="slug" value="men-clothing"/>
+            <column name="parent_id" valueNumeric="3"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" valueNumeric="7"/>
+            <column name="name" value="Women Clothing"/>
+            <column name="slug" value="women-clothing"/>
+            <column name="parent_id" valueNumeric="3"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="id" valueNumeric="8"/>
+            <column name="name" value="Programming Books"/>
+            <column name="slug" value="programming-books"/>
+            <column name="parent_id" valueNumeric="2"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="categories">
+                <where>id IN (1,2,3,4,5,6,7,8)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-005 PRODUCTS
+         ========================= -->
+    <changeSet id="v2-005-seed-products" author="minh">
+        <!-- Smartphones -->
+        <insert tableName="products">
+            <column name="id" valueNumeric="1"/>
+            <column name="category_id" valueNumeric="5"/>
+            <column name="name" value="Smartphone X20"/>
+            <column name="slug" value="smartphone-x20"/>
+            <column name="sku" value="SMX20"/>
+            <column name="description"
+                    value="6.5-inch display, 128GB storage, triple camera, and fast charging."/>
+            <column name="price" valueNumeric="9990000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" valueNumeric="2"/>
+            <column name="category_id" valueNumeric="5"/>
+            <column name="name" value="Smartphone A15"/>
+            <column name="slug" value="smartphone-a15"/>
+            <column name="sku" value="SMA15"/>
+            <column name="description"
+                    value="Budget smartphone with 64GB storage and dual camera."/>
+            <column name="price" valueNumeric="3990000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- Laptops -->
+        <insert tableName="products">
+            <column name="id" valueNumeric="3"/>
+            <column name="category_id" valueNumeric="4"/>
+            <column name="name" value="Laptop Pro 14&quot;"/>
+            <column name="slug" value="laptop-pro-14"/>
+            <column name="sku" value="LP14"/>
+            <column name="description"
+                    value="Powerful 14-inch laptop with Intel i7 and 16GB RAM."/>
+            <column name="price" valueNumeric="19990000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" valueNumeric="4"/>
+            <column name="category_id" valueNumeric="4"/>
+            <column name="name" value="Laptop Air 13&quot;"/>
+            <column name="slug" value="laptop-air-13"/>
+            <column name="sku" value="LA13"/>
+            <column name="description"
+                    value="Lightweight 13-inch laptop, 8GB RAM, 256GB SSD."/>
+            <column name="price" valueNumeric="14990000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- Accessories -->
+        <insert tableName="products">
+            <column name="id" valueNumeric="5"/>
+            <column name="category_id" valueNumeric="1"/>
+            <column name="name" value="Wireless Headphones"/>
+            <column name="slug" value="wireless-headphones"/>
+            <column name="sku" value="WH-001"/>
+            <column name="description"
+                    value="Noise-cancelling Bluetooth wireless headphones with 30-hour battery life."/>
+            <column name="price" valueNumeric="1299000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" valueNumeric="6"/>
+            <column name="category_id" valueNumeric="1"/>
+            <column name="name" value="Power Bank 20000mAh"/>
+            <column name="slug" value="power-bank-20000"/>
+            <column name="sku" value="PB20000"/>
+            <column name="description"
+                    value="High capacity power bank with fast charging support."/>
+            <column name="price" valueNumeric="590000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- Books -->
+        <insert tableName="products">
+            <column name="id" valueNumeric="7"/>
+            <column name="category_id" valueNumeric="8"/>
+            <column name="name" value="Clean Code"/>
+            <column name="slug" value="clean-code"/>
+            <column name="sku" value="BOOK-001"/>
+            <column name="description"
+                    value="A Handbook of Agile Software Craftsmanship by Robert C. Martin."/>
+            <column name="price" valueNumeric="450000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" valueNumeric="8"/>
+            <column name="category_id" valueNumeric="8"/>
+            <column name="name" value="Design Patterns"/>
+            <column name="slug" value="design-patterns"/>
+            <column name="sku" value="BOOK-002"/>
+            <column name="description"
+                    value="Elements of Reusable Object-Oriented Software."/>
+            <column name="price" valueNumeric="550000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- Fashion -->
+        <insert tableName="products">
+            <column name="id" valueNumeric="9"/>
+            <column name="category_id" valueNumeric="6"/>
+            <column name="name" value="Men T-Shirt"/>
+            <column name="slug" value="men-tshirt"/>
+            <column name="sku" value="TSHIRT-M01"/>
+            <column name="description"
+                    value="Cotton t-shirt for men."/>
+            <column name="price" valueNumeric="250000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" valueNumeric="10"/>
+            <column name="category_id" valueNumeric="7"/>
+            <column name="name" value="Women Dress"/>
+            <column name="slug" value="women-dress"/>
+            <column name="sku" value="WD-01"/>
+            <column name="description"
+                    value="Elegant summer dress."/>
+            <column name="price" valueNumeric="390000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="products">
+                <where>id IN (1,2,3,4,5,6,7,8,9,10)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-006 PRODUCT_IMAGES
+         ========================= -->
+    <changeSet id="v2-006-seed-product-images" author="minh">
+        <insert tableName="product_images">
+            <column name="id" valueNumeric="1"/>
+            <column name="product_id" valueNumeric="1"/>
+            <column name="url" value="https://cdn.example.com/images/smartphone-x20.jpg"/>
+            <column name="is_primary" valueBoolean="true"/>
+        </insert>
+        <insert tableName="product_images">
+            <column name="id" valueNumeric="2"/>
+            <column name="product_id" valueNumeric="3"/>
+            <column name="url" value="https://cdn.example.com/images/laptop-pro-14.jpg"/>
+            <column name="is_primary" valueBoolean="true"/>
+        </insert>
+        <insert tableName="product_images">
+            <column name="id" valueNumeric="3"/>
+            <column name="product_id" valueNumeric="7"/>
+            <column name="url" value="https://cdn.example.com/images/clean-code.jpg"/>
+            <column name="is_primary" valueBoolean="true"/>
+        </insert>
+        <insert tableName="product_images">
+            <column name="id" valueNumeric="4"/>
+            <column name="product_id" valueNumeric="9"/>
+            <column name="url" value="https://cdn.example.com/images/men-tshirt.jpg"/>
+            <column name="is_primary" valueBoolean="true"/>
+        </insert>
+        <insert tableName="product_images">
+            <column name="id" valueNumeric="5"/>
+            <column name="product_id" valueNumeric="10"/>
+            <column name="url" value="https://cdn.example.com/images/women-dress.jpg"/>
+            <column name="is_primary" valueBoolean="true"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="product_images">
+                <where>id IN (1,2,3,4,5)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-007 WAREHOUSES
+         ========================= -->
+    <changeSet id="v2-007-seed-warehouses" author="minh">
+        <insert tableName="warehouses">
+            <column name="id" valueNumeric="1"/>
+            <column name="code" value="HN01"/>
+            <column name="name" value="Kho Hà Nội"/>
+            <column name="address" value="123 Hoàng Quốc Việt"/>
+            <column name="city" value="Hà Nội"/>
+            <column name="country" value="Việt Nam"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="warehouses">
+            <column name="id" valueNumeric="2"/>
+            <column name="code" value="HCM01"/>
+            <column name="name" value="Kho Hồ Chí Minh"/>
+            <column name="address" value="456 Nguyễn Văn Linh"/>
+            <column name="city" value="Hồ Chí Minh"/>
+            <column name="country" value="Việt Nam"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="warehouses">
+            <column name="id" valueNumeric="3"/>
+            <column name="code" value="DN01"/>
+            <column name="name" value="Kho Đà Nẵng"/>
+            <column name="address" value="789 Điện Biên Phủ"/>
+            <column name="city" value="Đà Nẵng"/>
+            <column name="country" value="Việt Nam"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="warehouses">
+                <where>id IN (1,2,3)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-008 INVENTORY
+         ========================= -->
+    <changeSet id="v2-008-seed-inventory" author="minh">
+        <!-- Smartphone X20 -->
+        <insert tableName="inventory">
+            <column name="product_id" valueNumeric="1"/>
+            <column name="warehouse_id" valueNumeric="1"/>
+            <column name="stock_qty" valueNumeric="40"/>
+            <column name="reserved_qty" valueNumeric="5"/>
+        </insert>
+        <insert tableName="inventory">
+            <column name="product_id" valueNumeric="1"/>
+            <column name="warehouse_id" valueNumeric="2"/>
+            <column name="stock_qty" valueNumeric="30"/>
+            <column name="reserved_qty" valueNumeric="2"/>
+        </insert>
+
+        <!-- Smartphone A15 -->
+        <insert tableName="inventory">
+            <column name="product_id" valueNumeric="2"/>
+            <column name="warehouse_id" valueNumeric="1"/>
+            <column name="stock_qty" valueNumeric="60"/>
+            <column name="reserved_qty" valueNumeric="10"/>
+        </insert>
+
+        <!-- Laptop Pro 14 -->
+        <insert tableName="inventory">
+            <column name="product_id" valueNumeric="3"/>
+            <column name="warehouse_id" valueNumeric="1"/>
+            <column name="stock_qty" valueNumeric="25"/>
+            <column name="reserved_qty" valueNumeric="3"/>
+        </insert>
+        <insert tableName="inventory">
+            <column name="product_id" valueNumeric="3"/>
+            <column name="warehouse_id" valueNumeric="3"/>
+            <column name="stock_qty" valueNumeric="15"/>
+            <column name="reserved_qty" valueNumeric="0"/>
+        </insert>
+
+        <!-- Laptop Air 13 -->
+        <insert tableName="inventory">
+            <column name="product_id" valueNumeric="4"/>
+            <column name="warehouse_id" valueNumeric="2"/>
+            <column name="stock_qty" valueNumeric="20"/>
+            <column name="reserved_qty" valueNumeric="2"/>
+        </insert>
+
+        <!-- Headphones & Powerbank -->
+        <insert tableName="inventory">
+            <column name="product_id" valueNumeric="5"/>
+            <column name="warehouse_id" valueNumeric="2"/>
+            <column name="stock_qty" valueNumeric="70"/>
+            <column name="reserved_qty" valueNumeric="10"/>
+        </insert>
+        <insert tableName="inventory">
+            <column name="product_id" valueNumeric="6"/>
+            <column name="warehouse_id" valueNumeric="3"/>
+            <column name="stock_qty" valueNumeric="80"/>
+            <column name="reserved_qty" valueNumeric="5"/>
+        </insert>
+
+        <!-- Books -->
+        <insert tableName="inventory">
+            <column name="product_id" valueNumeric="7"/>
+            <column name="warehouse_id" valueNumeric="1"/>
+            <column name="stock_qty" valueNumeric="100"/>
+            <column name="reserved_qty" valueNumeric="0"/>
+        </insert>
+        <insert tableName="inventory">
+            <column name="product_id" valueNumeric="8"/>
+            <column name="warehouse_id" valueNumeric="1"/>
+            <column name="stock_qty" valueNumeric="50"/>
+            <column name="reserved_qty" valueNumeric="0"/>
+        </insert>
+
+        <!-- Fashion -->
+        <insert tableName="inventory">
+            <column name="product_id" valueNumeric="9"/>
+            <column name="warehouse_id" valueNumeric="2"/>
+            <column name="stock_qty" valueNumeric="70"/>
+            <column name="reserved_qty" valueNumeric="10"/>
+        </insert>
+        <insert tableName="inventory">
+            <column name="product_id" valueNumeric="10"/>
+            <column name="warehouse_id" valueNumeric="3"/>
+            <column name="stock_qty" valueNumeric="60"/>
+            <column name="reserved_qty" valueNumeric="5"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="inventory">
+                <where>product_id IN (1,2,3,4,5,6,7,8,9,10)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-009 ADDRESSES
+         ========================= -->
+    <changeSet id="v2-009-seed-addresses" author="minh">
+        <insert tableName="addresses">
+            <column name="id" valueNumeric="1"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="city" value="Hà Nội"/>
+            <column name="state" value="Ba Đình"/>
+            <column name="country" value="Việt Nam"/>
+            <column name="zipcode" value="100000"/>
+            <column name="line1" value="12 Kim Mã"/>
+            <column name="line2" value="Tầng 2"/>
+            <column name="is_default" valueBoolean="true"/>
+        </insert>
+        <insert tableName="addresses">
+            <column name="id" valueNumeric="2"/>
+            <column name="user_id" valueNumeric="3"/>
+            <column name="city" value="Hồ Chí Minh"/>
+            <column name="state" value="Quận 1"/>
+            <column name="country" value="Việt Nam"/>
+            <column name="zipcode" value="700000"/>
+            <column name="line1" value="45 Nguyễn Huệ"/>
+            <column name="is_default" valueBoolean="true"/>
+        </insert>
+        <insert tableName="addresses">
+            <column name="id" valueNumeric="3"/>
+            <column name="user_id" valueNumeric="3"/>
+            <column name="city" value="Đà Nẵng"/>
+            <column name="state" value="Hải Châu"/>
+            <column name="country" value="Việt Nam"/>
+            <column name="zipcode" value="550000"/>
+            <column name="line1" value="23 Lê Lợi"/>
+            <column name="is_default" valueBoolean="false"/>
+        </insert>
+        <insert tableName="addresses">
+            <column name="id" valueNumeric="4"/>
+            <column name="user_id" valueNumeric="4"/>
+            <column name="city" value="Hải Phòng"/>
+            <column name="state" value="Lê Chân"/>
+            <column name="country" value="Việt Nam"/>
+            <column name="zipcode" value="180000"/>
+            <column name="line1" value="56 Cầu Đất"/>
+            <column name="is_default" valueBoolean="true"/>
+        </insert>
+        <insert tableName="addresses">
+            <column name="id" valueNumeric="5"/>
+            <column name="user_id" valueNumeric="5"/>
+            <column name="city" value="Cần Thơ"/>
+            <column name="state" value="Ninh Kiều"/>
+            <column name="country" value="Việt Nam"/>
+            <column name="zipcode" value="900000"/>
+            <column name="line1" value="101 Nguyễn Trãi"/>
+            <column name="is_default" valueBoolean="true"/>
+        </insert>
+        <insert tableName="addresses">
+            <column name="id" valueNumeric="6"/>
+            <column name="user_id" valueNumeric="6"/>
+            <column name="city" value="Huế"/>
+            <column name="state" value="Phú Nhuận"/>
+            <column name="country" value="Việt Nam"/>
+            <column name="zipcode" value="530000"/>
+            <column name="line1" value="78 Hùng Vương"/>
+            <column name="is_default" valueBoolean="true"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="addresses">
+                <where>id IN (1,2,3,4,5,6)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-010 CARTS & CART_ITEMS
+         ========================= -->
+    <changeSet id="v2-010-seed-carts" author="minh">
+        <!-- carts -->
+        <insert tableName="carts">
+            <column name="id" valueNumeric="1"/>
+            <column name="user_id" valueNumeric="2"/>
+        </insert>
+        <insert tableName="carts">
+            <column name="id" valueNumeric="2"/>
+            <column name="user_id" valueNumeric="3"/>
+        </insert>
+        <insert tableName="carts">
+            <column name="id" valueNumeric="3"/>
+            <column name="user_id" valueNumeric="4"/>
+        </insert>
+        <insert tableName="carts">
+            <column name="id" valueNumeric="4"/>
+            <column name="user_id" valueNumeric="5"/>
+        </insert>
+        <insert tableName="carts">
+            <column name="id" valueNumeric="5"/>
+            <column name="user_id" valueNumeric="6"/>
+        </insert>
+
+        <!-- cart_items -->
+        <insert tableName="cart_items">
+            <column name="id" valueNumeric="1"/>
+            <column name="cart_id" valueNumeric="1"/>
+            <column name="product_id" valueNumeric="1"/>
+            <column name="unit_price_snapshot" valueNumeric="9990000"/>
+            <column name="quantity" valueNumeric="1"/>
+        </insert>
+        <insert tableName="cart_items">
+            <column name="id" valueNumeric="2"/>
+            <column name="cart_id" valueNumeric="1"/>
+            <column name="product_id" valueNumeric="7"/>
+            <column name="unit_price_snapshot" valueNumeric="450000"/>
+            <column name="quantity" valueNumeric="2"/>
+        </insert>
+        <insert tableName="cart_items">
+            <column name="id" valueNumeric="3"/>
+            <column name="cart_id" valueNumeric="2"/>
+            <column name="product_id" valueNumeric="10"/>
+            <column name="unit_price_snapshot" valueNumeric="390000"/>
+            <column name="quantity" valueNumeric="1"/>
+        </insert>
+        <insert tableName="cart_items">
+            <column name="id" valueNumeric="4"/>
+            <column name="cart_id" valueNumeric="3"/>
+            <column name="product_id" valueNumeric="3"/>
+            <column name="unit_price_snapshot" valueNumeric="19990000"/>
+            <column name="quantity" valueNumeric="1"/>
+        </insert>
+        <insert tableName="cart_items">
+            <column name="id" valueNumeric="5"/>
+            <column name="cart_id" valueNumeric="3"/>
+            <column name="product_id" valueNumeric="9"/>
+            <column name="unit_price_snapshot" valueNumeric="250000"/>
+            <column name="quantity" valueNumeric="3"/>
+        </insert>
+        <insert tableName="cart_items">
+            <column name="id" valueNumeric="6"/>
+            <column name="cart_id" valueNumeric="4"/>
+            <column name="product_id" valueNumeric="6"/>
+            <column name="unit_price_snapshot" valueNumeric="590000"/>
+            <column name="quantity" valueNumeric="2"/>
+        </insert>
+        <insert tableName="cart_items">
+            <column name="id" valueNumeric="7"/>
+            <column name="cart_id" valueNumeric="5"/>
+            <column name="product_id" valueNumeric="2"/>
+            <column name="unit_price_snapshot" valueNumeric="3990000"/>
+            <column name="quantity" valueNumeric="1"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="cart_items">
+                <where>id IN (1,2,3,4,5,6,7)</where>
+            </delete>
+            <delete tableName="carts">
+                <where>id IN (1,2,3,4,5)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-011 ORDERS
+         ========================= -->
+    <changeSet id="v2-011-seed-orders" author="minh">
+        <insert tableName="orders">
+            <column name="id" valueNumeric="1"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="address_id_snapshot" valueNumeric="1"/>
+            <column name="total_amount" valueNumeric="10890000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="PAID"/>
+        </insert>
+        <insert tableName="orders">
+            <column name="id" valueNumeric="2"/>
+            <column name="user_id" valueNumeric="3"/>
+            <column name="address_id_snapshot" valueNumeric="2"/>
+            <column name="total_amount" valueNumeric="390000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="PENDING"/>
+        </insert>
+        <insert tableName="orders">
+            <column name="id" valueNumeric="3"/>
+            <column name="user_id" valueNumeric="4"/>
+            <column name="address_id_snapshot" valueNumeric="4"/>
+            <column name="total_amount" valueNumeric="20740000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="SHIPPED"/>
+        </insert>
+        <insert tableName="orders">
+            <column name="id" valueNumeric="4"/>
+            <column name="user_id" valueNumeric="5"/>
+            <column name="address_id_snapshot" valueNumeric="5"/>
+            <column name="total_amount" valueNumeric="450000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="CANCELLED"/>
+        </insert>
+        <insert tableName="orders">
+            <column name="id" valueNumeric="5"/>
+            <column name="user_id" valueNumeric="6"/>
+            <column name="address_id_snapshot" valueNumeric="6"/>
+            <column name="total_amount" valueNumeric="3990000"/>
+            <column name="currency" value="VND"/>
+            <column name="status" value="PENDING"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="orders">
+                <where>id IN (1,2,3,4,5)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-012 ORDER_ITEMS
+         ========================= -->
+    <changeSet id="v2-012-seed-order-items" author="minh">
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="1"/>
+            <column name="order_id" valueNumeric="1"/>
+            <column name="product_id" valueNumeric="1"/>
+            <column name="product_name_snapshot" value="Smartphone X20"/>
+            <column name="unit_price_snapshot" valueNumeric="9990000"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="line_total" valueNumeric="9990000"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="2"/>
+            <column name="order_id" valueNumeric="1"/>
+            <column name="product_id" valueNumeric="7"/>
+            <column name="product_name_snapshot" value="Clean Code"/>
+            <column name="unit_price_snapshot" valueNumeric="450000"/>
+            <column name="quantity" valueNumeric="2"/>
+            <column name="line_total" valueNumeric="900000"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="3"/>
+            <column name="order_id" valueNumeric="2"/>
+            <column name="product_id" valueNumeric="10"/>
+            <column name="product_name_snapshot" value="Women Dress"/>
+            <column name="unit_price_snapshot" valueNumeric="390000"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="line_total" valueNumeric="390000"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="4"/>
+            <column name="order_id" valueNumeric="3"/>
+            <column name="product_id" valueNumeric="3"/>
+            <column name="product_name_snapshot" value="Laptop Pro 14&quot;"/>
+            <column name="unit_price_snapshot" valueNumeric="19990000"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="line_total" valueNumeric="19990000"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="5"/>
+            <column name="order_id" valueNumeric="3"/>
+            <column name="product_id" valueNumeric="9"/>
+            <column name="product_name_snapshot" value="Men T-Shirt"/>
+            <column name="unit_price_snapshot" valueNumeric="250000"/>
+            <column name="quantity" valueNumeric="3"/>
+            <column name="line_total" valueNumeric="750000"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="6"/>
+            <column name="order_id" valueNumeric="4"/>
+            <column name="product_id" valueNumeric="7"/>
+            <column name="product_name_snapshot" value="Clean Code"/>
+            <column name="unit_price_snapshot" valueNumeric="450000"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="line_total" valueNumeric="450000"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="id" valueNumeric="7"/>
+            <column name="order_id" valueNumeric="5"/>
+            <column name="product_id" valueNumeric="2"/>
+            <column name="product_name_snapshot" value="Smartphone A15"/>
+            <column name="unit_price_snapshot" valueNumeric="3990000"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="line_total" valueNumeric="3990000"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="order_items">
+                <where>id IN (1,2,3,4,5,6,7)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-013 PAYMENTS
+         ========================= -->
+    <changeSet id="v2-013-seed-payments" author="minh">
+        <insert tableName="payments">
+            <column name="id" valueNumeric="1"/>
+            <column name="order_id" valueNumeric="1"/>
+            <column name="method" value="VNPAY"/>
+            <column name="amount" valueNumeric="10890000"/>
+            <column name="status" value="SUCCEEDED"/>
+            <column name="provider_txn_id" value="TXN123456"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="id" valueNumeric="2"/>
+            <column name="order_id" valueNumeric="2"/>
+            <column name="method" value="COD"/>
+            <column name="amount" valueNumeric="390000"/>
+            <column name="status" value="INITIATED"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="id" valueNumeric="3"/>
+            <column name="order_id" valueNumeric="3"/>
+            <column name="method" value="PAYPAL"/>
+            <column name="amount" valueNumeric="20740000"/>
+            <column name="status" value="SUCCEEDED"/>
+            <column name="provider_txn_id" value="PAYPAL789"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="payments">
+                <where>id IN (1,2,3)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-014 REVIEWS
+         ========================= -->
+    <changeSet id="v2-014-seed-reviews" author="minh">
+        <insert tableName="reviews">
+            <column name="id" valueNumeric="1"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="product_id" valueNumeric="1"/>
+            <column name="rating" valueNumeric="5"/>
+            <column name="comment" value="Smartphone chạy rất mượt và pin trâu!"/>
+        </insert>
+        <insert tableName="reviews">
+            <column name="id" valueNumeric="2"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="product_id" valueNumeric="7"/>
+            <column name="rating" valueNumeric="4"/>
+            <column name="comment" value="Sách rất hay, nên đọc."/>
+        </insert>
+        <insert tableName="reviews">
+            <column name="id" valueNumeric="3"/>
+            <column name="user_id" valueNumeric="3"/>
+            <column name="product_id" valueNumeric="10"/>
+            <column name="rating" valueNumeric="5"/>
+            <column name="comment" value="Váy đẹp hơn mong đợi."/>
+        </insert>
+        <insert tableName="reviews">
+            <column name="id" valueNumeric="4"/>
+            <column name="user_id" valueNumeric="4"/>
+            <column name="product_id" valueNumeric="3"/>
+            <column name="rating" valueNumeric="4"/>
+            <column name="comment" value="Laptop mạnh, dùng tốt cho lập trình."/>
+        </insert>
+        <insert tableName="reviews">
+            <column name="id" valueNumeric="5"/>
+            <column name="user_id" valueNumeric="4"/>
+            <column name="product_id" valueNumeric="9"/>
+            <column name="rating" valueNumeric="3"/>
+            <column name="comment" value="Áo bình thường, vải ổn."/>
+        </insert>
+        <insert tableName="reviews">
+            <column name="id" valueNumeric="6"/>
+            <column name="user_id" valueNumeric="5"/>
+            <column name="product_id" valueNumeric="8"/>
+            <column name="rating" valueNumeric="5"/>
+            <column name="comment" value="Design Patterns cực kỳ hữu ích cho dev backend."/>
+        </insert>
+
+        <rollback>
+            <delete tableName="reviews">
+                <where>id IN (1,2,3,4,5,6)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+     v2-015 WISHLISTS
+     ========================= -->
+    <changeSet id="v2-015-seed-wishlists" author="minh">
+        <insert tableName="wishlists">
+            <column name="id" valueNumeric="1"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="product_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="wishlists">
+            <column name="id" valueNumeric="2"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="product_id" valueNumeric="7"/>
+        </insert>
+        <insert tableName="wishlists">
+            <column name="id" valueNumeric="3"/>
+            <column name="user_id" valueNumeric="3"/>
+            <column name="product_id" valueNumeric="3"/>
+        </insert>
+        <insert tableName="wishlists">
+            <column name="id" valueNumeric="4"/>
+            <column name="user_id" valueNumeric="4"/>
+            <column name="product_id" valueNumeric="10"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="wishlists">
+                <where>id IN (1,2,3,4)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+     v2-016 RECENT_VIEWS
+     ========================= -->
+    <changeSet id="v2-016-seed-recent-views" author="minh">
+        <insert tableName="recent_views">
+            <column name="id" valueNumeric="1"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="product_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="recent_views">
+            <column name="id" valueNumeric="2"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="product_id" valueNumeric="3"/>
+        </insert>
+        <insert tableName="recent_views">
+            <column name="id" valueNumeric="3"/>
+            <column name="user_id" valueNumeric="3"/>
+            <column name="product_id" valueNumeric="7"/>
+        </insert>
+        <insert tableName="recent_views">
+            <column name="id" valueNumeric="4"/>
+            <column name="user_id" valueNumeric="3"/>
+            <column name="product_id" valueNumeric="10"/>
+        </insert>
+        <insert tableName="recent_views">
+            <column name="id" valueNumeric="5"/>
+            <column name="user_id" valueNumeric="4"/>
+            <column name="product_id" valueNumeric="5"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="recent_views">
+                <where>id IN (1,2,3,4,5)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+     v2-017 SEARCH_LOGS
+     ========================= -->
+    <changeSet id="v2-017-seed-search-logs" author="minh">
+        <!-- user 2 -->
+        <insert tableName="search_logs">
+            <column name="id" valueNumeric="1"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="keyword" value="smartphone"/>
+        </insert>
+        <insert tableName="search_logs">
+            <column name="id" valueNumeric="2"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="keyword" value="smartphone x20"/>
+        </insert>
+
+        <!-- user 3 -->
+        <insert tableName="search_logs">
+            <column name="id" valueNumeric="3"/>
+            <column name="user_id" valueNumeric="3"/>
+            <column name="keyword" value="laptop pro 14"/>
+        </insert>
+        <insert tableName="search_logs">
+            <column name="id" valueNumeric="4"/>
+            <column name="user_id" valueNumeric="3"/>
+            <column name="keyword" value="clean code"/>
+        </insert>
+
+        <!-- user 4 -->
+        <insert tableName="search_logs">
+            <column name="id" valueNumeric="5"/>
+            <column name="user_id" valueNumeric="4"/>
+            <column name="keyword" value="women dress"/>
+        </insert>
+
+        <!-- guest (user_id = NULL) -->
+        <insert tableName="search_logs">
+            <column name="id" valueNumeric="6"/>
+            <column name="keyword" value="wireless headphones"/>
+        </insert>
+        <insert tableName="search_logs">
+            <column name="id" valueNumeric="7"/>
+            <column name="keyword" value="power bank 20000mah"/>
+        </insert>
+        <insert tableName="search_logs">
+            <column name="id" valueNumeric="8"/>
+            <column name="keyword" value="men tshirt"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="search_logs">
+                <where>id IN (1,2,3,4,5,6,7,8)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+     v2-018 VOUCHERS
+     ========================= -->
+    <changeSet id="v2-018-seed-vouchers" author="minh">
+        <!-- 10% cho đơn tối thiểu 500k -->
+        <insert tableName="vouchers">
+            <column name="id" valueNumeric="1"/>
+            <column name="code" value="WELCOME10"/>
+            <column name="name" value="Welcome 10% off"/>
+            <column name="description" value="Giảm 10% cho khách hàng mới, tối đa 100k."/>
+            <column name="discount_type" value="PERCENT"/>
+            <column name="discount_value" valueNumeric="10"/>
+            <column name="max_discount_amount" valueNumeric="100000"/>
+            <column name="min_order_total" valueNumeric="500000"/>
+            <column name="start_at" valueDate="2025-01-01T00:00:00"/>
+            <column name="end_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="usage_limit_global" valueNumeric="1000"/>
+            <column name="usage_limit_user" valueNumeric="5"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- Freeship cho đơn từ 300k -->
+        <insert tableName="vouchers">
+            <column name="id" valueNumeric="2"/>
+            <column name="code" value="FREESHIP300"/>
+            <column name="name" value="Free Shipping 300k"/>
+            <column name="description" value="Miễn phí vận chuyển cho đơn từ 300k."/>
+            <column name="discount_type" value="FREESHIP"/>
+            <column name="min_order_total" valueNumeric="300000"/>
+            <column name="start_at" valueDate="2025-01-01T00:00:00"/>
+            <column name="end_at" valueDate="2026-01-01T00:00:00"/>
+            <column name="usage_limit_global" valueNumeric="5000"/>
+            <column name="usage_limit_user" valueNumeric="10"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <!-- Flash sale 20% -->
+        <insert tableName="vouchers">
+            <column name="id" valueNumeric="3"/>
+            <column name="code" value="FLASH20"/>
+            <column name="name" value="Flash Sale 20%"/>
+            <column name="description" value="Giảm 20% tối đa 200k trong giờ vàng."/>
+            <column name="discount_type" value="PERCENT"/>
+            <column name="discount_value" valueNumeric="20"/>
+            <column name="max_discount_amount" valueNumeric="200000"/>
+            <column name="min_order_total" valueNumeric="300000"/>
+            <column name="start_at" valueDate="2025-11-01T00:00:00"/>
+            <column name="end_at" valueDate="2025-12-01T00:00:00"/>
+            <column name="usage_limit_global" valueNumeric="500"/>
+            <column name="usage_limit_user" valueNumeric="2"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="vouchers">
+                <where>id IN (1,2,3)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+     v2-019 VOUCHER_USES
+     ========================= -->
+    <changeSet id="v2-019-seed-voucher-uses" author="minh">
+        <!-- user 2 dùng WELCOME10 cho order 1 -->
+        <insert tableName="voucher_uses">
+            <column name="id" valueNumeric="1"/>
+            <column name="voucher_id" valueNumeric="1"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="order_id" valueNumeric="1"/>
+            <column name="discount_amount" valueNumeric="100000"/>
+        </insert>
+
+        <!-- user 3 dùng FREESHIP300 cho order 2 -->
+        <insert tableName="voucher_uses">
+            <column name="id" valueNumeric="2"/>
+            <column name="voucher_id" valueNumeric="2"/>
+            <column name="user_id" valueNumeric="3"/>
+            <column name="order_id" valueNumeric="2"/>
+            <column name="discount_amount" valueNumeric="30000"/>
+        </insert>
+
+        <!-- user 4 dùng FLASH20 cho order 3 -->
+        <insert tableName="voucher_uses">
+            <column name="id" valueNumeric="3"/>
+            <column name="voucher_id" valueNumeric="3"/>
+            <column name="user_id" valueNumeric="4"/>
+            <column name="order_id" valueNumeric="3"/>
+            <column name="discount_amount" valueNumeric="200000"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="voucher_uses">
+                <where>id IN (1,2,3)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+     v2-020 BANNERS
+     ========================= -->
+    <changeSet id="v2-020-seed-banners" author="minh">
+        <!-- Banner 1: Sale smartphone -->
+        <insert tableName="banners">
+            <column name="id" valueNumeric="1"/>
+            <column name="title" value="Siêu sale Smartphone X20"/>
+            <column name="image_url" value="https://cdn.example.com/banners/smartphone-x20-sale.jpg"/>
+            <column name="target_url" value="/products/smartphone-x20"/>
+            <column name="position" valueNumeric="1"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="start_at" valueDate="2025-01-01T00:00:00"/>
+            <column name="end_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+
+        <!-- Banner 2: Laptop Pro -->
+        <insert tableName="banners">
+            <column name="id" valueNumeric="2"/>
+            <column name="title" value="Laptop Pro 14&quot; - Giảm sốc"/>
+            <column name="image_url" value="https://cdn.example.com/banners/laptop-pro-14.jpg"/>
+            <column name="target_url" value="/products/laptop-pro-14"/>
+            <column name="position" valueNumeric="2"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="start_at" valueDate="2025-01-01T00:00:00"/>
+            <column name="end_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+
+        <!-- Banner 3: Sách lập trình -->
+        <insert tableName="banners">
+            <column name="id" valueNumeric="3"/>
+            <column name="title" value="Góc dev: Clean Code &amp; Design Patterns"/>
+            <column name="image_url" value="https://cdn.example.com/banners/dev-books.jpg"/>
+            <column name="target_url" value="/categories/programming-books"/>
+            <column name="position" valueNumeric="3"/>
+            <column name="is_active" valueBoolean="true"/>
+            <column name="start_at" valueDate="2025-01-01T00:00:00"/>
+            <column name="end_at" valueDate="2026-01-01T00:00:00"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="banners">
+                <where>id IN (1,2,3)</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <!-- =========================
+         v2-021 NOTIFICATIONS
+         ========================= -->
+    <changeSet id="v2-021-seed-notifications" author="minh">
+
+        <!-- THÔNG BÁO CHUNG (SYSTEM) -->
+        <insert tableName="notifications">
+            <column name="id" valueNumeric="1"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="title" value="Chào mừng bạn trở lại!"/>
+            <column name="message" value="Cảm ơn bạn đã mua hàng tại hệ thống."/>
+            <column name="type" value="SYSTEM"/>
+            <column name="is_read" valueBoolean="false"/>
+        </insert>
+
+        <!-- ORDER -->
+        <insert tableName="notifications">
+            <column name="id" valueNumeric="2"/>
+            <column name="user_id" valueNumeric="2"/>
+            <column name="title" value="Đơn hàng #1 đã được thanh toán"/>
+            <column name="message" value="Đơn hàng của bạn đã thanh toán thành công."/>
+            <column name="type" value="ORDER"/>
+            <column name="reference_id" valueNumeric="1"/>
+            <column name="reference_type" value="ORDER"/>
+        </insert>
+
+        <!-- SHIPPING -->
+        <insert tableName="notifications">
+            <column name="id" valueNumeric="3"/>
+            <column name="user_id" valueNumeric="4"/>
+            <column name="title" value="Đơn hàng #3 đang được giao"/>
+            <column name="message" value="Đơn hàng của bạn đang trên đường vận chuyển."/>
+            <column name="type" value="ORDER"/>
+            <column name="reference_id" valueNumeric="3"/>
+            <column name="reference_type" value="ORDER"/>
+        </insert>
+
+        <!-- REVIEW -->
+        <insert tableName="notifications">
+            <column name="id" valueNumeric="4"/>
+            <column name="user_id" valueNumeric="3"/>
+            <column name="title" value="Cảm ơn bạn đã đánh giá sản phẩm!"/>
+            <column name="message" value="Đánh giá của bạn đã được ghi nhận."/>
+            <column name="type" value="REVIEW"/>
+            <column name="reference_id" valueNumeric="2"/>
+            <column name="reference_type" value="REVIEW"/>
+        </insert>
+
+        <!-- PROMOTION -->
+        <insert tableName="notifications">
+            <column name="id" valueNumeric="5"/>
+            <column name="user_id" valueNumeric="5"/>
+            <column name="title" value="Flash Sale bắt đầu!"/>
+            <column name="message" value="Giảm giá 20% cho đơn từ 300k."/>
+            <column name="type" value="PROMOTION"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="notifications">
+                <where>id IN (1,2,3,4,5)</where>
+            </delete>
+        </rollback>
+
+    </changeSet>
+
+
+</databaseChangeLog>
