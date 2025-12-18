@@ -4,7 +4,7 @@
 This document outlines the roadmap for the development of the E-commerce system, from core backend construction to final deployment.
 
 ## Phase 1: Core Backend & Security Foundation
-**Status: In Progress**
+**Status: Completed**
 **Focus:** Building the fundamental data structures, business logic, API endpoints, and securing the system.
 
 *   [x] **Database Design & Setup**: Schema design for Users, Products, Orders, Carts, etc. Implementation using Liquibase for version control.
@@ -24,13 +24,13 @@ This document outlines the roadmap for the development of the E-commerce system,
 *   [x] **Advanced Security (Current Focus)**:
     *   Refine JWT implementation (Refresh Tokens).
     *   Role-Based Access Control (RBAC) audit.
-    *   CORS & CSRF configuration.
+    *   CORS configuration.
 *   [x] **Phase 1 Review**:
     *   Verify all core APIs and Security mechanisms.
     *   Ensure database data integrity.
 
 ## Phase 2: Frontend Development (Early Integration)
-**Status: Pending**
+**Status: In Progress**
 **Focus:** Building the User Interface to validate Backend APIs and visualize the system flow. This helps identify redundant endpoints or missing data early.
 
 *   [ ] **Setup & Architecture**:
@@ -45,6 +45,11 @@ This document outlines the roadmap for the development of the E-commerce system,
     *   Product & Category Management.
     *   Order Processing.
     *   User Management.
+*   [ ] **API Namespace Convention**:
+    *   Public storefront APIs under `/api/public/**`.
+    *   Auth APIs under `/api/auth/**`.
+    *   User APIs under `/api/users/me/**`.
+    *   Admin APIs under `/api/admin/**`.
 *   [ ] **Feedback Loop**:
     *   Refine Backend APIs based on Frontend requirements (e.g., missing fields in DTOs, pagination adjustments).
 *   [ ] **Phase 2 Review**:
