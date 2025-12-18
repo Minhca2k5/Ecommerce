@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/home")
 @RequiredArgsConstructor
-@Tag(name = "Home", description = "Home Page APIs")
+@Tag(name = "Home", description = "trang chủ ứng dụng")
 public class HomeController {
 
     private final HomeService homeService;
 
-    @Operation(summary = "Get Home Page Data")
+    @Operation(summary = "Lấy dữ liệu trang chủ")
     @GetMapping
     public ResponseEntity<HomeResponse> getHomeData() {
         var data = homeService.getHomeData();
