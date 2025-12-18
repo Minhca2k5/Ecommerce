@@ -2,7 +2,6 @@ package com.minzetsu.ecommerce.notification.controller.user;
 
 import com.minzetsu.ecommerce.common.config.CustomUserDetails;
 import com.minzetsu.ecommerce.notification.dto.request.NotificationCreateRequest;
-import com.minzetsu.ecommerce.notification.dto.request.NotificationUpdateRequest;
 import com.minzetsu.ecommerce.notification.dto.response.NotificationResponse;
 import com.minzetsu.ecommerce.notification.service.NotificationService;
 import io.swagger.v3.oas.annotations.Operation;

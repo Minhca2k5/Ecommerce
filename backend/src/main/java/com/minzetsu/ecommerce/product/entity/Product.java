@@ -3,7 +3,6 @@ package com.minzetsu.ecommerce.product.entity;
 import com.minzetsu.ecommerce.common.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Check;
 
 import java.math.BigDecimal;
 

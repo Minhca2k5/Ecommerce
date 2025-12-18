@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
                         email = "mastercode2k5@gmail.com",
                         url = "https://github.com/Minhca2k5"
                 ),
-                description = "OpenApi documentation for Ecommerce Application",
+                description = "OpenApi documentation for ecommerce.backend Application",
                 title = "OpenApi specification - Minzetsu",
                 version = "1.0",
                 license = @License(

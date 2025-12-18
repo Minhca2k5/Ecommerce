@@ -3,7 +3,6 @@ package com.minzetsu.ecommerce.order.repository;
 import com.minzetsu.ecommerce.order.entity.Order;
 import com.minzetsu.ecommerce.order.entity.OrderStatus;
 import org.springframework.data.jpa.repository.*;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

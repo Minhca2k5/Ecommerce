@@ -1,6 +1,7 @@
 package com.minzetsu.ecommerce.promotion.mapper;
 
-import com.minzetsu.ecommerce.promotion.dto.request.*;
+import com.minzetsu.ecommerce.promotion.dto.request.BannerCreateRequest;
+import com.minzetsu.ecommerce.promotion.dto.request.BannerUpdateRequest;
 import com.minzetsu.ecommerce.promotion.dto.response.BannerResponse;
 import com.minzetsu.ecommerce.promotion.entity.Banner;
 import org.mapstruct.*;

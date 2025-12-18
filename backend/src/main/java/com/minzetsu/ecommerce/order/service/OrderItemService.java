@@ -2,7 +2,6 @@ package com.minzetsu.ecommerce.order.service;
 
 import com.minzetsu.ecommerce.order.dto.filter.OrderItemFilter;
 import com.minzetsu.ecommerce.order.dto.response.OrderItemResponse;
-import com.minzetsu.ecommerce.order.entity.Order;
 import com.minzetsu.ecommerce.order.entity.OrderItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,6 +1,7 @@
 package com.minzetsu.ecommerce.notification.mapper;
 
-import com.minzetsu.ecommerce.notification.dto.request.*;
+import com.minzetsu.ecommerce.notification.dto.request.NotificationCreateRequest;
+import com.minzetsu.ecommerce.notification.dto.request.NotificationUpdateRequest;
 import com.minzetsu.ecommerce.notification.dto.response.NotificationResponse;
 import com.minzetsu.ecommerce.notification.entity.Notification;
 import org.mapstruct.*;

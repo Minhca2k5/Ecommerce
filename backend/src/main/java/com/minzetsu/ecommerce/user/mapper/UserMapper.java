@@ -6,6 +6,8 @@ import com.minzetsu.ecommerce.review.dto.response.ReviewResponse;
 import com.minzetsu.ecommerce.user.dto.request.UserCreateRequest;
 import com.minzetsu.ecommerce.user.dto.request.UserUpdateRequest;
 import com.minzetsu.ecommerce.user.dto.response.*;
+import com.minzetsu.ecommerce.user.dto.response.AddressResponse;
+import com.minzetsu.ecommerce.user.dto.response.UserResponse;
 import com.minzetsu.ecommerce.user.entity.User;
 import org.mapstruct.*;
 

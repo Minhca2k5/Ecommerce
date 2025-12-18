@@ -2,7 +2,6 @@ package com.minzetsu.ecommerce.promotion.entity;
 
 import com.minzetsu.ecommerce.common.base.BaseEntity;
 import com.minzetsu.ecommerce.order.entity.Order;
-import com.minzetsu.ecommerce.promotion.entity.Voucher;
 import com.minzetsu.ecommerce.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
