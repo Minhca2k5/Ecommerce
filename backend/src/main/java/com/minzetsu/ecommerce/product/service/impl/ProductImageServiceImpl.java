@@ -4,7 +4,7 @@ import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.product.dto.request.ProductImageRequest;
 import com.minzetsu.ecommerce.product.dto.response.AdminProductImageResponse;
-import com.minzetsu.ecommerce.product.dto.response.UserProductImageResponse;
+import com.minzetsu.ecommerce.product.dto.response.ProductImageResponse;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.entity.ProductImage;
 import com.minzetsu.ecommerce.product.entity.ProductStatus;
@@ -130,30 +130,30 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserProductImageResponse> getUserImagesResponseByProductId(Long productId) {
+    public List<ProductImageResponse> getImagesResponseByProductId(Long productId) {
         Product product = productService.getProductById(productId);
         validateActiveProduct(product, productId);
 
         List<ProductImage> images = productImageRepository.findByProductId(productId);
-        return productImageMapper.toUserResponseList(images);
+        return productImageMapper.toResponseList(images);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserProductImageResponse getPrimaryUserImageResponseByProductId(Long productId) {
+    public ProductImageResponse getPrimaryImageResponseByProductId(Long productId) {
         Product product = productService.getProductById(productId);
         validateActiveProduct(product, productId);
 
         ProductImage primaryImage = productImageRepository.findByIsPrimaryTrueAndProductId(productId)
                 .orElseThrow(() -> new NotFoundException("Primary image not found for productId: " + productId));
-        return productImageMapper.toUserResponse(primaryImage);
+        return productImageMapper.toResponse(primaryImage);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserProductImageResponse getUserImageResponseById(Long id) {
+    public ProductImageResponse getImageResponseById(Long id) {
         ProductImage image = getExistingImage(id);
         validateActiveProduct(image.getProduct(), image.getProduct().getId());
-        return productImageMapper.toUserResponse(image);
+        return productImageMapper.toResponse(image);
     }
 }

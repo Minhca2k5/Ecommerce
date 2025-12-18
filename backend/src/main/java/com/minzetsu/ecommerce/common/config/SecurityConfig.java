@@ -76,7 +76,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/docs/**",
-                                "/api/products/**" // Cho phép xem sản phẩm không cần login
+                                "/api/public/**"
                         ).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

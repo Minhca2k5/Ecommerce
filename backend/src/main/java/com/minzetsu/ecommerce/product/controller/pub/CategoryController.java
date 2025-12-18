@@ -1,7 +1,7 @@
-package com.minzetsu.ecommerce.product.controller.user;
+package com.minzetsu.ecommerce.product.controller.pub;
 
 import com.minzetsu.ecommerce.product.dto.filter.CategoryFilter;
-import com.minzetsu.ecommerce.product.dto.response.UserCategoryResponse;
+import com.minzetsu.ecommerce.product.dto.response.CategoryResponse;
 import com.minzetsu.ecommerce.product.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users/me/categories")
+@RequestMapping("/api/public/categories")
 @RequiredArgsConstructor
-@Tag(name = "User - Categories", description = "Xem và tìm kiếm danh mục sản phẩm dành cho người dùng")
+@Tag(name = "Categories", description = "Xem và tìm kiếm danh mục sản phẩm")
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -26,11 +26,11 @@ public class CategoryController {
             description = "Lọc và tìm kiếm các danh mục theo tên, slug hoặc danh mục cha. Hỗ trợ phân trang."
     )
     @GetMapping
-    public ResponseEntity<Page<UserCategoryResponse>> searchCategories(
+    public ResponseEntity<Page<CategoryResponse>> searchCategories(
             @ModelAttribute CategoryFilter filter,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(categoryService.searchUserCategoryResponses(filter, pageable));
+        return ResponseEntity.ok(categoryService.searchCategoryResponses(filter, pageable));
     }
 
     @Operation(
@@ -38,10 +38,10 @@ public class CategoryController {
             description = "Trả về thông tin cơ bản của danh mục sản phẩm, bao gồm tên và slug."
     )
     @GetMapping("/{categoryId}")
-    public ResponseEntity<UserCategoryResponse> getCategoryById(
+    public ResponseEntity<CategoryResponse> getCategoryById(
             @PathVariable("categoryId") Long categoryId
     ) {
-        return ResponseEntity.ok(categoryService.getUserCategoryResponseById(categoryId));
+        return ResponseEntity.ok(categoryService.getCategoryResponseById(categoryId));
     }
 
     @Operation(
@@ -49,10 +49,10 @@ public class CategoryController {
             description = "Trả về thông tin chi tiết của danh mục, bao gồm danh mục con và các sản phẩm liên quan."
     )
     @GetMapping("/{categoryId}/details")
-    public ResponseEntity<UserCategoryResponse> getFullCategoryById(
+    public ResponseEntity<CategoryResponse> getFullCategoryById(
             @PathVariable("categoryId") Long categoryId
     ) {
-        return ResponseEntity.ok(categoryService.getFullUserCategoryResponseById(categoryId));
+        return ResponseEntity.ok(categoryService.getFullCategoryResponseById(categoryId));
     }
 
     @Operation(
@@ -60,9 +60,9 @@ public class CategoryController {
             description = "Trả về danh sách tất cả danh mục con trực tiếp của danh mục cha được chỉ định."
     )
     @GetMapping("/{categoryId}/subcategories")
-    public ResponseEntity<List<UserCategoryResponse>> getSubcategories(
+    public ResponseEntity<List<CategoryResponse>> getSubcategories(
             @PathVariable("categoryId") Long categoryId
     ) {
-        return ResponseEntity.ok(categoryService.getUserSubcategoryResponsesByParentId(categoryId));
+        return ResponseEntity.ok(categoryService.getSubcategoryResponsesByParentId(categoryId));
     }
 }

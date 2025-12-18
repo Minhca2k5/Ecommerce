@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserProductResponse extends BaseDTO {
+public class ProductResponse extends BaseDTO {
 
     private String name;
     private String slug;
@@ -38,6 +38,6 @@ public class UserProductResponse extends BaseDTO {
     private String url;
 
     private List<ReviewResponse> reviews;
-    private List<UserProductImageResponse> images;
+    private List<ProductImageResponse> images;
 
 }

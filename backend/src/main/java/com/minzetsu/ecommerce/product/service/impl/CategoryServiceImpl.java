@@ -7,7 +7,7 @@ import com.minzetsu.ecommerce.product.dto.filter.ProductFilter;
 import com.minzetsu.ecommerce.product.dto.request.CategoryRequest;
 import com.minzetsu.ecommerce.product.dto.response.AdminCategoryResponse;
 import com.minzetsu.ecommerce.product.dto.response.AdminProductResponse;
-import com.minzetsu.ecommerce.product.dto.response.UserCategoryResponse;
+import com.minzetsu.ecommerce.product.dto.response.CategoryResponse;
 import com.minzetsu.ecommerce.product.entity.Category;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.mapper.CategoryMapper;
@@ -140,33 +140,33 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserCategoryResponse> searchUserCategoryResponses(CategoryFilter filter, Pageable pageable) {
+    public Page<CategoryResponse> searchCategoryResponses(CategoryFilter filter, Pageable pageable) {
         return PageableUtils.search(
                 filter,
                 pageable,
                 categoryRepository,
                 CategorySpecification.filter(filter),
-                categoryMapper::toUserResponse
+                categoryMapper::toResponse
         );
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserCategoryResponse getUserCategoryResponseById(Long id) {
-        return categoryMapper.toUserResponse(getExistingCategory(id));
+    public CategoryResponse getCategoryResponseById(Long id) {
+        return categoryMapper.toResponse(getExistingCategory(id));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserCategoryResponse getFullUserCategoryResponseById(Long id) {
+    public CategoryResponse getFullCategoryResponseById(Long id) {
         Category category = getExistingCategory(id);
-        List<UserCategoryResponse> subCategoryResponses = getUserSubcategoryResponsesByParentId(id);
-        return categoryMapper.toFullUserResponse(category, subCategoryResponses);
+        List<CategoryResponse> subCategoryResponses = getSubcategoryResponsesByParentId(id);
+        return categoryMapper.toFullResponse(category, subCategoryResponses);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserCategoryResponse> getUserSubcategoryResponsesByParentId(Long parentId) {
-        return categoryMapper.toUserResponseList(categoryRepository.findByParentId(parentId));
+    public List<CategoryResponse> getSubcategoryResponsesByParentId(Long parentId) {
+        return categoryMapper.toResponseList(categoryRepository.findByParentId(parentId));
     }
 }

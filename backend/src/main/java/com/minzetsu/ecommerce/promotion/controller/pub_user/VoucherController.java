@@ -1,6 +1,6 @@
-package com.minzetsu.ecommerce.promotion.controller.user;
+package com.minzetsu.ecommerce.promotion.controller.pub_user;
 
-import com.minzetsu.ecommerce.promotion.dto.response.UserVoucherResponse;
+import com.minzetsu.ecommerce.promotion.dto.response.VoucherResponse;
 import com.minzetsu.ecommerce.promotion.entity.VoucherStatus;
 import com.minzetsu.ecommerce.promotion.service.VoucherService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,11 +16,11 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users/me/vouchers")
+@RequestMapping("/api/public/vouchers")
 @RequiredArgsConstructor
 @Tag(
-        name = "User - Vouchers",
-        description = "Quản lý voucher dành cho người dùng"
+        name = "Vouchers",
+        description = "Quản lý voucher"
 )
 public class VoucherController {
     private final VoucherService voucherService;
@@ -31,8 +31,8 @@ public class VoucherController {
     )
     @ApiResponse(responseCode = "200", description = "Lấy danh sách voucher thành công")
     @GetMapping
-    public ResponseEntity<List<UserVoucherResponse>> getVouchersByCode(@RequestParam String code) {
-        List<UserVoucherResponse> vouchers = voucherService.getUserVoucherResponsesByCodeAndActiveStatus(code, VoucherStatus.ACTIVE);
+    public ResponseEntity<List<VoucherResponse>> getVouchersByCode(@RequestParam String code) {
+        List<VoucherResponse> vouchers = voucherService.getVoucherResponsesByCodeAndActiveStatus(code, VoucherStatus.ACTIVE);
         return ResponseEntity.ok(vouchers);
     }
 
@@ -42,11 +42,11 @@ public class VoucherController {
     )
     @ApiResponse(responseCode = "200", description = "Lấy danh sách voucher thành công")
     @GetMapping("/filter")
-    public ResponseEntity<Page<UserVoucherResponse>> getVouchersByMinOrderAmount(
+    public ResponseEntity<Page<VoucherResponse>> getVouchersByMinOrderAmount(
             @RequestParam BigDecimal minOrderAmount,
             Pageable pageable
             ) {
-        Page<UserVoucherResponse> vouchers = voucherService.searchUserVoucherResponsesByMinOrderTotalAndActiveStatus(minOrderAmount, VoucherStatus.ACTIVE, pageable);
+        Page<VoucherResponse> vouchers = voucherService.searchVoucherResponsesByMinOrderTotalAndActiveStatus(minOrderAmount, VoucherStatus.ACTIVE, pageable);
         return ResponseEntity.ok(vouchers);
     }
 
@@ -56,9 +56,9 @@ public class VoucherController {
     )
     @ApiResponse(responseCode = "200", description = "Lấy thông tin voucher thành công")
     @GetMapping("/{voucherId}")
-    public ResponseEntity<UserVoucherResponse> getVoucherById(
+    public ResponseEntity<VoucherResponse> getVoucherById(
             @PathVariable("voucherId") Long voucherId
     ) {
-        return ResponseEntity.ok(voucherService.getUserVoucherResponseById(voucherId));
+        return ResponseEntity.ok(voucherService.getVoucherResponseById(voucherId));
     }
 }

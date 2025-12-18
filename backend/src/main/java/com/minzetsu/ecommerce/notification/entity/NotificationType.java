@@ -6,5 +6,6 @@ public enum NotificationType {
     VOUCHER,
     REVIEW,
     SYSTEM,
-    PROMOTION
+    PRODUCT,
+    CATEGORY,
 }

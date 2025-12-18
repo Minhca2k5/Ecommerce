@@ -1,7 +1,7 @@
-package com.minzetsu.ecommerce.product.controller.user;
+package com.minzetsu.ecommerce.product.controller.pub;
 
 import com.minzetsu.ecommerce.product.dto.filter.ProductFilter;
-import com.minzetsu.ecommerce.product.dto.response.UserProductResponse;
+import com.minzetsu.ecommerce.product.dto.response.ProductResponse;
 import com.minzetsu.ecommerce.product.service.ProductService;
 import com.minzetsu.ecommerce.review.dto.response.ReviewResponse;
 import com.minzetsu.ecommerce.review.service.ReviewService;
@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/public/products")
 @RequiredArgsConstructor
-@Tag(name = "User - Products", description = "Xem và tìm kiếm sản phẩm dành cho người dùng")
+@Tag(name = "Products", description = "Xem và tìm kiếm sản phẩm")
 public class ProductController {
 
     private final ProductService productService;
@@ -35,11 +35,11 @@ public class ProductController {
             description = "Lọc và tìm kiếm các sản phẩm theo tên, danh mục, trạng thái hoặc khoảng giá. Hỗ trợ phân trang và sắp xếp."
     )
     @GetMapping
-    public ResponseEntity<Page<UserProductResponse>> searchProducts(
+    public ResponseEntity<Page<ProductResponse>> searchProducts(
             @ModelAttribute ProductFilter filter,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(productService.searchUserProductResponses(filter, pageable));
+        return ResponseEntity.ok(productService.searchProductResponses(filter, pageable));
     }
 
     @Operation(
@@ -47,10 +47,10 @@ public class ProductController {
             description = "Trả về thông tin chi tiết của sản phẩm, bao gồm hình ảnh, danh mục, tồn kho và thuộc tính khác."
     )
     @GetMapping("/{productId}")
-    public ResponseEntity<UserProductResponse> getProductById(
+    public ResponseEntity<ProductResponse> getProductById(
             @PathVariable("productId") Long productId
     ) {
-        return ResponseEntity.ok(productService.getFullUserProductResponseById(productId));
+        return ResponseEntity.ok(productService.getFullProductResponseById(productId));
     }
 
     @Operation(
@@ -70,8 +70,8 @@ public class ProductController {
     )
     @ApiResponse(responseCode = "200", description = "Danh sách sản phẩm đánh giá cao được trả về thành công")
     @GetMapping("/top-rating")
-    public ResponseEntity<List<UserProductResponse>> getTopRatingProducts() {
-        return ResponseEntity.ok(productService.getTopRatingUserProductResponses(days, limit));
+    public ResponseEntity<List<ProductResponse>> getTopRatingProducts() {
+        return ResponseEntity.ok(productService.getTopRatingProductResponses(days, limit));
     }
 
     @Operation(
@@ -80,8 +80,8 @@ public class ProductController {
     )
     @ApiResponse(responseCode = "200", description = "Danh sách sản phẩm được yêu thích nhiều nhất được trả về thành công")
     @GetMapping("/most-favorite")
-    public ResponseEntity<List<UserProductResponse>> getMostFavoriteProducts() {
-        return ResponseEntity.ok(productService.getMostFavoriteUserProductResponses(days, limit));
+    public ResponseEntity<List<ProductResponse>> getMostFavoriteProducts() {
+        return ResponseEntity.ok(productService.getMostFavoriteProductResponses(days, limit));
     }
 
     @Operation(
@@ -90,8 +90,8 @@ public class ProductController {
     )
     @ApiResponse(responseCode = "200", description = "Danh sách sản phẩm được xem nhiều nhất được trả về thành công")
     @GetMapping("/most-viewed")
-    public ResponseEntity<List<UserProductResponse>> getMostViewedProducts() {
-        return ResponseEntity.ok(productService.getMostViewedUserProductResponses(days, limit));
+    public ResponseEntity<List<ProductResponse>> getMostViewedProducts() {
+        return ResponseEntity.ok(productService.getMostViewedProductResponses(days, limit));
     }
 
     @Operation(
@@ -100,7 +100,7 @@ public class ProductController {
     )
     @ApiResponse(responseCode = "200", description = "Danh sách sản phẩm bán chạy nhất được trả về thành công")
     @GetMapping("/best-selling")
-    public ResponseEntity<List<UserProductResponse>> getBestSellingProducts() {
-        return ResponseEntity.ok(productService.getBestSellingUserProductResponses(days, limit));
+    public ResponseEntity<List<ProductResponse>> getBestSellingProducts() {
+        return ResponseEntity.ok(productService.getBestSellingProductResponses(days, limit));
     }
 }

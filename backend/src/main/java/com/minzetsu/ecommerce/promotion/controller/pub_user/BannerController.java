@@ -1,4 +1,4 @@
-package com.minzetsu.ecommerce.promotion.controller.user;
+package com.minzetsu.ecommerce.promotion.controller.pub_user;
 
 import com.minzetsu.ecommerce.promotion.dto.filter.BannerFilter;
 import com.minzetsu.ecommerce.promotion.dto.response.BannerResponse;
@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/users/me/banners")
+@RequestMapping("/api/public/banners")
 @RequiredArgsConstructor
-@Tag(name = "User - Banners", description = "Quản lý banner dành cho người dùng")
+@Tag(name = "Banners", description = "Quản lý banner")
 public class BannerController {
     private final BannerService bannerService;
 

@@ -16,8 +16,8 @@ import com.minzetsu.ecommerce.product.dto.request.ProductCreateRequest;
 import com.minzetsu.ecommerce.product.dto.request.ProductUpdateRequest;
 import com.minzetsu.ecommerce.product.dto.response.AdminProductImageResponse;
 import com.minzetsu.ecommerce.product.dto.response.AdminProductResponse;
-import com.minzetsu.ecommerce.product.dto.response.UserProductImageResponse;
-import com.minzetsu.ecommerce.product.dto.response.UserProductResponse;
+import com.minzetsu.ecommerce.product.dto.response.ProductImageResponse;
+import com.minzetsu.ecommerce.product.dto.response.ProductResponse;
 import com.minzetsu.ecommerce.product.entity.Category;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.entity.ProductImage;
@@ -76,7 +76,7 @@ public class ProductServiceImpl implements ProductService {
         mainImage.ifPresent(image -> {
             if (response instanceof AdminProductResponse adminResponse) {
                 adminResponse.setUrl(image.getUrl());
-            } else if (response instanceof UserProductResponse userResponse) {
+            } else if (response instanceof ProductResponse userResponse) {
                 userResponse.setUrl(image.getUrl());
             }
         });
@@ -94,7 +94,7 @@ public class ProductServiceImpl implements ProductService {
             adminResponse.setRecentlyTotalSoldQuantity(recentlyTotalSoldQuantity);
             adminResponse.setRecentlyTotalViewedQuantity(recentlyTotalViewedQuantity);
             adminResponse.setRecentlyFavoriteCount(recentlyFavoriteCount);
-        } else if (response instanceof UserProductResponse userResponse) {
+        } else if (response instanceof ProductResponse userResponse) {
             userResponse.setRecentlyAverageRating(recentlyAverageRating);
             userResponse.setRecentlyReviewCount(recentlyReviewCount);
             userResponse.setRecentlyTotalSoldQuantity(recentlyTotalSoldQuantity);
@@ -123,26 +123,26 @@ public class ProductServiceImpl implements ProductService {
         return response;
     }
 
-    private UserProductResponse toUserResponse(Product product) {
-        UserProductResponse response = productMapper.toUserResponse(product);
+    private ProductResponse toUserResponse(Product product) {
+        ProductResponse response = productMapper.toResponse(product);
         Long productId = response.getId();
         assignUrlToResponse(productId, response);
         return response;
     }
 
-    private List<UserProductResponse> toUserResponseList(List<Product> products) {
+    private List<ProductResponse> toUserResponseList(List<Product> products) {
         return products.stream()
                 .map(this::toUserResponse)
                 .toList();
     }
 
-    private UserProductResponse toFullUserResponse(
+    private ProductResponse toFullUserResponse(
             Product product,
             List<ReviewResponse> reviews,
             List<InventoryResponse> inventories,
-            List<UserProductImageResponse> images
+            List<ProductImageResponse> images
     ) {
-        UserProductResponse response = productMapper.toFullUserResponse(product, reviews, images);
+        ProductResponse response = productMapper.toFullResponse(product, reviews, images);
         List<InventoryResponse> activeInventories = inventories.stream()
                 .filter(InventoryResponse::getIsActive)
                 .toList();
@@ -256,7 +256,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserProductResponse> searchUserProductResponses(ProductFilter filter, Pageable pageable) {
+    public Page<ProductResponse> searchProductResponses(ProductFilter filter, Pageable pageable) {
         filter.setStatus("ACTIVE");
         return PageableUtils.search(
                 filter,
@@ -269,18 +269,18 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserProductResponse getFullUserProductResponseById(Long id) {
+    public ProductResponse getFullProductResponseById(Long id) {
         Product product = getExistingProduct(id);
         validateActiveProduct(product);
         List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(id));
         List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductId(id));
-        List<UserProductImageResponse> images = productImageMapper.toUserResponseList(productImageRepository.findByProductId(id));
+        List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(id));
         return toFullUserResponse(product, reviews, inventories, images);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserProductResponse> getTopRatingUserProductResponses(Integer days, Integer limit) {
+    public List<ProductResponse> getTopRatingProductResponses(Integer days, Integer limit) {
         List<ProductRatingView> views =
                 reviewRepository.getProductRatingViewsByAverageRatingLastDaysAndLimit(days, limit);
 
@@ -293,7 +293,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserProductResponse> getMostFavoriteUserProductResponses(Integer days, Integer limit) {
+    public List<ProductResponse> getMostFavoriteProductResponses(Integer days, Integer limit) {
         List<ProductMostFavoriteView> views =
                 wishlistRepository.getProductMostFavoriteViewsByTotalFavoriteLastDaysAndLimit(days, limit);
 
@@ -306,7 +306,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserProductResponse> getMostViewedUserProductResponses(Integer days, Integer limit) {
+    public List<ProductResponse> getMostViewedProductResponses(Integer days, Integer limit) {
         List<ProductMostViewedView> views =
                 recentViewRepository.getProductMostViewedViewsByTotalViewedLastDaysAndLimit(days, limit);
 
@@ -319,7 +319,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserProductResponse> getBestSellingUserProductResponses(Integer days, Integer limit) {
+    public List<ProductResponse> getBestSellingProductResponses(Integer days, Integer limit) {
         List<ProductBestSellingView> views =
                 orderItemRepository.getProductBestSellingViewsByTotalQuantitySoldLastDaysAndLimit(days, limit);
 
@@ -330,10 +330,10 @@ public class ProductServiceImpl implements ProductService {
         );
     }
 
-    private <T> List<UserProductResponse> buildRankedUserResponses(
+    private <T> List<ProductResponse> buildRankedUserResponses(
             List<T> views,
             Function<T, Long> idExtractor,
-            BiConsumer<UserProductResponse, T> metricSetter
+            BiConsumer<ProductResponse, T> metricSetter
     ) {
         List<Long> productIds = views.stream()
                 .map(idExtractor)
@@ -349,7 +349,7 @@ public class ProductServiceImpl implements ProductService {
                 .filter(Objects::nonNull)
                 .toList();
 
-        List<UserProductResponse> responses = toUserResponseList(orderedProducts);
+        List<ProductResponse> responses = toUserResponseList(orderedProducts);
 
         IntStream.range(0, responses.size())
                 .forEach(i ->

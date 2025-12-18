@@ -4,18 +4,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.minzetsu.ecommerce.common.base.BaseDTO;
 import lombok.*;
 
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserCategoryResponse extends BaseDTO {
+public class ProductImageResponse extends BaseDTO {
 
-    private String name;
-    private String slug;
-    private Long parentId;
-    private List<UserCategoryResponse> subcategories;
+    private String url;
+    private Boolean isPrimary;
 }

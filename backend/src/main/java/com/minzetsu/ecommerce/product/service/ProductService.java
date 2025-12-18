@@ -4,7 +4,7 @@ import com.minzetsu.ecommerce.product.dto.filter.ProductFilter;
 import com.minzetsu.ecommerce.product.dto.request.ProductCreateRequest;
 import com.minzetsu.ecommerce.product.dto.request.ProductUpdateRequest;
 import com.minzetsu.ecommerce.product.dto.response.AdminProductResponse;
-import com.minzetsu.ecommerce.product.dto.response.UserProductResponse;
+import com.minzetsu.ecommerce.product.dto.response.ProductResponse;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.entity.ProductStatus;
 import org.springframework.data.domain.Page;
@@ -24,10 +24,10 @@ public interface ProductService {
     AdminProductResponse getFullAdminProductResponseById(Long id);
     Page<AdminProductResponse> searchAdminProductResponses(ProductFilter filter, Pageable pageable);
 
-    Page<UserProductResponse> searchUserProductResponses(ProductFilter filter, Pageable pageable);
-    UserProductResponse getFullUserProductResponseById(Long id);
-    List<UserProductResponse> getTopRatingUserProductResponses(Integer days, Integer limit);
-    List<UserProductResponse> getMostFavoriteUserProductResponses(Integer days, Integer limit);
-    List<UserProductResponse> getMostViewedUserProductResponses(Integer days, Integer limit);
-    List<UserProductResponse> getBestSellingUserProductResponses(Integer days, Integer limit);
+    Page<ProductResponse> searchProductResponses(ProductFilter filter, Pageable pageable);
+    ProductResponse getFullProductResponseById(Long id);
+    List<ProductResponse> getTopRatingProductResponses(Integer days, Integer limit);
+    List<ProductResponse> getMostFavoriteProductResponses(Integer days, Integer limit);
+    List<ProductResponse> getMostViewedProductResponses(Integer days, Integer limit);
+    List<ProductResponse> getBestSellingProductResponses(Integer days, Integer limit);
 }

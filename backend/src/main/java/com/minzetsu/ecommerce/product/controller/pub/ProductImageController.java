@@ -1,6 +1,6 @@
-package com.minzetsu.ecommerce.product.controller.user;
+package com.minzetsu.ecommerce.product.controller.pub;
 
-import com.minzetsu.ecommerce.product.dto.response.UserProductImageResponse;
+import com.minzetsu.ecommerce.product.dto.response.ProductImageResponse;
 import com.minzetsu.ecommerce.product.service.ProductImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users/me/products/{productId}/images")
+@RequestMapping("/api/public/products/{productId}/images")
 @RequiredArgsConstructor
-@Tag(name = "User - Product Images", description = "Xem hình ảnh sản phẩm dành cho người dùng")
+@Tag(name = "Product Images", description = "Xem hình ảnh sản phẩm")
 public class ProductImageController {
 
     private final ProductImageService productImageService;
@@ -23,10 +23,10 @@ public class ProductImageController {
             description = "Trả về danh sách các hình ảnh (bao gồm ảnh chính và ảnh phụ) của sản phẩm được chỉ định."
     )
     @GetMapping
-    public ResponseEntity<List<UserProductImageResponse>> getImagesByProductId(
+    public ResponseEntity<List<ProductImageResponse>> getImagesByProductId(
             @PathVariable("productId") Long productId
     ) {
-        return ResponseEntity.ok(productImageService.getUserImagesResponseByProductId(productId));
+        return ResponseEntity.ok(productImageService.getImagesResponseByProductId(productId));
     }
 
     @Operation(
@@ -34,10 +34,10 @@ public class ProductImageController {
             description = "Trả về hình ảnh chính (primary) của sản phẩm. Nếu sản phẩm chưa có ảnh chính, trả về null hoặc 404."
     )
     @GetMapping("/primary")
-    public ResponseEntity<UserProductImageResponse> getPrimaryImageByProductId(
+    public ResponseEntity<ProductImageResponse> getPrimaryImageByProductId(
             @PathVariable("productId") Long productId
     ) {
-        return ResponseEntity.ok(productImageService.getPrimaryUserImageResponseByProductId(productId));
+        return ResponseEntity.ok(productImageService.getPrimaryImageResponseByProductId(productId));
     }
 
     @Operation(
@@ -45,9 +45,9 @@ public class ProductImageController {
             description = "Trả về thông tin chi tiết của một hình ảnh cụ thể dựa trên ID hình ảnh."
     )
     @GetMapping("/{imageId}")
-    public ResponseEntity<UserProductImageResponse> getImageById(
+    public ResponseEntity<ProductImageResponse> getImageById(
             @PathVariable("imageId") Long imageId
     ) {
-        return ResponseEntity.ok(productImageService.getUserImageResponseById(imageId));
+        return ResponseEntity.ok(productImageService.getImageResponseById(imageId));
     }
 }

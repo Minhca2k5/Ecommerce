@@ -5,8 +5,8 @@ import com.minzetsu.ecommerce.product.dto.request.ProductCreateRequest;
 import com.minzetsu.ecommerce.product.dto.request.ProductUpdateRequest;
 import com.minzetsu.ecommerce.product.dto.response.AdminProductImageResponse;
 import com.minzetsu.ecommerce.product.dto.response.AdminProductResponse;
-import com.minzetsu.ecommerce.product.dto.response.UserProductImageResponse;
-import com.minzetsu.ecommerce.product.dto.response.UserProductResponse;
+import com.minzetsu.ecommerce.product.dto.response.ProductImageResponse;
+import com.minzetsu.ecommerce.product.dto.response.ProductResponse;
 import com.minzetsu.ecommerce.review.dto.response.ReviewResponse;
 import com.minzetsu.ecommerce.product.entity.Product;
 import org.mapstruct.*;
@@ -81,16 +81,16 @@ public interface ProductMapper {
     @Mapping(target = "recentlyTotalSoldQuantity", ignore = true)
     @Mapping(target = "recentlyTotalViewedQuantity", ignore = true)
     @Mapping(target = "recentlyFavoriteCount", ignore = true)
-    UserProductResponse toUserResponse(Product product);
+    ProductResponse toResponse(Product product);
 
-    List<UserProductResponse> toUserResponseList(List<Product> products);
+    List<ProductResponse> toResponseList(List<Product> products);
 
-    default UserProductResponse toFullUserResponse(
+    default ProductResponse toFullResponse(
             Product product,
             List<ReviewResponse> reviews,
-            List<UserProductImageResponse> images
+            List<ProductImageResponse> images
     ) {
-        UserProductResponse res = toUserResponse(product);
+        ProductResponse res = toResponse(product);
         res.setReviews(reviews);
         res.setImages(images);
         return res;

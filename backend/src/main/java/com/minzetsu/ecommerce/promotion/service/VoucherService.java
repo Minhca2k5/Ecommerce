@@ -4,7 +4,7 @@ import com.minzetsu.ecommerce.promotion.dto.filter.VoucherFilter;
 import com.minzetsu.ecommerce.promotion.dto.request.VoucherCreateRequest;
 import com.minzetsu.ecommerce.promotion.dto.request.VoucherUpdateRequest;
 import com.minzetsu.ecommerce.promotion.dto.response.AdminVoucherResponse;
-import com.minzetsu.ecommerce.promotion.dto.response.UserVoucherResponse;
+import com.minzetsu.ecommerce.promotion.dto.response.VoucherResponse;
 import com.minzetsu.ecommerce.promotion.entity.Voucher;
 import com.minzetsu.ecommerce.promotion.entity.VoucherStatus;
 import org.springframework.data.domain.Page;
@@ -19,8 +19,8 @@ public interface VoucherService {
     AdminVoucherResponse updateAdminVoucherResponse(Long id, VoucherUpdateRequest request);
     void deleteVoucher(Long id);
     Voucher getVoucherById(Long id);
-    List<UserVoucherResponse> getUserVoucherResponsesByCodeAndActiveStatus(String code, VoucherStatus status);
-    Page<UserVoucherResponse> searchUserVoucherResponsesByMinOrderTotalAndActiveStatus(BigDecimal minOrderTotal, VoucherStatus status, Pageable pageable);
-    UserVoucherResponse getUserVoucherResponseById(Long id);
+    List<VoucherResponse> getVoucherResponsesByCodeAndActiveStatus(String code, VoucherStatus status);
+    Page<VoucherResponse> searchVoucherResponsesByMinOrderTotalAndActiveStatus(BigDecimal minOrderTotal, VoucherStatus status, Pageable pageable);
+    VoucherResponse getVoucherResponseById(Long id);
     AdminVoucherResponse getAdminVoucherResponseById(Long id);
 }

@@ -1,4 +1,4 @@
-package com.minzetsu.ecommerce.promotion.controller.user;
+package com.minzetsu.ecommerce.promotion.controller.pub_user;
 
 import com.minzetsu.ecommerce.common.config.CustomUserDetails;
 import com.minzetsu.ecommerce.promotion.dto.response.VoucherUseResponse;

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserVoucherResponse extends BaseDTO {
+public class VoucherResponse extends BaseDTO {
 
     private String code;
     private String name;

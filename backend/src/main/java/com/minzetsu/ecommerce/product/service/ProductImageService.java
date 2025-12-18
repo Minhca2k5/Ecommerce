@@ -2,7 +2,7 @@ package com.minzetsu.ecommerce.product.service;
 
 import com.minzetsu.ecommerce.product.dto.request.ProductImageRequest;
 import com.minzetsu.ecommerce.product.dto.response.AdminProductImageResponse;
-import com.minzetsu.ecommerce.product.dto.response.UserProductImageResponse;
+import com.minzetsu.ecommerce.product.dto.response.ProductImageResponse;
 import com.minzetsu.ecommerce.product.entity.ProductImage;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public interface ProductImageService {
     AdminProductImageResponse getPrimaryAdminImageResponseByProductId(Long productId);
     AdminProductImageResponse getAdminImageResponseById(Long id);
 
-    List<UserProductImageResponse> getUserImagesResponseByProductId(Long productId);
-    UserProductImageResponse getPrimaryUserImageResponseByProductId(Long productId);
-    UserProductImageResponse getUserImageResponseById(Long id);
+    List<ProductImageResponse> getImagesResponseByProductId(Long productId);
+    ProductImageResponse getPrimaryImageResponseByProductId(Long productId);
+    ProductImageResponse getImageResponseById(Long id);
 }

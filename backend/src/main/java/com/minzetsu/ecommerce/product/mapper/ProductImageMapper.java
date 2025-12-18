@@ -2,7 +2,7 @@ package com.minzetsu.ecommerce.product.mapper;
 
 import com.minzetsu.ecommerce.product.dto.request.ProductImageRequest;
 import com.minzetsu.ecommerce.product.dto.response.AdminProductImageResponse;
-import com.minzetsu.ecommerce.product.dto.response.UserProductImageResponse;
+import com.minzetsu.ecommerce.product.dto.response.ProductImageResponse;
 import com.minzetsu.ecommerce.product.entity.ProductImage;
 import org.mapstruct.*;
 
@@ -25,7 +25,7 @@ public interface ProductImageMapper {
 
     List<AdminProductImageResponse> toAdminResponseList(List<ProductImage> images);
 
-    UserProductImageResponse toUserResponse(ProductImage image);
+    ProductImageResponse toResponse(ProductImage image);
 
-    List<UserProductImageResponse> toUserResponseList(List<ProductImage> images);
+    List<ProductImageResponse> toResponseList(List<ProductImage> images);
 }

@@ -3,7 +3,7 @@ package com.minzetsu.ecommerce.product.mapper;
 import com.minzetsu.ecommerce.product.dto.request.CategoryRequest;
 import com.minzetsu.ecommerce.product.dto.response.AdminCategoryResponse;
 import com.minzetsu.ecommerce.product.dto.response.AdminProductResponse;
-import com.minzetsu.ecommerce.product.dto.response.UserCategoryResponse;
+import com.minzetsu.ecommerce.product.dto.response.CategoryResponse;
 import com.minzetsu.ecommerce.product.entity.Category;
 import org.mapstruct.*;
 
@@ -39,15 +39,15 @@ public interface CategoryMapper {
     }
 
     @Mapping(target = "parentId", source = "parent.id")
-    UserCategoryResponse toUserResponse(Category category);
+    CategoryResponse toResponse(Category category);
 
-    List<UserCategoryResponse> toUserResponseList(List<Category> categories);
+    List<CategoryResponse> toResponseList(List<Category> categories);
 
-    default UserCategoryResponse toFullUserResponse(
+    default CategoryResponse toFullResponse(
             Category category,
-            List<UserCategoryResponse> subcategories
+            List<CategoryResponse> subcategories
     ) {
-        UserCategoryResponse response = toUserResponse(category);
+        CategoryResponse response = toResponse(category);
         response.setSubcategories(subcategories);
         return response;
     }

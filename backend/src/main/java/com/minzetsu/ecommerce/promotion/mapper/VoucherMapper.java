@@ -3,7 +3,7 @@ package com.minzetsu.ecommerce.promotion.mapper;
 import com.minzetsu.ecommerce.promotion.dto.request.VoucherCreateRequest;
 import com.minzetsu.ecommerce.promotion.dto.request.VoucherUpdateRequest;
 import com.minzetsu.ecommerce.promotion.dto.response.AdminVoucherResponse;
-import com.minzetsu.ecommerce.promotion.dto.response.UserVoucherResponse;
+import com.minzetsu.ecommerce.promotion.dto.response.VoucherResponse;
 import com.minzetsu.ecommerce.promotion.entity.Voucher;
 import org.mapstruct.*;
 
@@ -23,6 +23,6 @@ public interface VoucherMapper {
 
     List<AdminVoucherResponse> toAdminResponseList(List<Voucher> list);
 
-    UserVoucherResponse toUserResponse(Voucher voucher);
-    List<UserVoucherResponse> toUserResponseList(List<Voucher> list);
+    VoucherResponse toUserResponse(Voucher voucher);
+    List<VoucherResponse> toUserResponseList(List<Voucher> list);
 }

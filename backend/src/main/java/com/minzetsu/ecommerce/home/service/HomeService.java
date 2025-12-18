@@ -30,7 +30,7 @@ public class HomeService {
         // Actually CategoryService.searchUserCategoryResponses might not filter by parentId=null by default unless specified.
         // Let's assume we want top level. If filter doesn't support it, we might get all. 
         // For now, let's just get first page. Ideally we should add parentId to CategoryFilter.
-        var categoryPage = categoryService.searchUserCategoryResponses(categoryFilter, PageRequest.of(0, 10));
+        var categoryPage = categoryService.searchCategoryResponses(categoryFilter, PageRequest.of(0, 10));
 
         // 3. New Arrivals (Products sorted by created_at desc)
         var newArrivalsFilter = ProductFilter.builder()
@@ -38,16 +38,16 @@ public class HomeService {
                 .sortBy("createdAt")
                 .sortDirection("DESC")
                 .build();
-        var newArrivalsPage = productService.searchUserProductResponses(newArrivalsFilter, PageRequest.of(0, 8));
+        var newArrivalsPage = productService.searchProductResponses(newArrivalsFilter, PageRequest.of(0, 8));
 
         // 4. Best Sellers
-        var bestSellers = productService.getBestSellingUserProductResponses(30, 8);
+        var bestSellers = productService.getBestSellingProductResponses(30, 8);
 
         // 5. Top Rated
-        var topRated = productService.getTopRatingUserProductResponses(30, 8);
+        var topRated = productService.getTopRatingProductResponses(30, 8);
 
         // 6. Most Viewed
-        var mostViewed = productService.getMostViewedUserProductResponses(30, 8);
+        var mostViewed = productService.getMostViewedProductResponses(30, 8);
 
         return HomeResponse.builder()
                 .banners(bannerPage.getContent())

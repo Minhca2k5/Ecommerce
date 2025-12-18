@@ -1,154 +1,181 @@
-# Frontend Phase 2 Roadmap (React) — bám theo Backend Endpoints
+# Frontend Phase 2 Roadmap (React) — bám theo Backend Endpoints (UPDATED)
 
-Mục tiêu: xây frontend chạy tốt trên laptop/mobile (responsive), làm **từng lát cắt nhỏ** để bạn vừa code vừa hiểu. Backend đã có sẵn API theo các nhóm dưới đây; frontend sẽ lần lượt “phủ” từng nhóm.
+Mục tiêu Phase 2: xây frontend chạy tốt trên laptop/mobile (responsive), UI đẹp, UX chuẩn (loading/error/empty), và **tận dụng hầu hết endpoint** backend để dự án “CV-ready” và sẵn sàng sang Phase 3 (performance/caching).
+
+Nguyên tắc:
+- Không đoán API: luôn đối chiếu Swagger/OpenAPI trước khi code.
+- Mỗi milestone phải có: UI chạy được + gọi API thật + loading/error + responsive cơ bản.
+- Ưu tiên “end-to-end user journey” trước (browse → cart → checkout → order → payment), sau đó mới admin.
+
+---
 
 ## 0) Chuẩn bị (bắt buộc)
 
-### 0.1. Chạy backend (để có Swagger + test API)
+### 0.1) Chạy backend (có Swagger + test API)
 - `cd backend`
 - `.\mvnw spring-boot:run`
-- Mở Swagger UI:
+- Swagger UI:
   - `http://localhost:8080/docs` (hoặc `http://localhost:8080/swagger-ui/index.html`)
 - OpenAPI JSON:
   - `http://localhost:8080/v3/api-docs`
 
-### 0.2. Nguyên tắc xây frontend
-- Không “nhớ API bằng đầu” → luôn đối chiếu Swagger/OpenAPI.
-- Mỗi milestone phải có:
-  - UI chạy được
-  - gọi được API thật
-  - có loading/error state
-  - có responsive cơ bản (mobile-first)
+**Checkpoint**:
+- Mở Swagger được
+- `GET /api/public/home` trả 200 + JSON
 
 ---
 
 ## 1) Khởi tạo frontend (Milestone M1)
 
-### 1.1. Scaffold React (TypeScript)
-Lý do chọn TS: phổ biến trong công ty, bắt lỗi sớm khi gọi API.
-
-- Tại root repo:
+### 1.1) Scaffold React (TypeScript)
+- Ở root repo:
   - `npx create-vite@latest frontend -- --template react-ts`
   - `cd frontend`
   - `npm install`
   - `npm run dev`
 
-### 1.2. Cấu hình base URL backend
+### 1.2) Cấu hình base URL backend
 - Tạo `frontend/.env`:
   - `VITE_API_BASE_URL=http://localhost:8080`
 
-**Checkpoint hiểu**:
-- Vite env dùng `import.meta.env.VITE_*`
-- dev server chạy ở `http://localhost:5173` (thường)
+**Checkpoint**:
+- Dev server chạy `http://localhost:5173`
+- Đọc env bằng `import.meta.env.VITE_API_BASE_URL`
 
 ---
 
 ## 2) Nền tảng routing + layout (Milestone M2)
 
-### 2.1. Cài router
+### 2.1) Cài router
 - `npm install react-router-dom`
 
-### 2.2. Tạo layout tối thiểu
-Mục tiêu: có header + container + footer; responsive.
-
+### 2.2) Tạo layout tối thiểu (mobile-first)
 Route tối thiểu:
 - `/` Home
 - `/products` Product list
 - `/products/:productId` Product detail
+- `/categories/:categoryId` Category detail (public)
 - `/login` Login
 
-**Checkpoint hiểu**:
-- Layout component và nested routes
+**Checkpoint**:
+- Layout component + nested routes
 - Điều hướng bằng `Link`, đọc param bằng `useParams`
 
 ---
 
 ## 3) API layer tối thiểu (Milestone M3) — chưa auth
 
-### 3.1. Viết API client wrapper
-Tạo file gợi ý:
-- `frontend/src/lib/apiClient.ts`
+### 3.1) Viết API client wrapper
+- Tạo `frontend/src/lib/apiClient.ts`
 
 Yêu cầu:
 - Base URL từ `VITE_API_BASE_URL`
 - `fetch` + parse JSON
-- Throw error khi `!response.ok`
-- Kiểu dữ liệu “tạm” dùng `unknown`/`any` trước, rồi cải tiến dần
+- Throw error khi `!response.ok` (kèm status + message)
+- Trước mắt có thể dùng `unknown`/`any`, sau đó type dần
 
-### 3.2. Kết nối endpoint public đầu tiên
-Backend endpoint:
-- `GET /api/home`
+### 3.2) Kết nối endpoint public đầu tiên
+Backend:
+- `GET /api/public/home`
 
 UI:
-- Trang Home gọi API và render JSON thô (để thấy dữ liệu thật trước)
+- Trang Home gọi API và render dữ liệu thật (có thể render “raw JSON” trước để verify end-to-end)
 
-**Checkpoint hiểu**:
-- `useEffect` + `useState` + loading/error
-- Debug network tab (request/response)
+**Checkpoint**:
+- Có loading/error state
+- Debug được request/response trong Network tab
 
 ---
 
 ## 4) Storefront public (Milestone M4)
+Mục tiêu: user chưa đăng nhập vẫn browse được “đã đẹp”.
 
-### 4.1. Product listing + paging/filter cơ bản
-Backend endpoints:
-- `GET /api/products` (filter + pageable)
-- `GET /api/products/top-rating`
-- `GET /api/products/most-favorite`
-- `GET /api/products/most-viewed`
-- `GET /api/products/best-selling`
-
-UI pages:
-- `/products`: list + pagination (Prev/Next)
-- Home section: hiển thị “top lists” (ít nhất 1 list)
-
-**Checkpoint hiểu**:
-- Dạng response `Page<...>` của Spring (thường có `content`, `totalElements`, `number`, `size`…)
-- Query string (page/size/sort + filter)
-
-### 4.2. Product detail + reviews
-Backend endpoints:
-- `GET /api/products/{productId}`
-- `GET /api/products/{productId}/reviews`
+### 4.1) Product listing + paging/filter
+Backend:
+- `GET /api/public/products` (filter + pageable)
+- `GET /api/public/products/top-rating`
+- `GET /api/public/products/most-favorite`
+- `GET /api/public/products/most-viewed`
+- `GET /api/public/products/best-selling`
 
 UI:
-- `/products/:productId`: hiển thị thông tin + danh sách reviews
+- `/products`: list + pagination (Prev/Next) + filter cơ bản
+- Home section: hiển thị ít nhất 1 top list
+
+**Checkpoint**:
+- Dùng đúng format `Page<...>` của Spring (`content`, `totalElements`, `number`, `size`, …)
+- Đồng bộ filter/paging bằng query string (page/size/sort/filter)
+
+### 4.2) Product detail + reviews (public read)
+Backend:
+- `GET /api/public/products/{productId}`
+- `GET /api/public/products/{productId}/reviews`
+
+UI:
+- `/products/:productId`: hiển thị thông tin + reviews
+
+### 4.3) Product images (gallery đẹp)
+Backend:
+- `GET /api/public/products/{productId}/images`
+- `GET /api/public/products/{productId}/images/primary`
+- `GET /api/public/products/{productId}/images/{imageId}`
+
+UI:
+- `/products/:productId`: gallery (primary + thumbnails) + skeleton loading
+
+### 4.4) Categories (public)
+Backend:
+- `GET /api/public/categories` (filter + pageable)
+- `GET /api/public/categories/{categoryId}`
+- `GET /api/public/categories/{categoryId}/details`
+- `GET /api/public/categories/{categoryId}/subcategories`
+
+UI:
+- `/products`: sidebar/filter theo category (tối thiểu: chọn category để lọc product list)
+- `/categories/:categoryId`: hiển thị chi tiết + subcategories
+
+### 4.5) Banners (public)
+Backend:
+- `GET /api/public/banners` (filter + pageable)
+
+UI:
+- Home hero carousel lấy từ banners thật (responsive + swipe mobile)
 
 ---
 
-## 5) Auth (Milestone M5) — mở khóa các endpoint `/users/me/*`
+## 5) Auth (Milestone M5) — mở khóa các endpoint `/api/users/me/*`
 
-Backend endpoints:
+Backend:
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/auth/refresh-token`
 
-### 5.1. Implement login/logout
+### 5.1) Implement login/logout
 UI:
 - `/login`: form login
-- (tùy chọn) `/register`: form register
+- (tuỳ chọn) `/register`: form register
 
-Storage (đơn giản để dễ hiểu):
-- `localStorage` lưu `accessToken`, `refreshToken`, `tokenType`
+Storage (đơn giản, dễ hiểu):
+- `localStorage`: `accessToken`, `refreshToken`, `tokenType`
 
-### 5.2. Auto attach token + refresh
+### 5.2) Auto attach token + refresh + retry
 Yêu cầu:
-- Với request cần auth: thêm header `Authorization: Bearer <accessToken>`
+- Với request cần auth: add header `Authorization: Bearer <accessToken>`
 - Nếu gặp 401/403 do token hết hạn:
   - gọi `POST /api/auth/refresh-token`
   - update token
-  - retry request 1 lần
+  - retry đúng 1 lần (tránh loop)
 
-**Checkpoint hiểu**:
-- Vì sao cần refresh token
-- Vì sao phải retry và tránh vòng lặp vô hạn
+**Checkpoint**:
+- Login/logout hoạt động
+- Auto refresh hoạt động, không retry vô hạn
 
 ---
 
 ## 6) User core (Milestone M6)
 
-### 6.1. Profile
-Backend endpoints:
+### 6.1) Profile
+Backend:
 - `GET /api/users/me`
 - `GET /api/users/me/details`
 - `PUT /api/users/me`
@@ -160,142 +187,106 @@ UI:
 - `/me/edit`: sửa profile
 - `/me/password`: đổi mật khẩu
 
-### 6.2. Addresses
-Backend endpoints:
+### 6.2) Addresses
+Backend (đầy đủ tuỳ implementation hiện tại):
 - `GET /api/users/me/addresses`
 - `POST /api/users/me/addresses`
 - `GET /api/users/me/addresses/default`
 - `GET /api/users/me/addresses/{addressId}`
 - `PUT /api/users/me/addresses/{addressId}`
+- `PATCH /api/users/me/addresses/{addressId}/default`
 - `DELETE /api/users/me/addresses/{addressId}`
-- `PATCH /api/users/me/addresses/{addressId}/set-default`
 
 UI:
-- `/me/addresses`: list + create/edit/delete + set default
+- `/me/addresses`: CRUD + set default
+- Checkout: chọn address default / chọn address khác
 
 ---
 
-## 7) Cart → Checkout → Order (Milestone M7) (xương sống ecommerce)
+## 7) Cart + Checkout + Orders + Payments (Milestone M7)
+Mục tiêu: hoàn thiện “core journey” để demo CV.
 
-### 7.1. Cart
-Backend endpoints:
+### 7.1) Cart
+Backend:
 - `GET /api/users/me/carts`
 - `POST /api/users/me/carts`
+- Cart items: toàn bộ endpoint trong `UserCartItemController` (add/update/remove/list/clear…)
 
 UI:
-- `/cart`: hiển thị cart (tạo cart nếu chưa có)
+- `/cart`: xem giỏ hàng, update qty, remove item, clear cart
 
-### 7.2. Cart items
-Backend endpoints:
-- `GET /api/users/me/carts/{cartId}/items` (page, optional `productName`)
-- `POST /api/users/me/carts/{cartId}/items` (add or update)
-- `PUT /api/users/me/carts/{cartId}/items/return` (update quantity kiểu “return”)
-- `DELETE /api/users/me/carts/{cartId}/items/{cartItemId}`
-- `DELETE /api/users/me/carts/{cartId}/items` (clear)
-
-UI:
-- add to cart từ product detail
-- cart page: update qty, remove, clear, search item theo name (optional)
-
-### 7.3. Orders
-Backend endpoints:
+### 7.2) Orders
+Backend:
 - `GET /api/users/me/orders`
-- `POST /api/users/me/orders`
 - `GET /api/users/me/orders/{orderId}`
+- `POST /api/users/me/orders`
+- Order items: toàn bộ endpoint trong `UserOrderItemController`
 
 UI:
-- `/checkout`: submit tạo order
-- `/orders`: list
-- `/orders/:orderId`: detail
+- `/checkout`: tạo order từ cart + address + payment method
+- `/orders`: list orders
+- `/orders/:orderId`: order detail (items + payment status)
 
-### 7.4. Order items
-Backend endpoints:
-- `GET /api/users/me/orders/{orderId}/items`
-- `GET /api/users/me/orders/{orderId}/items/all`
-- `GET /api/users/me/orders/{orderId}/items/{orderItemId}`
-
-UI:
-- order detail hiển thị items (dùng endpoint paged hoặc all)
-
-### 7.5. Payments
-Backend endpoints:
+### 7.3) Payments
+Backend:
 - `GET /api/users/me/orders/{orderId}/payments`
-- `POST /api/users/me/orders/{orderId}/payments`
 - `GET /api/users/me/orders/{orderId}/payments/{paymentId}`
+- `POST /api/users/me/orders/{orderId}/payments`
 
 UI:
-- `/orders/:orderId/payments`: tạo payment + list payment
+- Trong order detail: tạo payment (phase 2 chỉ cần tạo record + hiển thị status)
 
 ---
 
-## 8) User “extras” (Milestone M8)
+## 8) Promotions + Activity + Notifications + Reviews (Milestone M8)
 
-### 8.1. Wishlist
-Backend endpoints:
-- `GET /api/users/me/wishlists` (page, optional `productName`)
-- `POST /api/users/me/wishlists`
-- `DELETE /api/users/me/wishlists` (clear)
-- `DELETE /api/users/me/wishlists/{wishlistId}`
+### 8.1) Vouchers (public) + voucher uses (user)
+Backend (public):
+- `GET /api/public/vouchers?code=...`
+- `GET /api/public/vouchers/filter?minOrderAmount=...`
+- `GET /api/public/vouchers/{voucherId}`
 
-UI:
-- toggle wishlist từ product detail
-- `/me/wishlist`: list/search/clear/remove
-
-### 8.2. Recent views
-Backend endpoints:
-- `GET /api/users/me/recent-views` (page, optional `productName`)
-- `POST /api/users/me/recent-views`
-- `DELETE /api/users/me/recent-views` (clear)
-- `DELETE /api/users/me/recent-views/{recentViewId}`
-
-UI:
-- khi user mở product detail thì POST recent view
-- `/me/recent-views`: list/search/clear/remove
-
-### 8.3. Search logs
-Backend endpoints:
-- `GET /api/users/me/search-logs` (optional `keyword`)
-- `POST /api/users/me/search-logs`
-- `DELETE /api/users/me/search-logs` (clear)
-- `DELETE /api/users/me/search-logs/{searchLogId}`
-
-UI:
-- khi user search products thì POST search log
-- `/me/search-logs`: list/filter/clear/remove
-
-### 8.4. Notifications
-Backend endpoints:
-- `GET /api/users/me/notifications`
-- `POST /api/users/me/notifications`
-- `PUT /api/users/me/notifications/{notificationId}/read?isRead=...`
-- `PUT /api/users/me/notifications/{notificationId}/hidden?isHidden=...`
-- `PUT /api/users/me/notifications/user?isRead=...&isHidden=...`
-
-UI:
-- `/me/notifications`: list + mark read/hide + bulk actions
-
-### 8.5. Promotions (banners/vouchers)
-Backend endpoints:
-- `GET /api/users/me/banners` (page)
-- `GET /api/users/me/vouchers?code=...`
-- `GET /api/users/me/vouchers/filter?minOrderAmount=...` (page)
-- `GET /api/users/me/vouchers/{voucherId}`
+Backend (user):
 - `GET /api/users/me/voucher-uses/user/me`
 - `GET /api/users/me/voucher-uses/order/{orderId}`
 - `GET /api/users/me/voucher-uses/voucher/{voucherId}`
 
 UI:
-- Home: banners
-- Checkout: nhập voucher code (nếu backend order có support apply voucher thì kết nối thêm; nếu chưa thì hiển thị danh sách/validate trước)
+- Checkout: nhập voucher code → lookup voucher → hiển thị voucher hợp lệ/không hợp lệ
+- Profile: “Voucher uses” (đã dùng) + filter theo order
+
+### 8.2) Wishlist + Recent views + Search logs
+Backend:
+- `UserWishlistController`: `/api/users/me/wishlists/*`
+- `UserRecentViewController`: `/api/users/me/recent-views/*`
+- `UserSearchLogController`: `/api/users/me/search-logs/*`
+
+UI:
+- Wishlist page + add/remove từ product detail
+- Recent views widget (home hoặc profile)
+- Search logs (tối thiểu: tạo log khi search + list + clear)
+
+### 8.3) Notifications
+Backend:
+- `UserNotificationController`: `/api/users/me/notifications/*`
+
+UI:
+- Notification bell + list + mark read
+
+### 8.4) User reviews (write)
+Backend:
+- `UserReviewController`: `/api/users/me/reviews/*`
+
+UI:
+- Product detail: user có thể tạo/sửa/xoá review của mình (kèm rating/comment)
 
 ---
 
 ## 9) Admin dashboard (Milestone M9)
+Nguyên tắc: làm admin sau khi user flow đã ổn.
 
-Nguyên tắc: làm admin sau khi user flow ổn.
-
-### 9.1. Admin products/categories/images
-Backend endpoints:
+### 9.1) Admin products/categories/images
+Backend:
 - Products:
   - `GET /api/admin/products`
   - `POST /api/admin/products`
@@ -323,8 +314,8 @@ Backend endpoints:
 UI:
 - `/admin/products`, `/admin/categories`, `/admin/product-images`
 
-### 9.2. Admin orders/order-items
-Backend endpoints:
+### 9.2) Admin orders/order-items
+Backend:
 - Orders:
   - `GET /api/admin/orders`
   - `GET /api/admin/orders/{orderId}`
@@ -335,15 +326,15 @@ Backend endpoints:
   - `GET /api/admin/order-items/order/{orderId}`
   - `GET /api/admin/order-items/{orderItemId}`
 
-### 9.3. Admin payments
-Backend endpoints:
+### 9.3) Admin payments
+Backend:
 - `GET /api/admin/payments`
 - `GET /api/admin/payments/order/{orderId}`
 - `GET /api/admin/payments/{paymentId}`
 - `PATCH /api/admin/payments/{paymentId}/status?status=...`
 
-### 9.4. Admin users/roles/addresses
-Backend endpoints:
+### 9.4) Admin users/roles/addresses
+Backend:
 - Users:
   - `GET /api/admin/users`
   - `POST /api/admin/users`
@@ -363,8 +354,8 @@ Backend endpoints:
   - `GET /api/admin/addresses/{addressId}`
   - `GET /api/admin/addresses/user/{userId}/default`
 
-### 9.5. Admin inventory/warehouse
-Backend endpoints:
+### 9.5) Admin inventory/warehouse
+Backend:
 - Warehouses:
   - `GET /api/admin/warehouses`
   - `POST /api/admin/warehouses`
@@ -382,7 +373,8 @@ Backend endpoints:
   - `PATCH /api/admin/inventories/{inventoryId}/stock?quantity=...`
   - `PATCH /api/admin/inventories/{inventoryId}/reserved?quantity=...`
 
-### 9.6. Admin promotions/notifications/reviews
+### 9.6) Admin promotions/notifications/reviews
+Backend:
 - Banners:
   - `GET/POST /api/admin/banners`
   - `PUT /api/admin/banners/{id}`
@@ -407,15 +399,15 @@ Backend endpoints:
 
 ---
 
-## 10) Nâng cấp “CV-ready” (Milestone M10) — đề xuất
-- Tạo `README` cho frontend: cách chạy, cấu trúc thư mục, quyết định kỹ thuật.
+## 10) Nâng cấp “CV-ready” (Milestone M10)
+- Tạo `frontend/README.md`: cách chạy, cấu trúc thư mục, conventions, env.
 - Responsive audit: mobile (360px), tablet, desktop.
-- UX: empty states, skeleton loading, toasts, form validation.
+- UX polish: empty states, skeleton loading, toasts, form validation, confirm dialog.
 - (Tuỳ chọn) PWA: offline shell + installable.
+- Tổng kết coverage: liệt kê các endpoint đã dùng theo milestone (để chứng minh “dùng hầu hết API”).
 
 ---
 
-## Cách làm “từng chút một” (gợi ý nhịp)
-- Mỗi milestone: làm 1–2 màn hình + 1–3 endpoint.
-- Khi xong milestone: bạn tự viết lại 5–10 dòng “mình vừa học được gì” (để nhớ lâu).
-
+## Cách làm “đúng chất”
+- Mỗi milestone: làm 1–2 màn hình + 1–3 endpoint, xong rồi mới mở rộng.
+- Khi xong milestone: tự viết lại 5–10 dòng tóm tắt “mình vừa hiểu gì” (để thật sự nắm hệ thống).

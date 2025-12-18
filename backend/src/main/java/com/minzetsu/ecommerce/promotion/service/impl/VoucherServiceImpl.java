@@ -6,7 +6,7 @@ import com.minzetsu.ecommerce.promotion.dto.filter.VoucherFilter;
 import com.minzetsu.ecommerce.promotion.dto.request.VoucherCreateRequest;
 import com.minzetsu.ecommerce.promotion.dto.request.VoucherUpdateRequest;
 import com.minzetsu.ecommerce.promotion.dto.response.AdminVoucherResponse;
-import com.minzetsu.ecommerce.promotion.dto.response.UserVoucherResponse;
+import com.minzetsu.ecommerce.promotion.dto.response.VoucherResponse;
 import com.minzetsu.ecommerce.promotion.entity.Voucher;
 import com.minzetsu.ecommerce.promotion.entity.VoucherStatus;
 import com.minzetsu.ecommerce.promotion.mapper.VoucherMapper;
@@ -76,20 +76,20 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserVoucherResponse> getUserVoucherResponsesByCodeAndActiveStatus(String code, VoucherStatus status) {
+    public List<VoucherResponse> getVoucherResponsesByCodeAndActiveStatus(String code, VoucherStatus status) {
         return voucherMapper.toUserResponseList(voucherRepository.findByCodeContainingIgnoreCaseAndStatus(code, status));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserVoucherResponse> searchUserVoucherResponsesByMinOrderTotalAndActiveStatus(BigDecimal minOrderTotal, VoucherStatus status, Pageable pageable) {
+    public Page<VoucherResponse> searchVoucherResponsesByMinOrderTotalAndActiveStatus(BigDecimal minOrderTotal, VoucherStatus status, Pageable pageable) {
         Page<Voucher> vouchers = voucherRepository.findByMinOrderTotalLessThanEqualAndStatus(minOrderTotal, status, pageable);
         return vouchers.map(voucherMapper::toUserResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserVoucherResponse getUserVoucherResponseById(Long id) {
+    public VoucherResponse getVoucherResponseById(Long id) {
         Voucher voucher = getVoucherById(id);
         return voucherMapper.toUserResponse(voucher);
     }

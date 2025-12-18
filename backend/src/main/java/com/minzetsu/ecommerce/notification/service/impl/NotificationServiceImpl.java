@@ -21,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,8 @@ public class NotificationServiceImpl implements NotificationService {
     private String adminEndpoint;
     @Value("${user-endpoint}")
     private String userEndpoint;
+    @Value("${public-endpoint}")
+    private String publicEndpoint;
 
     void existsById(Long id) {
         if (!notificationRepository.existsById(id)) {
@@ -45,8 +48,18 @@ public class NotificationServiceImpl implements NotificationService {
     private static final Map<String, String> ENDPOINT_MAPPING = Map.of(
             "ORDER", "orders",
             "PAYMENT", "orders",
-            "REVIEW", "reviews/product",
-            "VOUCHER", "vouchers"
+            "REVIEW", "reviews",
+            "VOUCHER", "vouchers",
+            "PRODUCT", "products",
+            "CATEGORY", "categories"
+    );
+
+    private final List<NotificationType> publicKeys = new ArrayList<>(
+            List.of(
+                    NotificationType.PRODUCT,
+                    NotificationType.CATEGORY,
+                    NotificationType.VOUCHER
+            )
     );
 
     private String resolveEndpoint(NotificationType type, String referenceType) {
@@ -60,12 +73,16 @@ public class NotificationServiceImpl implements NotificationService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        String baseEndpoint = isAdmin ? adminEndpoint : userEndpoint;
+        String baseEndpoint;
+        if (publicKeys.contains(notification.getType())) {
+            baseEndpoint = publicEndpoint;
+        } else if (isAdmin) {
+            baseEndpoint = adminEndpoint;
+        } else {
+            baseEndpoint = userEndpoint;
+        }
         NotificationType type = notification.getType();
-
         String endpoint = resolveEndpoint(type, notification.getReferenceType());
-
         String url = "";
         if (!endpoint.isBlank() && notification.getReferenceId() != null) {
             url = String.format("%s/%s/%d", baseEndpoint, endpoint, notification.getReferenceId());
