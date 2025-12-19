@@ -34,8 +34,11 @@ This document outlines the roadmap for the development of the E-commerce system,
 **Focus:** Building the User Interface to validate Backend APIs and visualize the system flow. This helps identify redundant endpoints or missing data early.
 
 *   [ ] **Setup & Architecture**:
-    *   Initialize React/Vue/Angular project.
-    *   Setup API Client (Axios/Fetch) & State Management (Redux/Zustand).
+    *   [x] Initialize React project (Vite + React + TypeScript).
+    *   [x] Setup UI foundation (TailwindCSS + shadcn/ui).
+    *   [x] Setup routing + base layout (M2).
+    *   [ ] Setup API Client (Fetch/Axios) + typed errors.
+    *   [ ] Setup server-state (React Query) + client-state (Zustand).
 *   [ ] **Customer Storefront (User View)**:
     *   Home Page (Banners, Product Lists).
     *   Product Search & Detail Pages.
