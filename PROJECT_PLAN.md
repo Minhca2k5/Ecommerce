@@ -37,7 +37,7 @@ This document outlines the roadmap for the development of the E-commerce system,
     *   [x] Initialize React project (Vite + React + TypeScript).
     *   [x] Setup UI foundation (TailwindCSS + shadcn/ui).
     *   [x] Setup routing + base layout (M2).
-    *   [ ] Setup API Client (Fetch/Axios) + typed errors.
+    *   [x] Setup API Client (Fetch) + typed errors.
     *   [ ] Setup server-state (React Query) + client-state (Zustand).
 *   [ ] **Customer Storefront (User View)**:
     *   Home Page (Banners, Product Lists).
