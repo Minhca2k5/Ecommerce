@@ -26,6 +26,7 @@ public interface ProductService {
 
     Page<ProductResponse> searchProductResponses(ProductFilter filter, Pageable pageable);
     ProductResponse getFullProductResponseById(Long id);
+    ProductResponse getFullProductResponseBySlug(String slug);
     List<ProductResponse> getTopRatingProductResponses(Integer days, Integer limit);
     List<ProductResponse> getMostFavoriteProductResponses(Integer days, Integer limit);
     List<ProductResponse> getMostViewedProductResponses(Integer days, Integer limit);

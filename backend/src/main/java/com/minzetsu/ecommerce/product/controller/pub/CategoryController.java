@@ -45,6 +45,17 @@ public class CategoryController {
     }
 
     @Operation(
+            summary = "Lấy thông tin danh mục theo slug",
+            description = "Trả về thông tin cơ bản của danh mục sản phẩm theo slug, bao gồm tên và slug."
+    )
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<CategoryResponse> getCategoryBySlug(
+            @PathVariable("slug") String slug
+    ) {
+        return ResponseEntity.ok(categoryService.getCategoryResponseBySlug(slug));
+    }
+
+    @Operation(
             summary = "Lấy chi tiết danh mục",
             description = "Trả về thông tin chi tiết của danh mục, bao gồm danh mục con và các sản phẩm liên quan."
     )
@@ -56,6 +67,17 @@ public class CategoryController {
     }
 
     @Operation(
+            summary = "Lấy chi tiết danh mục theo slug",
+            description = "Trả về thông tin chi tiết của danh mục theo slug, bao gồm danh mục con."
+    )
+    @GetMapping("/slug/{slug}/details")
+    public ResponseEntity<CategoryResponse> getFullCategoryBySlug(
+            @PathVariable("slug") String slug
+    ) {
+        return ResponseEntity.ok(categoryService.getFullCategoryResponseBySlug(slug));
+    }
+
+    @Operation(
             summary = "Lấy danh sách danh mục con",
             description = "Trả về danh sách tất cả danh mục con trực tiếp của danh mục cha được chỉ định."
     )
@@ -64,5 +86,17 @@ public class CategoryController {
             @PathVariable("categoryId") Long categoryId
     ) {
         return ResponseEntity.ok(categoryService.getSubcategoryResponsesByParentId(categoryId));
+    }
+
+    @Operation(
+            summary = "Lấy danh sách danh mục con theo slug",
+            description = "Trả về danh sách tất cả danh mục con trực tiếp của danh mục cha theo slug."
+    )
+    @GetMapping("/slug/{slug}/subcategories")
+    public ResponseEntity<List<CategoryResponse>> getSubcategoriesBySlug(
+            @PathVariable("slug") String slug
+    ) {
+        CategoryResponse parent = categoryService.getCategoryResponseBySlug(slug);
+        return ResponseEntity.ok(categoryService.getSubcategoryResponsesByParentId(parent.getId()));
     }
 }

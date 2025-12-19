@@ -18,7 +18,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, Jpa
     List<OrderItem> findByOrderId(Long orderId);
     Page<OrderItem> findByOrderId(Long orderId, Pageable pageable);
 
-    @Query(value = "Select sum(oi.quantity) from order_items oi join orders o on oi.order_id = o.id where o.product_id = :productId and oi.created_at >= NOW() - INTERVAL :days DAY and o.status = 'PAID'", nativeQuery = true)
+    @Query(value = "Select sum(oi.quantity) from order_items oi join orders o on oi.order_id = o.id where oi.product_id = :productId and oi.created_at >= NOW() - INTERVAL :days DAY and o.status = 'PAID'", nativeQuery = true)
     Integer getTotalQuantitySoldByProductIdLastDays(Long productId, Integer days);
 
     @Query(value = "Select oi.product_id as productId, sum(oi.quantity) as totalSold from order_items oi join orders o on oi.order_id = o.id where o.status = 'PAID' and o.created_at >= NOW() - INTERVAL :days DAY group by oi.product_id order by totalSold desc LIMIT :limit", nativeQuery = true)

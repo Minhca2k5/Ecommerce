@@ -7,6 +7,13 @@ Nguyên tắc:
 - Mỗi milestone phải có: UI chạy được + gọi API thật + loading/error + responsive cơ bản.
 - Ưu tiên “end-to-end user journey” trước (browse → cart → checkout → order → payment), sau đó mới admin.
 
+Quy tắc UI/UX bắt buộc (áp dụng cho tất cả milestone từ M3 trở đi):
+- Không dump raw JSON ra UI (không `JSON.stringify` để hiển thị data).
+- Chỉ hiển thị thông tin cần thiết cho user; ẩn field kỹ thuật (`createdAt`, `updatedAt`, `id` thô, ... trừ khi phục vụ UX).
+- Mỗi màn hình phải “dùng như web thật”: CTA/nút rõ ràng, empty state, skeleton loading, error state.
+- Mỗi feature phải có entry rõ ràng trong UI (menu/button/link) để user biết có chức năng đó.
+- Xong milestone nào thì UI/style/phần đó phải hoàn thiện đến đó (không để kiểu demo kỹ thuật).
+
 ---
 
 ## 0) Chuẩn bị (bắt buộc)
@@ -79,7 +86,9 @@ Backend:
 - `GET /api/public/home`
 
 UI:
-- Trang Home gọi API và render dữ liệu thật (có thể render “raw JSON” trước để verify end-to-end)
+- Banner `target_url` format: `/[table plural]/slug/<slug>` (vd. `/products/slug/smartphone-x20`, `/categories/slug/programming-books`).
+- Trang Home gọi API và render **UI tối thiểu nhưng sạch** (không dump raw JSON ra màn hình).
+- Bắt buộc có: loading skeleton + empty state + error state.
 
 **Checkpoint**:
 - Có loading/error state
@@ -99,20 +108,26 @@ Backend:
 - `GET /api/public/products/best-selling`
 
 UI:
-- `/products`: list + pagination (Prev/Next) + filter cơ bản
-- Home section: hiển thị ít nhất 1 top list
+- `/products`: list + pagination + search + filter theo category (sidebar hoặc chips).
+- Home section: có selector (dropdown) chọn top list: `top-rating` (default) / `most-favorite` / `most-viewed` / `best-selling`.
 
 **Checkpoint**:
 - Dùng đúng format `Page<...>` của Spring (`content`, `totalElements`, `number`, `size`, …)
 - Đồng bộ filter/paging bằng query string (page/size/sort/filter)
+- UI không hiển thị các field kỹ thuật như `createdAt`, `updatedAt`, `id` thô (trừ khi có lý do).
+- Card sản phẩm hiển thị tối thiểu: ảnh (primary), tên, giá, rating, trạng thái còn hàng (nếu có).
 
 ### 4.2) Product detail + reviews (public read)
 Backend:
 - `GET /api/public/products/{productId}`
+- `GET /api/public/products/slug/{slug}` (dùng cho banner target_url)
 - `GET /api/public/products/{productId}/reviews`
 
 UI:
-- `/products/:productId`: hiển thị thông tin + reviews
+- `/products/:productId`: UI kiểu storefront thật:
+  - Gallery ảnh (primary + thumbnails)
+  - Tên, giá, badge trạng thái, mô tả
+  - Reviews list (rating stars + comment + created date), không dump JSON
 
 ### 4.3) Product images (gallery đẹp)
 Backend:
@@ -122,16 +137,21 @@ Backend:
 
 UI:
 - `/products/:productId`: gallery (primary + thumbnails) + skeleton loading
+- Banner click: `target_url` dạng `/products/slug/<slug>`; frontend nên có fallback nếu endpoint slug lỗi (vd. search theo slug -> lấy id -> load theo id).
 
 ### 4.4) Categories (public)
 Backend:
 - `GET /api/public/categories` (filter + pageable)
 - `GET /api/public/categories/{categoryId}`
+- `GET /api/public/categories/slug/{slug}` (dùng cho banner target_url)
 - `GET /api/public/categories/{categoryId}/details`
+- `GET /api/public/categories/slug/{slug}/details` (dùng cho banner target_url)
 - `GET /api/public/categories/{categoryId}/subcategories`
+- `GET /api/public/categories/slug/{slug}/subcategories` (tuỳ chọn)
 
 UI:
-- `/products`: sidebar/filter theo category (tối thiểu: chọn category để lọc product list)
+- Header hoặc Products page có entry rõ ràng cho Categories (nút/menu), không để endpoint “ẩn”.
+- `/products`: filter theo category (tối thiểu 1 trong 2: sidebar hoặc chips).
 - `/categories/:categoryId`: hiển thị chi tiết + subcategories
 
 ### 4.5) Banners (public)
@@ -151,6 +171,13 @@ Backend:
 - `POST /api/auth/refresh-token`
 
 ### 5.1) Implement login/logout
+UI/UX yêu cầu:
+- Form chuẩn (label/placeholder/validation message).
+- Password có show/hide.
+- Disable submit khi loading + hiển thị lỗi thân thiện.
+- Toast/snackbar khi login fail/success.
+- Header có entry account rõ ràng (Login/Logout + tên user nếu có).
+
 UI:
 - `/login`: form login
 - (tuỳ chọn) `/register`: form register
@@ -170,11 +197,19 @@ Yêu cầu:
 - Login/logout hoạt động
 - Auto refresh hoạt động, không retry vô hạn
 
+UI/UX checkpoint:
+- Không để user “tự đoán” trạng thái: loading/empty/error rõ ràng, không dump JSON.
+
 ---
 
 ## 6) User core (Milestone M6)
 
 ### 6.1) Profile
+UI/UX yêu cầu:
+- Profile page dạng “account settings” (avatar placeholder, email/username, thông tin cơ bản).
+- Edit form có validation + toast + disable khi loading.
+- Đổi mật khẩu có confirm + cảnh báo.
+
 Backend:
 - `GET /api/users/me`
 - `GET /api/users/me/details`
@@ -188,13 +223,18 @@ UI:
 - `/me/password`: đổi mật khẩu
 
 ### 6.2) Addresses
+UI/UX yêu cầu:
+- Address list dạng card + badge “Default”.
+- Dialog confirm khi delete.
+- Empty state hướng dẫn thêm địa chỉ.
+
 Backend (đầy đủ tuỳ implementation hiện tại):
 - `GET /api/users/me/addresses`
 - `POST /api/users/me/addresses`
 - `GET /api/users/me/addresses/default`
 - `GET /api/users/me/addresses/{addressId}`
 - `PUT /api/users/me/addresses/{addressId}`
-- `PATCH /api/users/me/addresses/{addressId}/default`
+- `PATCH /api/users/me/addresses/{addressId}/set-default`
 - `DELETE /api/users/me/addresses/{addressId}`
 
 UI:
@@ -207,6 +247,11 @@ UI:
 Mục tiêu: hoàn thiện “core journey” để demo CV.
 
 ### 7.1) Cart
+UI/UX yêu cầu:
+- Cart item có ảnh, tên, giá, qty stepper, subtotal.
+- Sticky order summary (desktop), responsive (mobile).
+- Empty cart state + CTA “Continue shopping”.
+
 Backend:
 - `GET /api/users/me/carts`
 - `POST /api/users/me/carts`
@@ -216,6 +261,11 @@ UI:
 - `/cart`: xem giỏ hàng, update qty, remove item, clear cart
 
 ### 7.2) Orders
+UI/UX yêu cầu:
+- Checkout dạng step hoặc sections rõ ràng: Address → Payment → Review.
+- Form validation + disable khi loading.
+- Orders list có status badge, total, created date; order detail có timeline/status.
+
 Backend:
 - `GET /api/users/me/orders`
 - `GET /api/users/me/orders/{orderId}`
@@ -228,6 +278,10 @@ UI:
 - `/orders/:orderId`: order detail (items + payment status)
 
 ### 7.3) Payments
+UI/UX yêu cầu:
+- Payment status hiển thị rõ (badge + message).
+- Nếu có nhiều payment records: list + xem chi tiết.
+
 Backend:
 - `GET /api/users/me/orders/{orderId}/payments`
 - `GET /api/users/me/orders/{orderId}/payments/{paymentId}`
@@ -241,6 +295,10 @@ UI:
 ## 8) Promotions + Activity + Notifications + Reviews (Milestone M8)
 
 ### 8.1) Vouchers (public) + voucher uses (user)
+UI/UX yêu cầu:
+- Voucher input có trạng thái: idle/valid/invalid/applying.
+- Hiển thị reason nếu không áp dụng được (message user-friendly).
+
 Backend (public):
 - `GET /api/public/vouchers?code=...`
 - `GET /api/public/vouchers/filter?minOrderAmount=...`
@@ -256,6 +314,11 @@ UI:
 - Profile: “Voucher uses” (đã dùng) + filter theo order
 
 ### 8.2) Wishlist + Recent views + Search logs
+UI/UX yêu cầu:
+- Wishlist: grid card + empty state.
+- Recent views: horizontal slider.
+- Search logs: list + clear all + delete one.
+
 Backend:
 - `UserWishlistController`: `/api/users/me/wishlists/*`
 - `UserRecentViewController`: `/api/users/me/recent-views/*`
@@ -267,6 +330,10 @@ UI:
 - Search logs (tối thiểu: tạo log khi search + list + clear)
 
 ### 8.3) Notifications
+UI/UX yêu cầu:
+- Bell có badge unread.
+- Có filter read/unread + action mark-all-read (nếu backend có).
+
 Backend:
 - `UserNotificationController`: `/api/users/me/notifications/*`
 
@@ -274,6 +341,10 @@ UI:
 - Notification bell + list + mark read
 
 ### 8.4) User reviews (write)
+UI/UX yêu cầu:
+- Rating input dạng stars click.
+- Review form validate + optimistic update (nếu hợp lý).
+
 Backend:
 - `UserReviewController`: `/api/users/me/reviews/*`
 
@@ -283,6 +354,12 @@ UI:
 ---
 
 ## 9) Admin dashboard (Milestone M9)
+UI/UX yêu cầu (admin):
+- Sidebar nav + breadcrumbs + responsive.
+- Table có search, filter, pagination; actions rõ ràng; confirm dialog khi delete.
+- Forms có validation + toast.
+- Không expose raw JSON; chỉ hiển thị field có ý nghĩa nghiệp vụ.
+
 Nguyên tắc: làm admin sau khi user flow đã ổn.
 
 ### 9.1) Admin products/categories/images

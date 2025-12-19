@@ -8,11 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long>, JpaSpecificationExecutor<Category> {
 
     List<Category> findByParentId(Long parentId);
+    Optional<Category> findBySlug(String slug);
 
     @Modifying
     @Query("""

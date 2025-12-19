@@ -10,19 +10,19 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary-foreground: 240 10% 3.9%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
     --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent-foreground: 240 10% 3.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+    --ring: 221 83% 53%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -63,6 +63,87 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-120%);
+    }
+    100% {
+      transform: translateX(120%);
+    }
+  }
+
+  .shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shine::after {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background: linear-gradient(
+      115deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.0) 35%,
+      rgba(255, 255, 255, 0.28) 50%,
+      rgba(255, 255, 255, 0.0) 65%,
+      transparent 100%
+    );
+    transform: translateX(-120%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .shine:hover::after {
+    opacity: 1;
+    animation: shimmer 1.2s ease-out;
+  }
+
+  .pressable {
+    transition: transform 160ms ease, box-shadow 160ms ease;
+  }
+
+  .pressable:active {
+    transform: translateY(1px) scale(0.99);
+  }
+
+  @keyframes gradient-pan {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .animated-aurora {
+    background-image: radial-gradient(800px circle at 20% 0%, hsl(var(--primary) / 0.22), transparent 55%),
+      radial-gradient(700px circle at 80% 10%, rgba(16, 185, 129, 0.14), transparent 55%),
+      radial-gradient(900px circle at 55% 85%, rgba(236, 72, 153, 0.10), transparent 60%),
+      linear-gradient(115deg, rgba(59, 130, 246, 0.10), rgba(236, 72, 153, 0.08), rgba(16, 185, 129, 0.08));
+    background-size: 200% 200%;
+    animation: gradient-pan 14s ease-in-out infinite;
+  }
+
+  @keyframes floaty {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  .floaty {
+    animation: floaty 6s ease-in-out infinite;
   }
 }

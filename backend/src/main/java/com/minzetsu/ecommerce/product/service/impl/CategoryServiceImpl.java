@@ -38,6 +38,11 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new NotFoundException("Category not found with id: " + id));
     }
 
+    private Category getExistingCategoryBySlug(String slug) {
+        return categoryRepository.findBySlug(slug)
+                .orElseThrow(() -> new NotFoundException("Category not found with slug: " + slug));
+    }
+
     private void unlinkRelationsBeforeDelete(Long categoryId) {
         // Gỡ liên kết category khỏi subcategories
         List<Category> subcategories = categoryRepository.findByParentId(categoryId);
@@ -161,6 +166,20 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponse getFullCategoryResponseById(Long id) {
         Category category = getExistingCategory(id);
         List<CategoryResponse> subCategoryResponses = getSubcategoryResponsesByParentId(id);
+        return categoryMapper.toFullResponse(category, subCategoryResponses);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CategoryResponse getCategoryResponseBySlug(String slug) {
+        return categoryMapper.toResponse(getExistingCategoryBySlug(slug));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CategoryResponse getFullCategoryResponseBySlug(String slug) {
+        Category category = getExistingCategoryBySlug(slug);
+        List<CategoryResponse> subCategoryResponses = getSubcategoryResponsesByParentId(category.getId());
         return categoryMapper.toFullResponse(category, subCategoryResponses);
     }
 

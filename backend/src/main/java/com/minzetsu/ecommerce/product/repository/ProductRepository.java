@@ -8,10 +8,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
     boolean existsById(Long id);
     boolean existsByCategoryId(Long categoryId);
+    Optional<Product> findBySlug(String slug);
     @Modifying
     @Query("UPDATE Product p SET p.status = :status WHERE p.id = :id")
     void updateByStatusAndId(ProductStatus status, Long id);

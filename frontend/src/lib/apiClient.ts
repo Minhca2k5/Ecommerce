@@ -1,3 +1,5 @@
+import { getApiBaseUrl } from "@/lib/env";
+
 type ApiErrorPayload = unknown;
 
 export class ApiError extends Error {
@@ -10,14 +12,6 @@ export class ApiError extends Error {
     this.status = status;
     this.payload = payload;
   }
-}
-
-function getApiBaseUrl() {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL as string | undefined;
-  if (!baseUrl) {
-    throw new Error("Missing VITE_API_BASE_URL in frontend/.env");
-  }
-  return baseUrl.replace(/\/+$/, "");
 }
 
 async function parseJsonSafe(response: Response): Promise<ApiErrorPayload | undefined> {
@@ -51,3 +45,21 @@ export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
+export function buildQuery(params: Record<string, string | number | boolean | null | undefined>) {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === null || value === undefined) continue;
+    searchParams.set(key, String(value));
+  }
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
+}
+
+export async function apiGetOrNull<T>(path: string, init?: RequestInit): Promise<T | null> {
+  try {
+    return await apiGet<T>(path, init);
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 404) return null;
+    throw e;
+  }
+}

@@ -54,6 +54,17 @@ public class ProductController {
     }
 
     @Operation(
+            summary = "Lấy thông tin chi tiết sản phẩm theo slug",
+            description = "Trả về thông tin chi tiết của sản phẩm theo slug, bao gồm hình ảnh, danh mục, tồn kho và các thuộc tính khác."
+    )
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<ProductResponse> getProductBySlug(
+            @PathVariable("slug") String slug
+    ) {
+        return ResponseEntity.ok(productService.getFullProductResponseBySlug(slug));
+    }
+
+    @Operation(
             summary = "Xem danh sách đánh giá của sản phẩm",
             description = "Trả về tất cả các đánh giá của một sản phẩm cụ thể (hiển thị công khai cho mọi người dùng)."
     )

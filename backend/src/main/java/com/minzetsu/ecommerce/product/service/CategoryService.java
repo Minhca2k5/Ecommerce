@@ -24,5 +24,7 @@ public interface CategoryService {
     Page<CategoryResponse> searchCategoryResponses(CategoryFilter filter, Pageable pageable);
     CategoryResponse getCategoryResponseById(Long id);
     CategoryResponse getFullCategoryResponseById(Long id);
+    CategoryResponse getCategoryResponseBySlug(String slug);
+    CategoryResponse getFullCategoryResponseBySlug(String slug);
     List<CategoryResponse> getSubcategoryResponsesByParentId(Long parentId);
 }

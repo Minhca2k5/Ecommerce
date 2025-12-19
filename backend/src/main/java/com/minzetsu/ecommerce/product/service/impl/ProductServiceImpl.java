@@ -163,6 +163,11 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new NotFoundException("Product not found with id: " + id));
     }
 
+    private Product getExistingProductBySlug(String slug) {
+        return productRepository.findBySlug(slug)
+                .orElseThrow(() -> new NotFoundException("Product not found with slug: " + slug));
+    }
+
     private void validateActiveProduct(Product product) {
         if (!ProductStatus.ACTIVE.equals(product.getStatus())) {
             throw new UnAuthorizedException("Access denied to product with id: " + product.getId());
@@ -275,6 +280,18 @@ public class ProductServiceImpl implements ProductService {
         List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(id));
         List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductId(id));
         List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(id));
+        return toFullUserResponse(product, reviews, inventories, images);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductResponse getFullProductResponseBySlug(String slug) {
+        Product product = getExistingProductBySlug(slug);
+        validateActiveProduct(product);
+        Long productId = product.getId();
+        List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(productId));
+        List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductId(productId));
+        List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(productId));
         return toFullUserResponse(product, reviews, inventories, images);
     }
 
