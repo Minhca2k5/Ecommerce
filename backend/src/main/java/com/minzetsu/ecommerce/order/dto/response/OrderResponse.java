@@ -16,6 +16,7 @@ import java.util.List;
 public class OrderResponse extends BaseDTO {
 
     private Long userId;
+    private Long voucherId;
     private String username;
     private String fullName;
 
@@ -24,6 +25,7 @@ public class OrderResponse extends BaseDTO {
     private BigDecimal totalAmount;
     private String currency;
     private String status;
+    private BigDecimal discountAmount;
 
     // danh sách item
     private List<OrderItemResponse> items;

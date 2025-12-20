@@ -3,7 +3,6 @@ package com.minzetsu.ecommerce.order.mapper;
 import com.minzetsu.ecommerce.order.dto.request.OrderRequest;
 import com.minzetsu.ecommerce.order.dto.response.OrderItemResponse;
 import com.minzetsu.ecommerce.order.dto.response.OrderResponse;
-import com.minzetsu.ecommerce.order.dto.response.OrderResponseAfterCreating;
 import com.minzetsu.ecommerce.order.entity.Order;
 import org.mapstruct.*;
 
@@ -22,6 +21,8 @@ public interface OrderMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "totalAmount", ignore = true)
     @Mapping(target = "user", ignore = true)
+    @Mapping(target = "voucher", ignore = true)
+    @Mapping(target = "discountAmount", ignore = true)
     Order toEntity(OrderRequest request);
 
     // entity -> response (base)
@@ -29,6 +30,9 @@ public interface OrderMapper {
     @Mapping(target = "username", source = "user.username")
     @Mapping(target = "fullName", source = "user.fullName")
     @Mapping(target = "items", ignore = true)
+    @Mapping(target = "discountAmount", source = "discountAmount")
+    @Mapping(target = "voucherId", source = "voucher.id")
+    @Mapping(target = "itemCount", ignore = true)
     OrderResponse toResponse(Order order);
 
     // build full response (order + items)
@@ -40,20 +44,4 @@ public interface OrderMapper {
     }
 
     List<OrderResponse> toResponseList(List<Order> orders);
-
-    @Mapping(target = "userId", source = "user.id")
-    @Mapping(target = "username", source = "user.username")
-    @Mapping(target = "fullName", source = "user.fullName")
-    @Mapping(target = "items", ignore = true)
-    @Mapping(target = "discountAmount", ignore = true)
-    OrderResponseAfterCreating toResponseAfterCreating(Order order);
-
-    // build full response (order + items)
-    default OrderResponseAfterCreating toFullResponseAfterCreating(Order order, List<OrderItemResponse> items, BigDecimal discountAmount) {
-        OrderResponseAfterCreating res = toResponseAfterCreating(order);
-        res.setItems(items);
-        res.setItemCount(items != null ? items.size() : 0);
-        res.setDiscountAmount(discountAmount);
-        return res;
-    }
 }

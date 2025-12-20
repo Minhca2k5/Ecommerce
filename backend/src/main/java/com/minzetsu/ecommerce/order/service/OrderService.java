@@ -3,7 +3,6 @@ package com.minzetsu.ecommerce.order.service;
 import com.minzetsu.ecommerce.order.dto.filter.OrderFilter;
 import com.minzetsu.ecommerce.order.dto.request.OrderRequest;
 import com.minzetsu.ecommerce.order.dto.response.OrderResponse;
-import com.minzetsu.ecommerce.order.dto.response.OrderResponseAfterCreating;
 import com.minzetsu.ecommerce.order.entity.Order;
 import com.minzetsu.ecommerce.order.entity.OrderStatus;
 import org.springframework.data.domain.Page;
@@ -21,5 +20,5 @@ public interface OrderService {
     Page<OrderResponse> searchOrderResponses(OrderFilter filter, Pageable pageable);
     List<OrderResponse> getOrderResponsesByUserId(Long userId);
     OrderResponse getFullOrderResponseByIdAndUserId(Long id, Long userId);
-    OrderResponseAfterCreating createOrderResponse(OrderRequest request, Long userId);
+    OrderResponse createOrderResponse(OrderRequest request, Long userId);
 }

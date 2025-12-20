@@ -10,7 +10,6 @@ import com.minzetsu.ecommerce.order.dto.filter.OrderFilter;
 import com.minzetsu.ecommerce.order.dto.request.OrderRequest;
 import com.minzetsu.ecommerce.order.dto.response.OrderItemResponse;
 import com.minzetsu.ecommerce.order.dto.response.OrderResponse;
-import com.minzetsu.ecommerce.order.dto.response.OrderResponseAfterCreating;
 import com.minzetsu.ecommerce.order.entity.Order;
 import com.minzetsu.ecommerce.order.entity.OrderItem;
 import com.minzetsu.ecommerce.order.entity.OrderStatus;
@@ -65,6 +64,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private Map<String, BigDecimal> calculateTotalAmount(List<CartItem> cartItems, BigDecimal shippingFee, Long voucherId) {
+        if (voucherId == null) {
+            BigDecimal totalAmount = cartItems.stream()
+                    .map(item -> item.getUnitPriceSnapshot()
+                            .multiply(BigDecimal.valueOf(item.getQuantity())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add)
+                    .add(shippingFee);
+            return Map.of(
+                    "totalAmount", totalAmount,
+                    "discountAmount", BigDecimal.ZERO
+            );
+        }
         Voucher voucher = voucherService.getVoucherById(voucherId);
         VoucherDiscountType discountType = voucher.getDiscountType();
         BigDecimal discountValue = voucher.getDiscountValue();
@@ -81,13 +91,13 @@ public class OrderServiceImpl implements OrderService {
             }
         } else if (discountType == VoucherDiscountType.PERCENT) {
             BigDecimal discountAmount = Amount.multiply(discountValue).divide(BigDecimal.valueOf(100));
+            BigDecimal maxDiscount = voucher.getMaxDiscountAmount();
+            if (maxDiscount != null && discountAmount.compareTo(maxDiscount) > 0) {
+                discountAmount = maxDiscount;
+            }
             Amount = Amount.subtract(discountAmount);
         } else {
-            if (shippingFee.compareTo(discountValue) < 0) {
-                shippingFee = BigDecimal.ZERO;
-            } else {
-                shippingFee = shippingFee.subtract(discountValue);
-            }
+            shippingFee = BigDecimal.ZERO;
         }
         BigDecimal totalAmount = Amount.add(shippingFee);
         return Map.of(
@@ -174,7 +184,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponseAfterCreating createOrderResponse(OrderRequest request, Long userId) {
+    public OrderResponse createOrderResponse(OrderRequest request, Long userId) {
         request.setUserId(userId);
         Long cartId = cartService.getCartByUserId(userId).getId();
         request.setCartId(cartId);
@@ -187,13 +197,16 @@ public class OrderServiceImpl implements OrderService {
         order.setUser(user);
         BigDecimal shippingFee = request.getShippingFee();
         Long voucherId = request.getVoucherId();
+        if (voucherId != null) {
+            Voucher voucher = voucherService.getVoucherById(voucherId);
+            order.setVoucher(voucher);
+        }
         order.setTotalAmount(calculateTotalAmount(cartItems, shippingFee, voucherId).get("totalAmount"));
-
+        order.setDiscountAmount(calculateTotalAmount(cartItems, shippingFee, voucherId).get("discountAmount"));
         Order savedOrder = orderRepository.save(order);
         List<OrderItem> orderItems = createOrderItemsService.createOrderItems(savedOrder, cartId);
         List<OrderItemResponse> orderItemResponses = orderItemMapper.toResponseList(orderItems);
-        BigDecimal discountAmount = calculateTotalAmount(cartItems, shippingFee, voucherId).get("discountAmount");
 
-        return orderMapper.toFullResponseAfterCreating(savedOrder, orderItemResponses, discountAmount);
+        return orderMapper.toFullResponse(savedOrder, orderItemResponses);
     }
 }

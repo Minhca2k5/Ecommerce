@@ -105,6 +105,7 @@ public class CartItemServiceImpl implements CartItemService {
     @Override
     @Transactional
     public void deleteByCartId(Long cartId) {
+        System.out.println("Deleting CartItems for cartId: " + cartId);
         List<CartItem> cartItems = findOrThrow(() -> getCartItemsByCartId(cartId),
                 "No CartItems found for cartId: " + cartId);
         cartItems.forEach(cartItem -> deleteById(cartItem.getId()));
@@ -121,7 +122,7 @@ public class CartItemServiceImpl implements CartItemService {
     @Override
     @Transactional(readOnly = true)
     public List<CartItem> getCartItemsByCartId(Long cartId) {
-        if (existsByCartId(cartId)) {
+        if (!existsByCartId(cartId)) {
             throw new NotFoundException("No CartItems found for cartId: " + cartId);
         }
         return cartItemRepository.findByCartId(cartId);
@@ -135,7 +136,7 @@ public class CartItemServiceImpl implements CartItemService {
     @Override
     @Transactional(readOnly = true)
     public Page<CartItem> getCartItemsByCartId(Long cartId, Pageable pageable) {
-        if (existsByCartId(cartId)) {
+        if (!existsByCartId(cartId)) {
             throw new NotFoundException("No CartItems found for cartId: " + cartId);
         }
         return cartItemRepository.findByCartId(cartId, pageable);

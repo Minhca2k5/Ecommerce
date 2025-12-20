@@ -1,6 +1,7 @@
 package com.minzetsu.ecommerce.order.entity;
 
 import com.minzetsu.ecommerce.common.base.BaseEntity;
+import com.minzetsu.ecommerce.promotion.entity.Voucher;
 import com.minzetsu.ecommerce.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,6 +30,13 @@ public class Order extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     private OrderStatus status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voucher_id")
+    private Voucher voucher;
+
+    @Column(name = "discount_amount", precision = 12, scale = 2)
+    private BigDecimal discountAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

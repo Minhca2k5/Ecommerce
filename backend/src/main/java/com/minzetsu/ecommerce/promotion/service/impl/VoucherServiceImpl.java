@@ -1,7 +1,9 @@
 package com.minzetsu.ecommerce.promotion.service.impl;
 
+import com.minzetsu.ecommerce.common.exception.DeletionException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
+import com.minzetsu.ecommerce.order.repository.OrderRepository;
 import com.minzetsu.ecommerce.promotion.dto.filter.VoucherFilter;
 import com.minzetsu.ecommerce.promotion.dto.request.VoucherCreateRequest;
 import com.minzetsu.ecommerce.promotion.dto.request.VoucherUpdateRequest;
@@ -28,6 +30,7 @@ public class VoucherServiceImpl implements VoucherService {
 
     private final VoucherRepository voucherRepository;
     private final VoucherMapper voucherMapper;
+    private final OrderRepository orderRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -64,6 +67,9 @@ public class VoucherServiceImpl implements VoucherService {
     public void deleteVoucher(Long id) {
         Voucher voucher = voucherRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Voucher not found"));
+        if (orderRepository.existsByVoucherId(id)) {
+            throw new DeletionException("Cannot delete voucher associated with existing orders");
+        }
         voucherRepository.delete(voucher);
     }
 

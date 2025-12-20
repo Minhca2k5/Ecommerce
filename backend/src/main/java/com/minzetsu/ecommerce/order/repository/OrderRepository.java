@@ -11,6 +11,7 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
 
     boolean existsByUserId(Long userId);
+    boolean existsByVoucherId(Long voucherId);
     boolean existsById(Long id);
 
     @Modifying

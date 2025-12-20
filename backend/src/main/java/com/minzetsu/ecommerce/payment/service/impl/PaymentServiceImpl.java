@@ -120,7 +120,9 @@ public class PaymentServiceImpl implements PaymentService {
         Payment savedPayment = paymentRepository.save(payment);
         Long voucherId = request.getVoucherId();
         BigDecimal discountAmount = request.getDiscountAmount();
-        voucherUseService.createVoucherUse(voucherId, userId, orderId, discountAmount);
+        if (voucherId != null && discountAmount != null) {
+            voucherUseService.createVoucherUse(voucherId, userId, orderId, discountAmount);
+        }
         return paymentMapper.toResponse(savedPayment);
     }
 }

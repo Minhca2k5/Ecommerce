@@ -3,7 +3,6 @@ package com.minzetsu.ecommerce.order.controller.user;
 import com.minzetsu.ecommerce.common.config.CustomUserDetails;
 import com.minzetsu.ecommerce.order.dto.request.OrderRequest;
 import com.minzetsu.ecommerce.order.dto.response.OrderResponse;
-import com.minzetsu.ecommerce.order.dto.response.OrderResponseAfterCreating;
 import com.minzetsu.ecommerce.order.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -54,7 +53,7 @@ public class UserOrderController {
             description = "Người dùng hiện tại tạo một đơn hàng mới dựa trên thông tin trong yêu cầu (giỏ hàng, địa chỉ, phương thức thanh toán, v.v.)."
     )
     @PostMapping
-    public ResponseEntity<OrderResponseAfterCreating> createCurrentUserOrder(
+    public ResponseEntity<OrderResponse> createCurrentUserOrder(
             @Valid @RequestBody OrderRequest request
     ) {
         Long userId = getCurrentUserId();
