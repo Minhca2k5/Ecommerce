@@ -96,7 +96,7 @@ public class ReviewServiceImpl implements ReviewService {
         if (!existsByUserId(userId)) {
             throw new NotFoundException("No reviews found for userId: " + userId);
         }
-        List<Review> reviews = reviewRepository.findByUserId(userId);
+        List<Review> reviews = reviewRepository.findByUserIdOrderByUpdatedAtDesc(userId);
         return reviewMapper.toResponseList(reviews);
     }
 
@@ -125,7 +125,7 @@ public class ReviewServiceImpl implements ReviewService {
         if (!existsByProductId(productId)) {
             throw new NotFoundException("No reviews found for productId: " + productId);
         }
-        List<Review> reviews = reviewRepository.findByProductId(productId);
+        List<Review> reviews = reviewRepository.findByProductIdOrderByUpdatedAtDesc(productId);
         return reviewMapper.toResponseList(reviews);
     }
 

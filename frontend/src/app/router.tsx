@@ -17,6 +17,10 @@ import CartPage from "@/pages/CartPage";
 import CheckoutPage from "@/pages/CheckoutPage";
 import OrdersPage from "@/pages/OrdersPage";
 import OrderDetailPage from "@/pages/OrderDetailPage";
+import NotificationsPage from "@/pages/NotificationsPage";
+import VoucherUsesPage from "@/pages/VoucherUsesPage";
+import WishlistPage from "@/pages/WishlistPage";
+import SearchLogsPage from "@/pages/SearchLogsPage";
 
 export const router = createBrowserRouter([
   {
@@ -39,6 +43,10 @@ export const router = createBrowserRouter([
           { path: "me/edit", element: <ProfileEditPage /> },
           { path: "me/password", element: <PasswordPage /> },
           { path: "me/addresses", element: <AddressesPage /> },
+          { path: "me/voucher-uses", element: <VoucherUsesPage /> },
+          { path: "me/wishlist", element: <WishlistPage /> },
+          { path: "me/search-logs", element: <SearchLogsPage /> },
+          { path: "notifications", element: <NotificationsPage /> },
           { path: "cart", element: <CartPage /> },
           { path: "checkout", element: <CheckoutPage /> },
           { path: "orders", element: <OrdersPage /> },

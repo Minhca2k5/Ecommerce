@@ -11,8 +11,8 @@ import java.util.Optional;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long>, JpaSpecificationExecutor<Review> {
 
-    List<Review> findByProductId(Long productId);
-    List<Review> findByUserId(Long userId);
+    List<Review> findByProductIdOrderByUpdatedAtDesc(Long productId);
+    List<Review> findByUserIdOrderByUpdatedAtDesc(Long userId);
 
     @Modifying
     @Query("UPDATE Review r SET r.rating = :rating WHERE r.id = :id")

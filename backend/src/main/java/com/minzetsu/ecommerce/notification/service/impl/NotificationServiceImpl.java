@@ -130,7 +130,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional(readOnly = true)
     public List<NotificationResponse> getNotificationResponsesByUserId(Long userId) {
-        return notificationRepository.findByUserId(userId).stream()
+        return notificationRepository.findByUserIdOrderByUpdatedAtDesc(userId).stream()
                 .map(this::toResponse)
                 .toList();
     }

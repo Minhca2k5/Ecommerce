@@ -484,7 +484,3 @@ Backend:
 - Tổng kết coverage: liệt kê các endpoint đã dùng theo milestone (để chứng minh “dùng hầu hết API”).
 
 ---
-
-## Cách làm “đúng chất”
-- Mỗi milestone: làm 1–2 màn hình + 1–3 endpoint, xong rồi mới mở rộng.
-- Khi xong milestone: tự viết lại 5–10 dòng tóm tắt “mình vừa hiểu gì” (để thật sự nắm hệ thống).

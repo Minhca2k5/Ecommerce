@@ -86,7 +86,7 @@ public class UserServiceImpl implements UserService {
         }
         Cart cart = cartRepository.findByUserId(id).orElse(null);
         if (cart != null) {
-            List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
+            List<CartItem> cartItems = cartItemRepository.findByCartIdOrderByUpdatedAtDesc(cart.getId());
             for (CartItem item : cartItems) {
                 Long productId = item.getProduct().getId();
                 Integer quantity = item.getQuantity();
@@ -123,9 +123,9 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserResponse getFullUserResponseById(Long id) {
         User user = getUserById(id);
-        List<AddressResponse> addressResponses = addressMapper.toResponseList(addressRepository.findByUserId(id));
-        List<ReviewResponse> reviewResponses = reviewMapper.toResponseList(reviewRepository.findByUserId(id));
-        List<OrderResponse> orderResponses = orderMapper.toResponseList(orderRepository.findByUserId(id));
+        List<AddressResponse> addressResponses = addressMapper.toResponseList(addressRepository.findByUserIdOrderByUpdatedAtDesc(id));
+        List<ReviewResponse> reviewResponses = reviewMapper.toResponseList(reviewRepository.findByUserIdOrderByUpdatedAtDesc(id));
+        List<OrderResponse> orderResponses = orderMapper.toResponseList(orderRepository.findByUserIdOrderByUpdatedAtDesc(id));
         CartResponse cartResponse = cartMapper.toResponse(cartRepository.findByUserId(id)
                 .orElseThrow(() -> new NotFoundException("Cart not found for user id: " + id)));
         return userMapper.toFullResponse(user, addressResponses, reviewResponses, cartResponse, orderResponses, roleMapper);

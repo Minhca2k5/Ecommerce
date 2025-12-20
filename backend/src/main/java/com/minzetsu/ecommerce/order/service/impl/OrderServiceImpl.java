@@ -168,7 +168,7 @@ public class OrderServiceImpl implements OrderService {
         if (!existsByUserId(userId)) {
             throw new NotFoundException("No orders found for userId: " + userId);
         }
-        return orderMapper.toResponseList(orderRepository.findByUserId(userId));
+        return orderMapper.toResponseList(orderRepository.findByUserIdOrderByUpdatedAtDesc(userId));
     }
 
     @Override
@@ -178,7 +178,7 @@ public class OrderServiceImpl implements OrderService {
                 ? getOrderByIdAndUserId(id, userId)
                 : getOrderById(id);
         List<OrderItemResponse> orderItems =
-                orderItemMapper.toResponseList(orderItemRepository.findByOrderId(id));
+                orderItemMapper.toResponseList(orderItemRepository.findByOrderIdOrderByUpdatedAtDesc(id));
         return orderMapper.toFullResponse(order, orderItems);
     }
 

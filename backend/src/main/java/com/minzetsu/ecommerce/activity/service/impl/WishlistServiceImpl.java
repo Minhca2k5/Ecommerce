@@ -102,6 +102,6 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     public List<WishlistResponse> getWishlistsByProductName(String productName, Long userId) {
-        return toResponseListWithUrl(wishlistRepository.findByProductName(productName, userId));
+        return toResponseListWithUrl(wishlistRepository.findByProductNameByOrderByUpdatedAtDesc(productName, userId));
     }
 }

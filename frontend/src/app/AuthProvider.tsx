@@ -4,6 +4,7 @@ import { getMe, login as loginApi, register as registerApi } from "@/lib/authApi
 import { clearStoredTokens, getStoredTokens, setStoredTokens, type StoredTokens } from "@/lib/authStorage";
 
 export type AuthUser = {
+  id?: number;
   username?: string;
   email?: string;
   fullName?: string;
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshMe = useCallback(async () => {
     try {
       const me = await getMe();
-      setUser({ username: me.username, email: me.email, fullName: me.fullName });
+      setUser({ id: me.id, username: me.username, email: me.email, fullName: me.fullName });
     } catch (e) {
       if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
         clearStoredTokens();

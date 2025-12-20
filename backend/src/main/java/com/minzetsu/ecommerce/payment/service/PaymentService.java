@@ -12,7 +12,6 @@ import java.util.List;
 
 public interface PaymentService {
     void updatePaymentStatusById(PaymentStatus status, Long id);
-    boolean existsByOrderId(Long orderId);
     boolean existsById(Long id);
     Payment getPaymentById(Long id);
     Payment getPaymentByIdAndUserId(Long id, Long userId);

@@ -1,6 +1,7 @@
 import { apiJson } from "@/lib/http";
 
 export type UserMeResponse = {
+  id?: number;
   username?: string;
   email?: string;
   fullName?: string;
@@ -92,4 +93,3 @@ export function setDefaultAddress(addressId: number) {
 export function getAddressById(addressId: number) {
   return apiJson<AddressResponse>(`/api/users/me/addresses/${addressId}`, { method: "GET", auth: true });
 }
-

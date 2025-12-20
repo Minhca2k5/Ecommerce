@@ -9,11 +9,14 @@ import type { SpringPage } from "@/lib/pagination";
 import { getNumber, getString } from "@/lib/safe";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/app/AuthProvider";
+import { addSearchLog } from "@/lib/searchLogApi";
 
 type ProductSummary = unknown;
 type CategorySummary = unknown;
 
 export default function ProductsPage() {
+  const auth = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const page = Number(searchParams.get("page") ?? "0");
@@ -67,6 +70,18 @@ export default function ProductsPage() {
       isMounted = false;
     };
   }, [queryString]);
+
+  useEffect(() => {
+    if (!auth.isAuthenticated) return;
+    const keyword = name.trim();
+    if (!keyword) return;
+    const handle = window.setTimeout(() => {
+      addSearchLog({ keyword }).catch(() => {
+        // ignore
+      });
+    }, 700);
+    return () => window.clearTimeout(handle);
+  }, [auth.isAuthenticated, name]);
 
   const products = data?.content ?? [];
 

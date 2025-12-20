@@ -242,7 +242,7 @@ public class ProductServiceImpl implements ProductService {
     public AdminProductResponse getFullAdminProductResponseById(Long id) {
         Product product = getExistingProduct(id);
         List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(id));
-        List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductId(id));
+        List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(id));
         List<AdminProductImageResponse> images = productImageMapper.toAdminResponseList(productImageRepository.findByProductId(id));
         return toFullAdminResponse(product, reviews, inventories, images);
     }
@@ -278,7 +278,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = getExistingProduct(id);
         validateActiveProduct(product);
         List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(id));
-        List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductId(id));
+        List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(id));
         List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(id));
         return toFullUserResponse(product, reviews, inventories, images);
     }
@@ -290,7 +290,7 @@ public class ProductServiceImpl implements ProductService {
         validateActiveProduct(product);
         Long productId = product.getId();
         List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(productId));
-        List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductId(productId));
+        List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(productId));
         List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(productId));
         return toFullUserResponse(product, reviews, inventories, images);
     }

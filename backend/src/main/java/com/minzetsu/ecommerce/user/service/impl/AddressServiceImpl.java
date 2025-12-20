@@ -108,7 +108,7 @@ public class AddressServiceImpl implements AddressService {
     @Transactional(readOnly = true)
     public List<AddressResponse> getAddressResponsesByUserId(Long userId) {
         validateUser(userId);
-        List<Address> addresses = addressRepository.findByUserId(userId);
+        List<Address> addresses = addressRepository.findByUserIdOrderByUpdatedAtDesc(userId);
         return addressMapper.toResponseList(addresses);
     }
 

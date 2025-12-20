@@ -11,6 +11,8 @@ import { formatCurrency } from "@/lib/format";
 import { getOrCreateCart, type CartResponse } from "@/lib/cartApi";
 import { createMyOrder } from "@/lib/orderApi";
 import { getDefaultAddress, listAddresses, type AddressResponse } from "@/lib/userApi";
+import { useNotifications } from "@/app/NotificationProvider";
+import { getVouchersByCode, type VoucherResponse } from "@/lib/voucherApi";
 
 function money(value: number | undefined, currency: string | undefined) {
   if (value === undefined || value === null) return "-";
@@ -20,12 +22,16 @@ function money(value: number | undefined, currency: string | undefined) {
 export default function CheckoutPage() {
   const toast = useToast();
   const navigate = useNavigate();
+  const notifications = useNotifications();
 
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [addresses, setAddresses] = useState<AddressResponse[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
   const [shippingFee, setShippingFee] = useState<string>("0");
-  const [voucherIdInput, setVoucherIdInput] = useState<string>("");
+  const [voucherCode, setVoucherCode] = useState<string>("");
+  const [voucherStatus, setVoucherStatus] = useState<"idle" | "checking" | "valid" | "invalid">("idle");
+  const [voucherError, setVoucherError] = useState<string | null>(null);
+  const [appliedVoucher, setAppliedVoucher] = useState<VoucherResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,10 +75,11 @@ export default function CheckoutPage() {
     if (!cart?.id || !selectedAddressId) return;
     setIsSubmitting(true);
     try {
+      const voucherId = appliedVoucher?.id ? Number(appliedVoucher.id) : undefined;
       const created = await createMyOrder({
         cartId: Number(cart.id),
         addressIdSnapshot: Number(selectedAddressId),
-        ...(voucherIdInput.trim() ? { voucherId: Number(voucherIdInput.trim()) } : {}),
+        ...(voucherId ? { voucherId } : {}),
         shippingFee: Math.max(0, Number(shippingFee || "0")),
         currency,
         status: "PENDING",
@@ -81,11 +88,62 @@ export default function CheckoutPage() {
       toast.push({ variant: "success", title: "Order placed", message: "Your order has been created." });
 
       const orderId = Number(created.id ?? 0);
+      if (orderId) {
+        notifications.push({
+          type: "ORDER",
+          title: `Order #${orderId} created`,
+          message: `Your order is pending. Total: ${formatCurrency(Number(created.totalAmount ?? 0), created.currency || currency)}.`,
+          referenceId: orderId,
+          referenceType: "ORDER",
+        });
+
+        if (voucherId) {
+          notifications.push({
+            type: "VOUCHER",
+            title: "Voucher applied",
+            message: `Applied code ${appliedVoucher?.code || ""} to your order.`,
+            referenceId: voucherId,
+            referenceType: "VOUCHER",
+          });
+        }
+      }
       navigate(orderId ? `/orders/${orderId}` : "/orders", { replace: true });
     } catch (e) {
       toast.push({ variant: "error", title: "Checkout failed", message: getErrorMessage(e, "Failed to place order.") });
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function checkVoucher() {
+    const code = voucherCode.trim();
+    setAppliedVoucher(null);
+    setVoucherError(null);
+    if (!code) {
+      setVoucherStatus("idle");
+      return;
+    }
+    setVoucherStatus("checking");
+    try {
+      const list = await getVouchersByCode(code);
+      const voucher = (list ?? [])[0] ?? null;
+      if (!voucher?.id) {
+        setVoucherStatus("invalid");
+        setVoucherError("Voucher not found or inactive.");
+        return;
+      }
+      setAppliedVoucher(voucher);
+      setVoucherStatus("valid");
+      notifications.push({
+        type: "VOUCHER",
+        title: "Voucher found",
+        message: `Code ${voucher.code} is ready to use at checkout.`,
+        referenceId: Number(voucher.id),
+        referenceType: "VOUCHER",
+      });
+    } catch (e) {
+      setVoucherStatus("invalid");
+      setVoucherError(getErrorMessage(e, "Failed to validate voucher."));
     }
   }
 
@@ -201,8 +259,21 @@ export default function CheckoutPage() {
                 <Input className="rounded-xl" value={shippingFee} onChange={(e) => setShippingFee(e.target.value)} inputMode="numeric" />
               </div>
               <div className="space-y-2">
-                <div className="text-xs font-medium text-muted-foreground">Voucher ID (optional)</div>
-                <Input className="rounded-xl" value={voucherIdInput} onChange={(e) => setVoucherIdInput(e.target.value)} inputMode="numeric" />
+                <div className="text-xs font-medium text-muted-foreground">Voucher code (optional)</div>
+                <div className="flex gap-2">
+                  <Input className="rounded-xl" value={voucherCode} onChange={(e) => setVoucherCode(e.target.value)} placeholder="e.g. SAVE10" />
+                  <Button type="button" variant="outline" className="rounded-xl" onClick={checkVoucher} disabled={voucherStatus === "checking" || !voucherCode.trim()}>
+                    {voucherStatus === "checking" ? "Checking..." : "Apply"}
+                  </Button>
+                </div>
+                {voucherStatus === "valid" && appliedVoucher ? (
+                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
+                    Applied: <span className="font-medium">{appliedVoucher.code}</span> — {appliedVoucher.name || "Voucher"}
+                  </div>
+                ) : null}
+                {voucherStatus === "invalid" && voucherError ? (
+                  <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-700">{voucherError}</div>
+                ) : null}
               </div>
             </CardContent>
           </Card>
@@ -236,4 +307,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-

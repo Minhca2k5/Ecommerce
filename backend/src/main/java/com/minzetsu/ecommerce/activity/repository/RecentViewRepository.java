@@ -19,8 +19,8 @@ public interface RecentViewRepository extends JpaRepository<RecentView, Long> {
     void deleteByUserId(Long userId);
     void deleteByProductId(Long productId);
     Optional<RecentView> findByUserIdAndProductId(Long userId, Long productId);
-    @Query("SELECT r FROM RecentView r JOIN FETCH r.product p WHERE p.name LIKE %:productName% and r.user.id = :userId")
-    List<RecentView> findByProductName(String productName, Long userId);
+    @Query("SELECT r FROM RecentView r JOIN FETCH r.product p WHERE p.name LIKE %:productName% and r.user.id = :userId ORDER BY r.updatedAt DESC")
+    List<RecentView> findByProductNameOrderByUpdatedAtDesc(String productName, Long userId);
     @Query(value = "Select Count(*) from recent_views where product_id = :productId and created_at >= NOW() - INTERVAL :days DAY", nativeQuery = true)
     Integer countByProductIdLastDays(Long productId, Integer days);
 

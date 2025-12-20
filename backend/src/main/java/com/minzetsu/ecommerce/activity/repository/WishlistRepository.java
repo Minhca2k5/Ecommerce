@@ -19,8 +19,8 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
     boolean existsByProductId(Long productId);
     boolean existsByUserId(Long userId);
     void deleteByUserId(Long userId);
-    @Query("SELECT w FROM Wishlist w JOIN FETCH w.product p WHERE p.name LIKE %:productName% and w.user.id = :userId")
-    List<Wishlist> findByProductName(String productName, Long userId);
+    @Query("SELECT w FROM Wishlist w JOIN FETCH w.product p WHERE p.name LIKE %:productName% and w.user.id = :userId ORDER BY w.updatedAt DESC")
+    List<Wishlist> findByProductNameByOrderByUpdatedAtDesc(String productName, Long userId);
     @Query(value = "Select Count(*) from wishlists where product_id = :productId and created_at >= NOW() - INTERVAL :days DAY", nativeQuery = true)
     Integer countByProductIdLastDays(Long productId, Integer days);
 

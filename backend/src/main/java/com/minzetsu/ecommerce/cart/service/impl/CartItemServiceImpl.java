@@ -125,7 +125,7 @@ public class CartItemServiceImpl implements CartItemService {
         if (!existsByCartId(cartId)) {
             throw new NotFoundException("No CartItems found for cartId: " + cartId);
         }
-        return cartItemRepository.findByCartId(cartId);
+        return cartItemRepository.findByCartIdOrderByUpdatedAtDesc(cartId);
     }
 
     @Override

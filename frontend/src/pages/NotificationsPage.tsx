@@ -1,0 +1,139 @@
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import EmptyState from "@/components/EmptyState";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNotifications } from "@/app/NotificationProvider";
+import { getNotificationRoute } from "@/lib/notificationRoute";
+
+function formatTime(iso: string) {
+  try {
+    const date = new Date(iso);
+    return date.toLocaleString();
+  } catch {
+    return iso;
+  }
+}
+
+function typeDot(type: string) {
+  const cls =
+    type === "PAYMENT"
+      ? "bg-emerald-500"
+      : type === "ORDER"
+        ? "bg-blue-500"
+        : type === "VOUCHER"
+          ? "bg-fuchsia-500"
+          : type === "REVIEW"
+            ? "bg-amber-500"
+            : type === "PRODUCT" || type === "CATEGORY"
+              ? "bg-indigo-500"
+              : "bg-primary";
+  return <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${cls}`} />;
+}
+
+export default function NotificationsPage() {
+  const navigate = useNavigate();
+  const notifications = useNotifications();
+
+  const sorted = useMemo(() => {
+    const next = [...notifications.items].filter((n) => !n.isHidden);
+    next.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+    return next;
+  }, [notifications.items]);
+
+  if (!sorted.length) {
+    return (
+      <EmptyState
+        title="No notifications"
+        description="You're all caught up."
+        action={
+          <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={() => navigate("/")}>
+            Go home
+          </Button>
+        }
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="text-sm text-muted-foreground">Account</div>
+          <div className="text-3xl font-semibold tracking-tight">Notifications</div>
+          <div className="mt-1 text-sm text-muted-foreground">Click a notification to open the referenced page.</div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" className="rounded-xl" onClick={() => notifications.markAllRead()}>
+            Mark all read
+          </Button>
+          <Button variant="outline" className="rounded-xl border-rose-500/20 text-rose-700 hover:bg-rose-500/10" onClick={() => notifications.clear()}>
+            Clear all
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {sorted.map((n) => (
+          <Card
+            key={String(n.id)}
+            className={[
+              "pressable relative overflow-hidden",
+              n.isRead ? "opacity-90" : "shine",
+            ].join(" ")}
+            onClick={() => {
+              const id = Number(n.id ?? 0);
+              if (id) notifications.markRead(id);
+              const route = getNotificationRoute(n);
+              if (route) navigate(route);
+            }}
+          >
+            <div className="pointer-events-none absolute inset-0 opacity-20 [background:radial-gradient(60%_60%_at_20%_20%,rgba(59,130,246,.16),transparent),radial-gradient(50%_60%_at_75%_40%,rgba(168,85,247,.12),transparent)]" />
+            <CardHeader className="relative">
+              <CardTitle className="flex items-start justify-between gap-3">
+                <span className="flex min-w-0 items-start gap-2">
+                  {typeDot(n.type)}
+                  <span className="min-w-0">
+                    <span className="block truncate">{n.title}</span>
+                    <span className="mt-1 block text-xs font-normal text-muted-foreground">{formatTime(n.createdAt)}</span>
+                  </span>
+                </span>
+                {!n.isRead ? <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] text-foreground ring-1 ring-primary/20">New</span> : null}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="relative">
+              <div className="text-sm text-muted-foreground">{n.message}</div>
+              <div className="mt-3 flex justify-between">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-xl"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const id = Number(n.id ?? 0);
+                    if (id) notifications.remove(id);
+                  }}
+                >
+                  Remove
+                </Button>
+                <Button
+                  type="button"
+                  className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const id = Number(n.id ?? 0);
+                    if (id) notifications.markRead(id);
+                    const route = getNotificationRoute(n);
+                    if (route) navigate(route);
+                  }}
+                >
+                  Open
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}

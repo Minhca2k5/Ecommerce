@@ -22,5 +22,5 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
     @Query("UPDATE Order o SET o.currency = :currency WHERE o.id = :id")
     void updateCurrencyById(Long id, String currency);
 
-    List<Order> findByUserId(Long userId);
+    List<Order> findByUserIdOrderByUpdatedAtDesc(Long userId);
 }

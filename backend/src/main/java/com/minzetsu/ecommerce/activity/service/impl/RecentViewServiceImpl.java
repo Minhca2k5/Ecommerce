@@ -106,6 +106,6 @@ public class RecentViewServiceImpl implements RecentViewService {
 
     @Override
     public List<RecentViewResponse> getRecentViewsByProductName(String productName, Long userId) {
-        return toResponseListWithUrl(recentViewRepository.findByProductName(productName, userId));
+        return toResponseListWithUrl(recentViewRepository.findByProductNameOrderByUpdatedAtDesc(productName, userId));
     }
 }

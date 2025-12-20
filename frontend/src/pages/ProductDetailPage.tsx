@@ -13,10 +13,19 @@ import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/app/AuthProvider";
 import { useCartActions } from "@/lib/useCartActions";
+import { useToast } from "@/app/ToastProvider";
+import { useNotifications } from "@/app/NotificationProvider";
+import { addRecentView } from "@/lib/recentViewApi";
+import { addWishlist } from "@/lib/wishlistApi";
+import { createMyReview, deleteMyReview, listMyReviews, updateMyReviewComment, updateMyReviewRating, type ReviewResponse } from "@/lib/reviewApi";
+import { getErrorMessage } from "@/lib/errors";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 export default function ProductDetailPage() {
   const auth = useAuth();
   const { addToCart, isWorking } = useCartActions();
+  const toast = useToast();
+  const notifications = useNotifications();
   const { productId, slug } = useParams();
   const productIdNumber = useMemo(() => Number(productId), [productId]);
   const slugValue = useMemo(() => (slug ?? "").trim(), [slug]);
@@ -25,6 +34,15 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<unknown>(null);
   const [images, setImages] = useState<unknown[]>([]);
   const [reviews, setReviews] = useState<unknown[]>([]);
+  const [myReviews, setMyReviews] = useState<ReviewResponse[]>([]);
+  const [myRating, setMyRating] = useState<number>(5);
+  const [myComment, setMyComment] = useState<string>("");
+  const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
+  const [deleteReviewId, setDeleteReviewId] = useState<number | null>(null);
+  const [editDraftRating, setEditDraftRating] = useState<number>(5);
+  const [editDraftComment, setEditDraftComment] = useState<string>("");
+  const [isSavingReview, setIsSavingReview] = useState(false);
+  const [isWishlistWorking, setIsWishlistWorking] = useState(false);
   const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +109,23 @@ export default function ProductDetailPage() {
           getString(primary, "url", "imageUrl") ??
           getString(p, "primaryImageUrl", "imageUrl", "thumbnailUrl");
         setActiveImageUrl(primaryUrl ?? null);
+
+        if (auth.isAuthenticated && resolvedId) {
+          addRecentView({ productId: Number(resolvedId) }).catch(() => {
+            // ignore
+          });
+          listMyReviews()
+            .then((list) => {
+              const mine = (list ?? []).filter((r) => Number(r.productId) === Number(resolvedId));
+              setMyReviews(mine);
+              setEditingReviewId(null);
+              setMyRating(5);
+              setMyComment("");
+            })
+            .catch(() => {
+              // ignore
+            });
+        }
       } catch (e) {
         if (!isMounted) return;
         if (e instanceof ApiError && e.status === 404) {
@@ -108,7 +143,7 @@ export default function ProductDetailPage() {
     return () => {
       isMounted = false;
     };
-  }, [isSlugRoute, productIdNumber, slugValue]);
+  }, [auth.isAuthenticated, isSlugRoute, productIdNumber, slugValue]);
 
   const productName = getString(product, "name", "title") ?? "Product";
   const price = getNumber(product, "salePrice", "price");
@@ -117,6 +152,111 @@ export default function ProductDetailPage() {
   const status = getString(product, "status", "inStockStatus");
   const description = getString(product, "description", "shortDescription");
   const resolvedId = getNumber(product, "id") ?? productIdNumber;
+
+  async function refreshPublicReviews() {
+    if (!resolvedId) return;
+    const next = await apiGetOrNull<unknown[]>(`/api/public/products/${resolvedId}/reviews`);
+    setReviews(next ?? []);
+  }
+
+  async function onAddWishlist() {
+    if (!resolvedId) return;
+    setIsWishlistWorking(true);
+    try {
+      const w = await addWishlist({ productId: Number(resolvedId) });
+      toast.push({ variant: "success", title: "Wishlisted", message: "Saved to your wishlist." });
+      notifications.push({
+        type: "PRODUCT",
+        title: "Saved to wishlist",
+        message: `${w.productName || productName} saved to wishlist.`,
+        referenceId: Number(resolvedId),
+        referenceType: "PRODUCT",
+      });
+    } catch (e) {
+      toast.push({ variant: "error", title: "Wishlist failed", message: getErrorMessage(e, "Failed to add to wishlist.") });
+    } finally {
+      setIsWishlistWorking(false);
+    }
+  }
+
+  async function onSaveReview() {
+    if (!resolvedId) return;
+    setIsSavingReview(true);
+    try {
+      const editId = editingReviewId ? Number(editingReviewId) : 0;
+      if (!editId) {
+        const created = await createMyReview({ productId: Number(resolvedId), rating: myRating, comment: myComment.trim() || undefined });
+        setMyReviews((prev) => [created, ...prev]);
+        setReviews((prev) => [created as unknown, ...(prev ?? [])]);
+        toast.push({ variant: "success", title: "Review posted", message: "Thanks for your feedback!" });
+        notifications.push({
+          type: "REVIEW",
+          title: "Review submitted",
+          message: `You rated ${productName} ${myRating}/5.`,
+          referenceId: Number(resolvedId),
+          referenceType: "PRODUCT",
+        });
+      } else {
+        const current = myReviews.find((r) => Number(r.id) === editId);
+        if (current && Number(current.rating) !== Number(myRating)) await updateMyReviewRating(editId, myRating);
+        if (current && String(current.comment || "") !== String(myComment || "")) await updateMyReviewComment(editId, myComment);
+        setMyReviews((prev) => prev.map((r) => (Number(r.id) === editId ? { ...r, rating: myRating, comment: myComment } : r)));
+        setReviews((prev) =>
+          (prev ?? []).map((r) => {
+            const id = getNumber(r, "id");
+            if (id && Number(id) === editId) return { ...(r as any), rating: myRating, comment: myComment } as unknown;
+            return r;
+          }),
+        );
+        toast.push({ variant: "success", title: "Review updated", message: "Your review has been updated." });
+        notifications.push({
+          type: "REVIEW",
+          title: "Review updated",
+          message: `Updated your review for ${productName}.`,
+          referenceId: Number(resolvedId),
+          referenceType: "PRODUCT",
+        });
+      }
+
+      const refreshed = await listMyReviews().catch(() => [] as ReviewResponse[]);
+      setMyReviews((refreshed ?? []).filter((r) => Number(r.productId) === Number(resolvedId)));
+      setEditingReviewId(null);
+      setMyRating(5);
+      setMyComment("");
+      await refreshPublicReviews();
+    } catch (e) {
+      toast.push({ variant: "error", title: "Review failed", message: getErrorMessage(e, "Failed to save review.") });
+    } finally {
+      setIsSavingReview(false);
+    }
+  }
+
+  async function onDeleteReview(reviewId?: number) {
+    const id = Number(reviewId ?? editingReviewId ?? 0);
+    if (!id) return;
+    setIsSavingReview(true);
+    try {
+      await deleteMyReview(id);
+      toast.push({ variant: "success", title: "Review deleted", message: "Your review has been removed." });
+      notifications.push({
+        type: "REVIEW",
+        title: "Review deleted",
+        message: `Removed your review for ${productName}.`,
+        referenceId: Number(resolvedId),
+        referenceType: "PRODUCT",
+      });
+      setMyReviews((prev) => prev.filter((r) => Number(r.id) !== id));
+      setReviews((prev) => (prev ?? []).filter((r) => Number(getNumber(r, "id") ?? 0) !== id));
+      setEditingReviewId(null);
+      setMyRating(5);
+      setMyComment("");
+      await refreshPublicReviews();
+    } catch (e) {
+      toast.push({ variant: "error", title: "Delete failed", message: getErrorMessage(e, "Failed to delete review.") });
+    } finally {
+      setIsSavingReview(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -170,6 +310,11 @@ export default function ProductDetailPage() {
               <Link to="/login">Add to cart</Link>
             </Button>
           )}
+          {auth.isAuthenticated ? (
+            <Button variant="outline" className="rounded-xl" onClick={onAddWishlist} disabled={!resolvedId || isWishlistWorking || Boolean(error) || isLoading}>
+              Wishlist
+            </Button>
+          ) : null}
           <Button asChild variant="outline">
             <Link to={`/products?categoryId=${getNumber(product, "categoryId") ?? ""}`}>
               <span className="inline-flex items-center gap-2">
@@ -263,6 +408,50 @@ export default function ProductDetailPage() {
                 <CardTitle className="text-base">Reviews</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                {auth.isAuthenticated ? (
+                  <div className="rounded-2xl border bg-background/60 p-3 backdrop-blur">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-medium">Write a review</div>
+                        <div className="mt-1 text-xs text-muted-foreground">Your comment appears instantly after posting.</div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: 5 }).map((_, i) => {
+                          const v = i + 1;
+                          const active = v <= myRating;
+                          return (
+                            <button
+                              key={v}
+                              type="button"
+                              className={active ? "text-amber-500" : "text-muted-foreground"}
+                              onClick={() => setMyRating(v)}
+                              aria-label={`Rate ${v}`}
+                            >
+                              ★
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      <textarea
+                        value={myComment}
+                        onChange={(e) => setMyComment(e.target.value)}
+                        className="min-h-20 w-full rounded-xl border bg-background px-3 py-2 text-sm"
+                        placeholder="Write a short comment..."
+                      />
+                      <Button
+                        disabled={isSavingReview}
+                        onClick={onSaveReview}
+                        className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+                      >
+                        {isSavingReview ? "Posting..." : "Post"}
+                      </Button>
+                    </div>
+
+                    {null}
+                  </div>
+                ) : null}
                 {asArray(reviews).length === 0 ? (
                   <div className="text-sm text-muted-foreground">
                     Chưa có đánh giá nào. Hãy là người đầu tiên review sản phẩm này.
@@ -272,18 +461,110 @@ export default function ProductDetailPage() {
                     {asArray(reviews).slice(0, 8).map((r, idx) => {
                       const ratingValue = getNumber(r, "rating") ?? 0;
                       const comment = getString(r, "comment", "content") ?? "";
-                      const username =
-                        getString(r, "username", "userName", "author") ?? "User";
+                      const username = getString(r, "username", "userName", "author") ?? "User";
+                      const reviewId = getNumber(r, "id") ?? 0;
+                      const isMine =
+                        auth.isAuthenticated &&
+                        ((getNumber(r, "userId") !== undefined && getNumber(r, "userId") === auth.user?.id) ||
+                          username === auth.user?.username);
+                      const displayName = isMine ? "You" : username;
+                      const isEditing = Boolean(reviewId) && editingReviewId === Number(reviewId);
                       return (
                         <div
                           key={String(idx)}
-                          className="shine rounded-xl border bg-card/80 p-3 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md"
+                          className="group shine rounded-xl border bg-card/80 p-3 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-md"
                         >
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="text-sm font-medium">{username}</div>
-                            <RatingStars rating={ratingValue} />
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="text-sm font-medium">{displayName}</div>
+                            <div className="flex items-center gap-2">
+                              <RatingStars rating={isEditing ? editDraftRating : ratingValue} />
+                              {isMine && reviewId ? (
+                                <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 rounded-lg px-2 text-xs"
+                                    onClick={() => {
+                                      setEditingReviewId(Number(reviewId));
+                                      setEditDraftRating(ratingValue || 5);
+                                      setEditDraftComment(comment);
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 rounded-lg px-2 text-xs text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                                    onClick={() => setDeleteReviewId(Number(reviewId))}
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              ) : null}
+                            </div>
                           </div>
-                          {comment ? (
+                          {isEditing ? (
+                            <div className="mt-3 space-y-2">
+                              <div className="flex items-center gap-1">
+                                {Array.from({ length: 5 }).map((_, i) => {
+                                  const v = i + 1;
+                                  const active = v <= editDraftRating;
+                                  return (
+                                    <button
+                                      key={v}
+                                      type="button"
+                                      className={active ? "text-amber-500" : "text-muted-foreground"}
+                                      onClick={() => setEditDraftRating(v)}
+                                      aria-label={`Rate ${v}`}
+                                    >
+                                      ★
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              <textarea
+                                value={editDraftComment}
+                                onChange={(e) => setEditDraftComment(e.target.value)}
+                                className="min-h-16 w-full rounded-xl border bg-background px-3 py-2 text-sm"
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  disabled={isSavingReview}
+                                  className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+                                  onClick={async () => {
+                                    if (!reviewId) return;
+                                    setIsSavingReview(true);
+                                    try {
+                                      if (Number(ratingValue) !== Number(editDraftRating)) await updateMyReviewRating(Number(reviewId), editDraftRating);
+                                      if (String(comment || "") !== String(editDraftComment || "")) await updateMyReviewComment(Number(reviewId), editDraftComment);
+                                      setReviews((prev) =>
+                                        (prev ?? []).map((x) => {
+                                          const rid = getNumber(x, "id");
+                                          if (rid && Number(rid) === Number(reviewId)) return { ...(x as any), rating: editDraftRating, comment: editDraftComment } as unknown;
+                                          return x;
+                                        }),
+                                      );
+                                      toast.push({ variant: "success", title: "Updated", message: "Review updated." });
+                                      setEditingReviewId(null);
+                                      await refreshPublicReviews();
+                                    } catch (e) {
+                                      toast.push({ variant: "error", title: "Update failed", message: getErrorMessage(e, "Failed to update review.") });
+                                    } finally {
+                                      setIsSavingReview(false);
+                                    }
+                                  }}
+                                >
+                                  Save
+                                </Button>
+                                <Button type="button" variant="outline" className="rounded-xl" onClick={() => setEditingReviewId(null)}>
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : comment ? (
                             <div className="mt-2 text-sm text-muted-foreground">{comment}</div>
                           ) : null}
                         </div>
@@ -296,6 +577,21 @@ export default function ProductDetailPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={Boolean(deleteReviewId)}
+        title="Delete this review?"
+        description="This action cannot be undone."
+        confirmText="Delete"
+        variant="danger"
+        isLoading={isSavingReview}
+        onClose={() => setDeleteReviewId(null)}
+        onConfirm={() => {
+          const id = Number(deleteReviewId ?? 0);
+          if (!id) return;
+          void onDeleteReview(id).finally(() => setDeleteReviewId(null));
+        }}
+      />
     </div>
   );
 }

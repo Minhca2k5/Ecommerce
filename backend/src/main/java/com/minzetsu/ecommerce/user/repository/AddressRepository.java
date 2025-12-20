@@ -19,6 +19,6 @@ public interface AddressRepository extends JpaRepository<Address, Long>, JpaSpec
     boolean existsByUserId(Long userId);
     boolean existsById(Long id);
     boolean existsByIsDefaultTrueAndUserId(Long userId);
-    List<Address> findByUserId(Long userId);
+    List<Address> findByUserIdOrderByUpdatedAtDesc(Long userId);
     void deleteByUserId(Long userId);
 }

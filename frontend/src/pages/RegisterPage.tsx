@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/app/AuthProvider";
+import { useNotifications } from "@/app/NotificationProvider";
 import { useToast } from "@/app/ToastProvider";
 import { getErrorMessage } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 
 export default function RegisterPage() {
   const auth = useAuth();
+  const notifications = useNotifications();
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -67,6 +69,12 @@ export default function RegisterPage() {
         ...(phone.trim() ? { phone: phone.trim() } : {}),
       });
       toast.push({ variant: "success", title: "Account created", message: "Welcome! Your account is ready." });
+      notifications.push({
+        type: "SYSTEM",
+        title: "Welcome!",
+        message: `Account created successfully. You're now signed in as ${auth.user?.username || username.trim()}.`,
+        referenceType: "USER",
+      });
       navigate("/", { replace: true });
     } catch (err) {
       const message = getErrorMessage(err, "Register failed. Please check your input and try again.");

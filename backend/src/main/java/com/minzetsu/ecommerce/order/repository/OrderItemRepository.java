@@ -15,7 +15,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, Jpa
     boolean existsByProductId(Long productId);
     boolean existsByOrderId(Long orderId);
     boolean existsById(Long id);
-    List<OrderItem> findByOrderId(Long orderId);
+    List<OrderItem> findByOrderIdOrderByUpdatedAtDesc(Long orderId);
     Page<OrderItem> findByOrderId(Long orderId, Pageable pageable);
 
     @Query(value = "Select sum(oi.quantity) from order_items oi join orders o on oi.order_id = o.id where oi.product_id = :productId and oi.created_at >= NOW() - INTERVAL :days DAY and o.status = 'PAID'", nativeQuery = true)

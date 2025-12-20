@@ -33,7 +33,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
             boolean isReturned
     );
 
-    List<CartItem> findByCartId(Long cartId);
+    List<CartItem> findByCartIdOrderByUpdatedAtDesc(Long cartId);
     Optional<CartItem> findByCartIdAndProductId(Long cartId, Long productId);
     Page<CartItem> findByCartId(Long cartId, Pageable pageable);
     @Query("SELECT c FROM CartItem c JOIN FETCH c.product p WHERE p.name LIKE %:productName% and c.cart.user.id = :userId")

@@ -10,6 +10,8 @@ import { useEffect, useMemo, useState } from "react";
 import { categoryMetaBySlug, defaultCategoryMeta } from "@/lib/categoryMeta";
 import CategoryIcon from "@/components/CategoryIcon";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/app/AuthProvider";
+import { listMyRecentViews, type RecentViewResponse } from "@/lib/recentViewApi";
 
 type Banner = unknown;
 type Product = unknown;
@@ -23,6 +25,7 @@ const topListOptions = [
 ] as const;
 
 export default function HomePage() {
+  const auth = useAuth();
   const [home, setHome] = useState<unknown>(null);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [homeCategories, setHomeCategories] = useState<Category[]>([]);
@@ -33,6 +36,8 @@ export default function HomePage() {
   const [topPageSize, setTopPageSize] = useState(9);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [recentViews, setRecentViews] = useState<RecentViewResponse[]>([]);
 
   const topEndpoint = useMemo(() => `/api/public/products/${topKey}`, [topKey]);
 
@@ -64,6 +69,16 @@ export default function HomePage() {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!auth.isAuthenticated) {
+      setRecentViews([]);
+      return;
+    }
+    listMyRecentViews({ page: 0, size: 12 })
+      .then((page) => setRecentViews(page.content ?? []))
+      .catch(() => setRecentViews([]));
+  }, [auth.isAuthenticated]);
 
   useEffect(() => {
     let isMounted = true;
@@ -127,6 +142,35 @@ export default function HomePage() {
           </p>
         </div>
       </section>
+
+      {auth.isAuthenticated && recentViews.length ? (
+        <section className="space-y-3">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <div className="text-sm text-muted-foreground">For you</div>
+              <div className="text-xl font-semibold tracking-tight">Recently viewed</div>
+            </div>
+            <Button asChild variant="outline" className="rounded-xl">
+              <Link to="/products">Browse</Link>
+            </Button>
+          </div>
+          <div className="flex gap-3 overflow-auto pb-1">
+            {recentViews.slice(0, 12).map((rv) => (
+              <Link key={String(rv.id)} to={`/products/${rv.productId ?? ""}`} className="w-56 shrink-0">
+                <div className="shine overflow-hidden rounded-2xl border bg-background/60 backdrop-blur">
+                  <div className="aspect-[4/3] overflow-hidden bg-muted">
+                    <SafeImage src={rv.url || ""} alt={rv.productName || "Product"} className="h-full w-full object-cover" />
+                  </div>
+                  <div className="p-3">
+                    <div className="truncate text-sm font-semibold">{rv.productName || "Product"}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">Tap to open</div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {isLoading ? (
         <div className="grid gap-4 lg:grid-cols-2">

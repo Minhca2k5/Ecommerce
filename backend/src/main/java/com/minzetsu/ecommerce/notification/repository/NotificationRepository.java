@@ -12,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long>, JpaSpecificationExecutor<Notification> {
-    List<Notification> findByUserId(Long userId);
+    List<Notification> findByUserIdOrderByUpdatedAtDesc(Long userId);
 
     @Modifying
     @Transactional

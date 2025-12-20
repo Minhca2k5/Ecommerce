@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.activity.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.minzetsu.ecommerce.common.base.BaseDTO;
 import lombok.*;
 
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class WishlistResponse extends BaseDTO {
 
     private Long userId;

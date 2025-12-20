@@ -42,7 +42,7 @@ public class CartServiceImpl implements CartService {
 
     private CartResponse buildFullCartResponse(Cart cart) {
         List<CartItemResponse> cartItems = cartItemMapper.toResponseList(
-                cartItemRepository.findByCartId(cart.getId())
+                cartItemRepository.findByCartIdOrderByUpdatedAtDesc(cart.getId())
         );
         BigDecimal discount = BigDecimal.ZERO;
         BigDecimal shippingFee = BigDecimal.ZERO;

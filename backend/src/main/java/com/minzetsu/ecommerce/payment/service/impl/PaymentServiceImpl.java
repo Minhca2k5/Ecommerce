@@ -48,11 +48,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public boolean existsByOrderId(Long orderId) {
-        return paymentRepository.existsByOrderId(orderId);
-    }
-
-    @Override
     public boolean existsById(Long id) {
         return paymentRepository.existsById(id);
     }
@@ -91,7 +86,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (userId != null) {
             orderService.getOrderByIdAndUserId(orderId, userId); // xác thực quyền truy cập
         }
-        List<Payment> payments = paymentRepository.findByOrderId(orderId);
+        List<Payment> payments = paymentRepository.findByOrderIdOrderByUpdatedAtDesc(orderId);
         return paymentMapper.toResponseList(payments);
     }
 
@@ -108,10 +103,10 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public PaymentResponse createPaymentResponse(PaymentRequest request, Long userId, Long orderId) {
         Order order = orderService.getOrderByIdAndUserId(orderId, userId);
-        if (existsByOrderId(orderId)) {
-            throw new AlreadyExistException("Payment already exists for orderId: " + orderId);
+        List<Payment> existingPayments = paymentRepository.findByOrderIdOrderByUpdatedAtDesc(orderId);
+        if (!existingPayments.isEmpty() && existingPayments.stream().anyMatch(p -> (p.getStatus() == PaymentStatus.INITIATED || p.getStatus() == PaymentStatus.SUCCEEDED))) {
+            throw new AlreadyExistException("Payment already exists for order with id: " + orderId);
         }
-
         request.setOrderId(orderId);
         Payment payment = paymentMapper.toEntity(request);
         payment.setAmount(order.getTotalAmount());

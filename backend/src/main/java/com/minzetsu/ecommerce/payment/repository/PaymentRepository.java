@@ -10,12 +10,11 @@ import java.util.List;
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpecificationExecutor<Payment> {
 
-    List<Payment> findByOrderId(Long orderId);
+    List<Payment> findByOrderIdOrderByUpdatedAtDesc(Long orderId);
 
     @Modifying
     @Query("UPDATE Payment p SET p.status = :status WHERE p.id = :id")
     void updateByStatusAndId(PaymentStatus status, Long id);
 
-    boolean existsByOrderId(Long orderId);
     boolean existsById(Long id);
 }

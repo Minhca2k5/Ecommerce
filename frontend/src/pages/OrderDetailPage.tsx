@@ -12,6 +12,7 @@ import { formatCurrency } from "@/lib/format";
 import { getNumber } from "@/lib/safe";
 import { getMyOrder, type OrderResponse } from "@/lib/orderApi";
 import { createPayment, listPayments, type PaymentResponse } from "@/lib/paymentApi";
+import { useNotifications } from "@/app/NotificationProvider";
 
 function statusBadge(status?: string) {
   const normalized = (status || "PENDING").toUpperCase();
@@ -28,6 +29,7 @@ export default function OrderDetailPage() {
   const toast = useToast();
   const navigate = useNavigate();
   const params = useParams();
+  const notifications = useNotifications();
 
   const orderId = useMemo(() => Number(params.orderId ?? "0"), [params.orderId]);
   const [order, setOrder] = useState<OrderResponse | null>(null);
@@ -74,6 +76,13 @@ export default function OrderDetailPage() {
         ...(discountAmount !== undefined ? { discountAmount } : {}),
       });
       toast.push({ variant: "success", title: "Payment created", message: "Payment created for this order." });
+      notifications.push({
+        type: "PAYMENT",
+        title: `Payment created for order #${orderId}`,
+        message: `Method: ${method}. You can track status in this order.`,
+        referenceId: orderId,
+        referenceType: "ORDER",
+      });
       setProviderTxnId("");
       const updated = await listPayments(orderId).catch(() => []);
       setPayments(updated);
@@ -214,4 +223,3 @@ export default function OrderDetailPage() {
     </div>
   );
 }
-

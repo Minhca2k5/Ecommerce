@@ -25,6 +25,7 @@ export type RefreshTokenRequest = {
 };
 
 export type UserMeResponse = {
+  id?: number;
   username?: string;
   email?: string;
   fullName?: string;
@@ -47,4 +48,3 @@ export async function refreshToken(request: RefreshTokenRequest) {
 export async function getMe() {
   return apiJson<UserMeResponse>("/api/users/me", { method: "GET", auth: true });
 }
-

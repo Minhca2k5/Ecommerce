@@ -65,7 +65,7 @@ public class OrderItemServiceImpl implements OrderItemService {
         if (!existsByOrderId(orderId)) {
             throw new NotFoundException("Order items not found for order id: " + orderId);
         }
-        return orderItemRepository.findByOrderId(orderId);
+        return orderItemRepository.findByOrderIdOrderByUpdatedAtDesc(orderId);
     }
 
     @Override
