@@ -140,6 +140,8 @@ CREATE TABLE IF NOT EXISTS orders (
     user_id             BIGINT NOT NULL,
     address_id_snapshot BIGINT,
     total_amount        DECIMAL(12,2) NOT NULL,
+    voucher_id          BIGINT,
+    discount_amount     DECIMAL(12,2) DEFAULT 0,
     currency            VARCHAR(8) DEFAULT 'VND',
     status              VARCHAR(16) DEFAULT 'PENDING',
     created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -308,6 +310,9 @@ CREATE TABLE IF NOT EXISTS voucher_uses (
     CONSTRAINT fk_voucher_uses_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_voucher_uses_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE orders
+  ADD CONSTRAINT fk_orders_voucher FOREIGN KEY (voucher_id) REFERENCES vouchers(id) ON DELETE SET NULL;
 
 -- =========================================================
 -- 14. BANNERS

@@ -13,6 +13,10 @@ import ProfilePage from "@/pages/ProfilePage";
 import ProfileEditPage from "@/pages/ProfileEditPage";
 import PasswordPage from "@/pages/PasswordPage";
 import AddressesPage from "@/pages/AddressesPage";
+import CartPage from "@/pages/CartPage";
+import CheckoutPage from "@/pages/CheckoutPage";
+import OrdersPage from "@/pages/OrdersPage";
+import OrderDetailPage from "@/pages/OrderDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +39,10 @@ export const router = createBrowserRouter([
           { path: "me/edit", element: <ProfileEditPage /> },
           { path: "me/password", element: <PasswordPage /> },
           { path: "me/addresses", element: <AddressesPage /> },
+          { path: "cart", element: <CartPage /> },
+          { path: "checkout", element: <CheckoutPage /> },
+          { path: "orders", element: <OrdersPage /> },
+          { path: "orders/:orderId", element: <OrderDetailPage /> },
         ],
       },
       { path: "*", element: <NotFoundPage /> },

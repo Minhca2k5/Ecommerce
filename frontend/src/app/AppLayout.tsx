@@ -15,7 +15,10 @@ export default function AppLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const displayName = useMemo(() => auth.user?.fullName || auth.user?.username || auth.user?.email || "Account", [auth.user?.email, auth.user?.fullName, auth.user?.username]);
+  const displayName = useMemo(
+    () => auth.user?.fullName || auth.user?.username || auth.user?.email || "Account",
+    [auth.user?.email, auth.user?.fullName, auth.user?.username],
+  );
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -34,10 +37,7 @@ export default function AppLayout() {
       <div className="pointer-events-none absolute inset-0 animated-aurora opacity-70" />
       <header className="sticky top-0 z-50 border-b bg-background/75 backdrop-blur supports-[backdrop-filter]:bg-background/50">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link
-            to="/"
-            className="font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500"
-          >
+          <Link to="/" className="font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500">
             Ecommerce
           </Link>
 
@@ -71,6 +71,17 @@ export default function AppLayout() {
                 Products
               </span>
             </NavLink>
+            {auth.isAuthenticated ? (
+              <NavLink to="/cart" className={navLinkClassName}>
+                <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M6 7h12l-1 13H7L6 7z" />
+                    <path d="M9 7a3 3 0 0 1 6 0" />
+                  </svg>
+                  Cart
+                </span>
+              </NavLink>
+            ) : null}
 
             {!auth.isAuthenticated ? (
               <NavLink to="/login" className={navLinkClassName}>
@@ -134,6 +145,16 @@ export default function AppLayout() {
                       <button
                         type="button"
                         onClick={() => {
+                          setIsMenuOpen(false);
+                          navigate("/orders");
+                        }}
+                        className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                      >
+                        Orders
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
                           auth.logout();
                           setIsMenuOpen(false);
                           toast.push({ variant: "success", title: "Logged out", message: "See you again soon." });
@@ -159,10 +180,9 @@ export default function AppLayout() {
       </main>
 
       <footer className="border-t">
-        <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Ecommerce
-        </div>
+        <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-muted-foreground">© {new Date().getFullYear()} Ecommerce</div>
       </footer>
     </div>
   );
 }
+

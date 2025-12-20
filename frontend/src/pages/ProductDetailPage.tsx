@@ -11,8 +11,12 @@ import { formatCurrency } from "@/lib/format";
 import { asArray, getNumber, getString, isRecord } from "@/lib/safe";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/app/AuthProvider";
+import { useCartActions } from "@/lib/useCartActions";
 
 export default function ProductDetailPage() {
+  const auth = useAuth();
+  const { addToCart, isWorking } = useCartActions();
   const { productId, slug } = useParams();
   const productIdNumber = useMemo(() => Number(productId), [productId]);
   const slugValue = useMemo(() => (slug ?? "").trim(), [slug]);
@@ -153,6 +157,19 @@ export default function ProductDetailPage() {
               </span>
             </Link>
           </Button>
+          {auth.isAuthenticated ? (
+            <Button
+              className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+              onClick={() => addToCart(resolvedId, 1)}
+              disabled={!resolvedId || isWorking || Boolean(error) || isLoading}
+            >
+              Add to cart
+            </Button>
+          ) : (
+            <Button asChild className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
+              <Link to="/login">Add to cart</Link>
+            </Button>
+          )}
           <Button asChild variant="outline">
             <Link to={`/products?categoryId=${getNumber(product, "categoryId") ?? ""}`}>
               <span className="inline-flex items-center gap-2">

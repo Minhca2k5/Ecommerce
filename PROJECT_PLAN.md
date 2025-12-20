@@ -44,9 +44,9 @@ This document outlines the roadmap for the development of the E-commerce system,
     *   [x] Product Search & Detail Pages (filters + pagination + detail view).
     *   [x] Category Browse & Detail Pages (subcategories + product list pagination).
     *   [x] Authentication (Login/Register + token refresh).
-    *   Cart & Checkout Flow.
+    *   [x] Cart & Checkout Flow.
     *   [x] User Profile & Address Book (CRUD + set default).
-    *   User Order History.
+    *   [x] User Order History.
 *   [ ] **Admin Dashboard (Management View)**:
     *   Product & Category Management.
     *   Order Processing.

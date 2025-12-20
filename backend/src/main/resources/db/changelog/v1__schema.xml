@@ -175,6 +175,8 @@
             <column name="user_id" type="BIGINT"><constraints nullable="false"/></column>
             <column name="address_id_snapshot" type="BIGINT"/>
             <column name="total_amount" type="DECIMAL(12,2)"><constraints nullable="false"/></column>
+            <column name="voucher_id" type="BIGINT"/>
+            <column name="discount_amount" type="DECIMAL(12,2)" defaultValueNumeric="0"/>
             <column name="currency" type="VARCHAR(8)" defaultValue="VND"/>
             <column name="status" type="VARCHAR(16)" defaultValue="PENDING"/>
             <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false"/> </column>
@@ -432,6 +434,11 @@
             </column>
             <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
+
+        <!-- FK orders.voucher_id -> vouchers.id -->
+        <addForeignKeyConstraint baseTableName="orders" baseColumnNames="voucher_id"
+                                 referencedTableName="vouchers" referencedColumnNames="id"
+                                 onDelete="SET NULL" constraintName="fk_orders_voucher"/>
 
         <!-- CHECK constraints cho vouchers -->
         <sql>
@@ -704,6 +711,114 @@
             <column name="user_id"/>
             <column name="is_read"/>
         </createIndex>
+    </changeSet>
+
+    <!-- Backfill: create vouchers tables on existing DBs that were initialized before vouchers were added to v1 schema. -->
+    <changeSet id="v1-013-backfill-vouchers" author="minh">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="vouchers"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="vouchers">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="discount_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount_value" type="DECIMAL(12,2)"/>
+            <column name="max_discount_amount" type="DECIMAL(12,2)"/>
+            <column name="min_order_total" type="DECIMAL(12,2)"/>
+            <column name="start_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="usage_limit_global" type="INT"/>
+            <column name="usage_limit_user" type="INT"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <sql>
+            ALTER TABLE vouchers
+            ADD CONSTRAINT ck_vouchers_discount_type CHECK (discount_type IN ('PERCENT','FIXED','FREESHIP'));
+        </sql>
+        <sql>
+            ALTER TABLE vouchers
+            ADD CONSTRAINT ck_vouchers_status CHECK (status IN ('ACTIVE','INACTIVE','EXPIRED'));
+        </sql>
+    </changeSet>
+
+    <changeSet id="v1-014-backfill-voucher-uses" author="minh">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="voucher_uses"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="voucher_uses">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="voucher_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount_amount" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="voucher_uses" baseColumnNames="voucher_id"
+                                 referencedTableName="vouchers" referencedColumnNames="id"
+                                 onDelete="CASCADE" constraintName="fk_voucher_uses_voucher"/>
+        <addForeignKeyConstraint baseTableName="voucher_uses" baseColumnNames="user_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 onDelete="CASCADE" constraintName="fk_voucher_uses_user"/>
+        <addForeignKeyConstraint baseTableName="voucher_uses" baseColumnNames="order_id"
+                                 referencedTableName="orders" referencedColumnNames="id"
+                                 onDelete="CASCADE" constraintName="fk_voucher_uses_order"/>
+    </changeSet>
+
+    <changeSet id="v1-015-backfill-orders-voucher-fk" author="minh">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="orders"/>
+                <tableExists tableName="vouchers"/>
+                <not>
+                    <foreignKeyConstraintExists foreignKeyName="fk_orders_voucher"/>
+                </not>
+            </and>
+        </preConditions>
+
+        <addForeignKeyConstraint baseTableName="orders" baseColumnNames="voucher_id"
+                                 referencedTableName="vouchers" referencedColumnNames="id"
+                                 onDelete="SET NULL" constraintName="fk_orders_voucher"/>
     </changeSet>
 
 </databaseChangeLog>
