@@ -109,5 +109,12 @@ export async function apiJson<T>(path: string, options: ApiJsonOptions = {}): Pr
     throw new ApiError(`Request failed: ${response.status} ${response.statusText}`, response.status, payload);
   }
 
-  return (await response.json()) as T;
+  if (response.status === 204) return undefined as T;
+
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) return undefined as T;
+
+  const text = await response.text();
+  if (!text.trim()) return undefined as T;
+  return JSON.parse(text) as T;
 }

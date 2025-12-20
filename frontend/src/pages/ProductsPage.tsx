@@ -146,7 +146,7 @@ export default function ProductsPage() {
                 >
                   All
                 </button>
-                {categories.slice(0, 12).map((c, index) => {
+                {categories.map((c, index) => {
                   const id = String(getNumber(c, "id") ?? index + 1);
                   const label = getString(c, "name", "title") ?? `Category ${id}`;
                   const active = categoryId === id;

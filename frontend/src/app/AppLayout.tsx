@@ -114,6 +114,26 @@ export default function AppLayout() {
                       <button
                         type="button"
                         onClick={() => {
+                          setIsMenuOpen(false);
+                          navigate("/me");
+                        }}
+                        className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                      >
+                        Profile
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          navigate("/me/addresses");
+                        }}
+                        className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                      >
+                        Addresses
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
                           auth.logout();
                           setIsMenuOpen(false);
                           toast.push({ variant: "success", title: "Logged out", message: "See you again soon." });

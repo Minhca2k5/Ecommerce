@@ -8,6 +8,11 @@ import RegisterPage from "@/pages/RegisterPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import ProductDetailPage from "@/pages/ProductDetailPage";
 import ProductsPage from "@/pages/ProductsPage";
+import RequireAuth from "@/app/RequireAuth";
+import ProfilePage from "@/pages/ProfilePage";
+import ProfileEditPage from "@/pages/ProfileEditPage";
+import PasswordPage from "@/pages/PasswordPage";
+import AddressesPage from "@/pages/AddressesPage";
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +28,15 @@ export const router = createBrowserRouter([
       { path: "categories/:categoryId", element: <CategoryDetailPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> },
+      {
+        element: <RequireAuth />,
+        children: [
+          { path: "me", element: <ProfilePage /> },
+          { path: "me/edit", element: <ProfileEditPage /> },
+          { path: "me/password", element: <PasswordPage /> },
+          { path: "me/addresses", element: <AddressesPage /> },
+        ],
+      },
       { path: "*", element: <NotFoundPage /> },
     ],
   },
