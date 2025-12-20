@@ -1,48 +1,11 @@
-import { getApiBaseUrl } from "@/lib/env";
-
-type ApiErrorPayload = unknown;
-
-export class ApiError extends Error {
-  status: number;
-  payload?: ApiErrorPayload;
-
-  constructor(message: string, status: number, payload?: ApiErrorPayload) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-    this.payload = payload;
-  }
-}
-
-async function parseJsonSafe(response: Response): Promise<ApiErrorPayload | undefined> {
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) return undefined;
-  try {
-    return (await response.json()) as ApiErrorPayload;
-  } catch {
-    return undefined;
-  }
-}
+import { apiJson } from "@/lib/http";
+import { ApiError } from "@/lib/apiError";
 
 export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
-  const url = `${getApiBaseUrl()}${path.startsWith("/") ? "" : "/"}${path}`;
-
-  const response = await fetch(url, {
-    ...init,
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      ...(init?.headers ?? {}),
-    },
-  });
-
-  if (!response.ok) {
-    const payload = await parseJsonSafe(response);
-    const message = `Request failed: ${response.status} ${response.statusText}`;
-    throw new ApiError(message, response.status, payload);
+  if (init?.method && init.method !== "GET") {
+    throw new Error("apiGet only supports GET");
   }
-
-  return (await response.json()) as T;
+  return apiJson<T>(path, { method: "GET", headers: init?.headers, signal: init?.signal, auth: false });
 }
 
 export function buildQuery(params: Record<string, string | number | boolean | null | undefined>) {

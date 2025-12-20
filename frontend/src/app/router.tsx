@@ -4,6 +4,7 @@ import CategoryDetailPage from "@/pages/CategoryDetailPage";
 import CategoriesPage from "@/pages/CategoriesPage";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
+import RegisterPage from "@/pages/RegisterPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import ProductDetailPage from "@/pages/ProductDetailPage";
 import ProductsPage from "@/pages/ProductsPage";
@@ -21,6 +22,7 @@ export const router = createBrowserRouter([
       { path: "categories/slug/:slug", element: <CategoryDetailPage /> },
       { path: "categories/:categoryId", element: <CategoryDetailPage /> },
       { path: "login", element: <LoginPage /> },
+      { path: "register", element: <RegisterPage /> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },
