@@ -3,9 +3,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/app/AuthProvider";
 import { useToast } from "@/app/ToastProvider";
 import { getErrorMessage } from "@/lib/errors";
+import { getAvailableRoles, setSelectedRole } from "@/lib/roleSelection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+
+function defaultRouteForRole(role: string) {
+  return role.toUpperCase() === "ADMIN" ? "/admin" : "/";
+}
 
 export default function LoginPage() {
   const auth = useAuth();
@@ -32,8 +37,15 @@ export default function LoginPage() {
         title: "Logged in",
         message: `Welcome back, ${auth.user?.fullName || auth.user?.username || username}!`,
       });
-      const from = (location.state as { from?: string } | null)?.from;
-      navigate(from || "/", { replace: true });
+      const rawFrom = (location.state as { from?: string } | null)?.from;
+      const from = rawFrom && rawFrom !== "/choose-role" ? rawFrom : undefined;
+      const roles = getAvailableRoles();
+      if (roles.length > 1) {
+        navigate("/choose-role", { replace: true, state: from ? { from } : null });
+        return;
+      }
+      if (roles.length === 1) setSelectedRole(roles[0]);
+      navigate(from || defaultRouteForRole(roles[0] ?? "USER"), { replace: true });
     } catch (err) {
       const message = getErrorMessage(err, "Login failed. Please check your username/password.");
       setError(message);

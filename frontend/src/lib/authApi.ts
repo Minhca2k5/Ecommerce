@@ -31,6 +31,7 @@ export type UserMeResponse = {
   fullName?: string;
   phone?: string;
   enabled?: boolean;
+  roles?: Array<{ id?: number; name?: string } | string>;
 };
 
 export async function login(request: LoginRequest) {

@@ -5,7 +5,7 @@ import SafeImage from "@/components/SafeImage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { apiGet, apiGetOrNull } from "@/lib/apiClient";
+import { apiGetOrNull } from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
 import { formatCurrency } from "@/lib/format";
 import { asArray, getNumber, getString, isRecord } from "@/lib/safe";

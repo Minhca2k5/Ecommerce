@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { ApiError } from "@/lib/apiError";
 import { getMe, login as loginApi, register as registerApi } from "@/lib/authApi";
 import { clearStoredTokens, getStoredTokens, setStoredTokens, type StoredTokens } from "@/lib/authStorage";
+import { clearSelectedRole } from "@/lib/roleSelection";
 
 export type AuthUser = {
   id?: number;
@@ -38,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
         clearStoredTokens();
+        clearSelectedRole();
         setUser(null);
         return;
       }
@@ -90,6 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => {
     clearStoredTokens();
+    clearSelectedRole();
     setUser(null);
   }, []);
 

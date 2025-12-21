@@ -215,7 +215,12 @@ export default function CartPage() {
               {items.map((item) => (
                 <div key={String(item.id ?? item.productId)} className="flex gap-3 rounded-2xl border bg-background/60 p-3 backdrop-blur">
                   <div className="h-20 w-20 overflow-hidden rounded-xl border bg-muted">
-                    <SafeImage src={item.url ?? ""} alt={item.productName || "Product"} className="h-full w-full object-cover" />
+                    <SafeImage
+                      src={item.url ?? ""}
+                      alt={item.productName || "Product"}
+                      fallbackKey={String(item.id ?? item.productId ?? "cart")}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
@@ -310,4 +315,3 @@ export default function CartPage() {
     </div>
   );
 }
-

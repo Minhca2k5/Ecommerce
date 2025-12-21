@@ -126,7 +126,12 @@ export default function WishlistPage() {
         {filtered.map((w) => (
           <Card key={String(w.id)} className="pressable overflow-hidden">
             <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-primary/15 via-background to-background">
-              <SafeImage src={w.url || ""} alt={w.productName || "Product"} className="h-full w-full object-cover" />
+              <SafeImage
+                src={w.url || ""}
+                alt={w.productName || "Product"}
+                fallbackKey={String(w.id ?? w.productId ?? "wish")}
+                className="h-full w-full object-cover"
+              />
             </div>
             <CardContent className="space-y-2 p-4">
               <div className="font-semibold line-clamp-2">{w.productName || "Product"}</div>
@@ -167,4 +172,3 @@ export default function WishlistPage() {
     </div>
   );
 }
-

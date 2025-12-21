@@ -28,7 +28,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const push = useCallback((toast: Omit<ToastItem, "id">) => {
     const id = randomId();
-    const next: ToastItem = { id, variant: "default", ...toast };
+    const next: ToastItem = { id, ...toast };
     setToasts((prev) => [next, ...prev].slice(0, 4));
     window.setTimeout(() => remove(id), 3500);
   }, [remove]);
@@ -82,4 +82,3 @@ export function useToast() {
   if (!ctx) throw new Error("useToast must be used within ToastProvider");
   return ctx;
 }
-

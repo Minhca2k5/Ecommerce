@@ -49,9 +49,13 @@ This document outlines the roadmap for the development of the E-commerce system,
     *   [x] User Profile & Address Book (CRUD + set default).
     *   [x] User Order History.
 *   [ ] **Admin Dashboard (Management View)**:
-    *   Product & Category Management.
-    *   Order Processing.
-    *   User Management.
+    *   [x] Product & Category Management.
+    *   [x] Order Processing.
+    *   [x] User Management.
+    *   [x] Marketing Management (Banners, Vouchers, Voucher Uses).
+    *   [x] Inventory Management (Warehouses, Inventories).
+    *   [x] Notifications + Reviews (Admin view).
+    *   [x] Admin Profile routes (under `/admin/profile`).
 *   [ ] **API Namespace Convention**:
     *   Public storefront APIs under `/api/public/**`.
     *   Auth APIs under `/api/auth/**`.

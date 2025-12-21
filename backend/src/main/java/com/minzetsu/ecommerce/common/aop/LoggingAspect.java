@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class LoggingAspect {
 
-    @Around("execution(* com.minzetsu.ecommerce.backend..service..*(..))")
+    @Around("execution(* com.minzetsu.ecommerce..service..*(..))")
     public Object logExecution(ProceedingJoinPoint joinPoint) throws Throwable {
         String method = joinPoint.getSignature().toShortString();
         long start = System.currentTimeMillis();

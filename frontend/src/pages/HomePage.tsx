@@ -159,8 +159,13 @@ export default function HomePage() {
               <Link key={String(rv.id)} to={`/products/${rv.productId ?? ""}`} className="w-56 shrink-0">
                 <div className="shine overflow-hidden rounded-2xl border bg-background/60 backdrop-blur">
                   <div className="aspect-[4/3] overflow-hidden bg-muted">
-                    <SafeImage src={rv.url || ""} alt={rv.productName || "Product"} className="h-full w-full object-cover" />
-                  </div>
+                    <SafeImage
+                      src={rv.url || ""}
+                      alt={rv.productName || "Product"}
+                      fallbackKey={String(rv.id ?? rv.productId ?? "recent")}
+                      className="h-full w-full object-cover"
+                    />
+                    </div>
                   <div className="p-3">
                     <div className="truncate text-sm font-semibold">{rv.productName || "Product"}</div>
                     <div className="mt-1 text-xs text-muted-foreground">Tap to open</div>

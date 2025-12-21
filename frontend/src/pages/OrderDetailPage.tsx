@@ -141,7 +141,12 @@ export default function OrderDetailPage() {
               items.map((it, idx) => (
                 <div key={String(it?.id ?? idx)} className="flex gap-3 rounded-2xl border bg-background/60 p-3 backdrop-blur">
                   <div className="h-16 w-16 overflow-hidden rounded-xl border bg-muted">
-                    <SafeImage src={it?.url ?? ""} alt={it?.productName ?? "Product"} className="h-full w-full object-cover" />
+                    <SafeImage
+                      src={it?.url ?? ""}
+                      alt={it?.productName ?? "Product"}
+                      fallbackKey={String(it?.id ?? it?.productId ?? idx)}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{it?.productName ?? "Product"}</div>

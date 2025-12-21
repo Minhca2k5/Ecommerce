@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/app/AuthProvider";
 import { useToast } from "@/app/ToastProvider";
 import { useNotifications } from "@/app/NotificationProvider";
 import { getNotificationRoute } from "@/lib/notificationRoute";
+import { getAvailableRoles, getSelectedRole, setSelectedRole } from "@/lib/roleSelection";
 
 const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   isActive
@@ -15,15 +16,29 @@ export default function AppLayout() {
   const toast = useToast();
   const notifications = useNotifications();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const notifRef = useRef<HTMLDivElement | null>(null);
+  const isAdminRoute = location.pathname === "/admin" || location.pathname.startsWith("/admin/");
 
   const displayName = useMemo(
     () => auth.user?.fullName || auth.user?.username || auth.user?.email || "Account",
     [auth.user?.email, auth.user?.fullName, auth.user?.username],
   );
+
+  const availableRoles = useMemo(() => getAvailableRoles(), [auth.isAuthenticated]);
+  const selectedRole = useMemo(() => getSelectedRole(), [auth.isAuthenticated]);
+  const [roleDraft, setRoleDraft] = useState(() => selectedRole ?? availableRoles[0] ?? "USER");
+
+  useEffect(() => {
+    setRoleDraft(selectedRole ?? availableRoles[0] ?? "USER");
+  }, [availableRoles, selectedRole]);
+
+  function defaultRouteForRole(role: string) {
+    return role.toUpperCase() === "ADMIN" ? "/admin" : "/";
+  }
 
   useEffect(() => {
     if (!isMenuOpen && !isNotifOpen) return;
@@ -44,12 +59,15 @@ export default function AppLayout() {
       <div className="pointer-events-none absolute inset-0 animated-aurora opacity-70" />
       <header className="sticky top-0 z-50 border-b bg-background/75 backdrop-blur supports-[backdrop-filter]:bg-background/50">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link to="/" className="font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500">
+          <Link
+            to={isAdminRoute ? "/admin" : "/"}
+            className="font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500"
+          >
             Ecommerce
           </Link>
 
           <nav className="flex items-center gap-4 text-sm">
-            <NavLink to="/" end className={navLinkClassName}>
+            <NavLink to={isAdminRoute ? "/admin" : "/"} end className={navLinkClassName}>
               <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M3 10.5l9-7 9 7" />
@@ -58,37 +76,44 @@ export default function AppLayout() {
                 Home
               </span>
             </NavLink>
-            <NavLink to="/categories" className={navLinkClassName}>
-              <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M4 6h7v7H4z" />
-                  <path d="M13 6h7v7h-7z" />
-                  <path d="M4 15h7v5H4z" />
-                  <path d="M13 15h7v5h-7z" />
-                </svg>
-                Categories
-              </span>
-            </NavLink>
-            <NavLink to="/products" className={navLinkClassName}>
-              <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M6 7h12l-1 13H7L6 7z" />
-                  <path d="M9 7a3 3 0 0 1 6 0" />
-                </svg>
-                Products
-              </span>
-            </NavLink>
-            {auth.isAuthenticated ? (
+
+            {!isAdminRoute ? (
               <>
-                <NavLink to="/cart" className={navLinkClassName}>
+                <NavLink to="/categories" className={navLinkClassName}>
+                  <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 6h7v7H4z" />
+                      <path d="M13 6h7v7h-7z" />
+                      <path d="M4 15h7v5H4z" />
+                      <path d="M13 15h7v5h-7z" />
+                    </svg>
+                    Categories
+                  </span>
+                </NavLink>
+                <NavLink to="/products" className={navLinkClassName}>
                   <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
                     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M6 7h12l-1 13H7L6 7z" />
                       <path d="M9 7a3 3 0 0 1 6 0" />
                     </svg>
-                    Cart
+                    Products
                   </span>
                 </NavLink>
+              </>
+            ) : null}
+            {auth.isAuthenticated ? (
+              <>
+                {!isAdminRoute ? (
+                  <NavLink to="/cart" className={navLinkClassName}>
+                    <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M6 7h12l-1 13H7L6 7z" />
+                        <path d="M9 7a3 3 0 0 1 6 0" />
+                      </svg>
+                      Cart
+                    </span>
+                  </NavLink>
+                ) : null}
 
                 <div ref={notifRef} className="relative">
                   <button
@@ -133,7 +158,7 @@ export default function AppLayout() {
                             type="button"
                             className={[
                               "w-full px-3 py-3 text-left transition hover:bg-muted",
-                              !n.isRead ? "bg-primary/5" : "",
+                              n.isRead ? "bg-rose-500/10" : "bg-emerald-500/10",
                             ].join(" ")}
                             onClick={() => {
                               const id = Number(n.id ?? 0);
@@ -143,7 +168,17 @@ export default function AppLayout() {
                               navigate(route || "/notifications");
                             }}
                           >
-                            <div className="text-sm font-medium truncate">{n.title}</div>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className={["text-sm font-medium truncate", n.isRead ? "text-muted-foreground" : "text-foreground"].join(" ")}>{n.title}</div>
+                              <span
+                                className={[
+                                  "shrink-0 rounded-full px-2 py-1 text-[11px] ring-1",
+                                  n.isRead ? "bg-rose-500/10 text-rose-700 ring-rose-500/20" : "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20",
+                                ].join(" ")}
+                              >
+                                {n.isRead ? "Read" : "Unread"}
+                              </span>
+                            </div>
                             <div className="mt-1 text-xs text-muted-foreground line-clamp-2">{n.message}</div>
                           </button>
                         ))}
@@ -208,73 +243,108 @@ export default function AppLayout() {
                       {auth.user?.email ? <div className="text-xs text-muted-foreground truncate">{auth.user.email}</div> : null}
                     </div>
                     <div className="border-t p-2">
+                      {availableRoles.length > 1 ? (
+                        <div className="mb-2 rounded-xl border bg-background/50 p-2">
+                          <div className="px-1 pb-2 text-xs font-medium text-muted-foreground">Role</div>
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={roleDraft}
+                              onChange={(e) => setRoleDraft(e.target.value)}
+                              className="h-9 w-full rounded-xl border bg-background px-3 text-sm"
+                            >
+                              {availableRoles.map((r) => (
+                                <option key={r} value={r}>
+                                  {r}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextRole = roleDraft.trim() || availableRoles[0];
+                                setSelectedRole(nextRole);
+                                setIsMenuOpen(false);
+                                toast.push({ variant: "success", title: "Role switched", message: `Switched to ${nextRole}.` });
+                                navigate(defaultRouteForRole(nextRole), { replace: true });
+                              }}
+                              className="h-9 shrink-0 rounded-xl border bg-background/75 px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                            >
+                              Switch
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
                       <button
                         type="button"
                         onClick={() => {
                           setIsMenuOpen(false);
-                          navigate("/me");
+                          navigate(isAdminRoute ? "/admin/profile" : "/me");
                         }}
                         className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
                         Profile
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          navigate("/me/addresses");
-                        }}
-                        className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                      >
-                        Addresses
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          navigate("/me/wishlist");
-                        }}
-                        className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                      >
-                        Wishlist
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          navigate("/orders");
-                        }}
-                        className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                      >
-                        Orders
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          navigate("/me/voucher-uses");
-                        }}
-                        className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                      >
-                        Voucher uses
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          navigate("/me/search-logs");
-                        }}
-                        className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                      >
-                        Search logs
-                      </button>
+                      {!isAdminRoute ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              navigate("/me/addresses");
+                            }}
+                            className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            Addresses
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              navigate("/me/wishlist");
+                            }}
+                            className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            Wishlist
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              navigate("/orders");
+                            }}
+                            className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            Orders
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              navigate("/me/voucher-uses");
+                            }}
+                            className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            Voucher uses
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              navigate("/me/search-logs");
+                            }}
+                            className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            Search logs
+                          </button>
+                        </>
+                      ) : null}
                       <button
                         type="button"
                         onClick={() => {
                           auth.logout();
                           setIsMenuOpen(false);
                           toast.push({ variant: "success", title: "Logged out", message: "See you again soon." });
-                          navigate("/", { replace: true });
+                          navigate(isAdminRoute ? "/admin" : "/", { replace: true });
                         }}
                         className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                       >

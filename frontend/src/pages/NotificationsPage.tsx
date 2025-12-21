@@ -79,7 +79,7 @@ export default function NotificationsPage() {
             key={String(n.id)}
             className={[
               "pressable relative overflow-hidden",
-              n.isRead ? "opacity-90" : "shine",
+              n.isRead ? "opacity-90 ring-1 ring-border/40" : "shine ring-1 ring-primary/25",
             ].join(" ")}
             onClick={() => {
               const id = Number(n.id ?? 0);
@@ -88,21 +88,34 @@ export default function NotificationsPage() {
               if (route) navigate(route);
             }}
           >
-            <div className="pointer-events-none absolute inset-0 opacity-20 [background:radial-gradient(60%_60%_at_20%_20%,rgba(59,130,246,.16),transparent),radial-gradient(50%_60%_at_75%_40%,rgba(168,85,247,.12),transparent)]" />
+            <div
+              className={[
+                "pointer-events-none absolute inset-0 opacity-25",
+                n.isRead
+                  ? "[background:radial-gradient(60%_60%_at_20%_20%,rgba(239,68,68,.12),transparent),radial-gradient(50%_60%_at_75%_40%,rgba(16,185,129,.08),transparent)]"
+                  : "[background:radial-gradient(60%_60%_at_20%_20%,rgba(16,185,129,.14),transparent),radial-gradient(50%_60%_at_75%_40%,rgba(239,68,68,.10),transparent)]",
+              ].join(" ")}
+            />
             <CardHeader className="relative">
               <CardTitle className="flex items-start justify-between gap-3">
                 <span className="flex min-w-0 items-start gap-2">
-                  {typeDot(n.type)}
+                  {typeDot(String(n.type ?? "SYSTEM"))}
                   <span className="min-w-0">
                     <span className="block truncate">{n.title}</span>
-                    <span className="mt-1 block text-xs font-normal text-muted-foreground">{formatTime(n.createdAt)}</span>
+                    <span className="mt-1 block text-xs font-normal text-muted-foreground">{formatTime(String(n.createdAt ?? ""))}</span>
                   </span>
                 </span>
-                {!n.isRead ? <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] text-foreground ring-1 ring-primary/20">New</span> : null}
+                {!n.isRead ? (
+                  <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] text-emerald-700 ring-1 ring-emerald-500/20">
+                    Unread
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-rose-500/10 px-2 py-1 text-[11px] text-rose-700 ring-1 ring-rose-500/20">Read</span>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="relative">
-              <div className="text-sm text-muted-foreground">{n.message}</div>
+              <div className={["text-sm", n.isRead ? "text-muted-foreground" : "text-foreground/90"].join(" ")}>{n.message}</div>
               <div className="mt-3 flex justify-between">
                 <Button
                   type="button"

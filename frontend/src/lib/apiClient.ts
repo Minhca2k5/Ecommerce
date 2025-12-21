@@ -5,7 +5,7 @@ export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
   if (init?.method && init.method !== "GET") {
     throw new Error("apiGet only supports GET");
   }
-  return apiJson<T>(path, { method: "GET", headers: init?.headers, signal: init?.signal, auth: false });
+  return apiJson<T>(path, { method: "GET", headers: init?.headers, signal: init?.signal ?? undefined, auth: false });
 }
 
 export function buildQuery(params: Record<string, string | number | boolean | null | undefined>) {
