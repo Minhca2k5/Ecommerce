@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { useMemo } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { adminNav } from "@/admin/adminNav";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +28,16 @@ function Breadcrumbs() {
 }
 
 export default function AdminLayout() {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const groups = Array.from(new Set(adminNav.map((i) => i.group)));
+
+  const activeTo = useMemo(() => {
+    const matches = adminNav
+      .map((i) => i.to)
+      .filter((to) => pathname === to || (to !== "/admin" && pathname.startsWith(`${to}/`)) || (to === "/admin" && pathname.startsWith("/admin")));
+    return matches.sort((a, b) => b.length - a.length)[0] ?? "/admin";
+  }, [pathname]);
 
   return (
     <div className="relative min-h-dvh bg-background">
@@ -65,6 +75,26 @@ export default function AdminLayout() {
             <div className="min-w-0">
               <Breadcrumbs />
               <div className="text-2xl font-semibold tracking-tight">Admin dashboard</div>
+              <div className="mt-3 lg:hidden">
+                <label className="text-xs font-medium text-muted-foreground">Navigate</label>
+                <select
+                  className="mt-1 w-full rounded-xl border bg-background/80 px-3 py-2 text-sm shadow-sm backdrop-blur focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  value={activeTo}
+                  onChange={(e) => navigate(e.target.value)}
+                >
+                  {groups.map((g) => (
+                    <optgroup key={g} label={g}>
+                      {adminNav
+                        .filter((i) => i.group === g)
+                        .map((i) => (
+                          <option key={i.to} value={i.to}>
+                            {i.label}
+                          </option>
+                        ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="hidden lg:block text-xs text-muted-foreground">ROLE_ADMIN protected</div>
           </div>
@@ -75,4 +105,3 @@ export default function AdminLayout() {
     </div>
   );
 }
-

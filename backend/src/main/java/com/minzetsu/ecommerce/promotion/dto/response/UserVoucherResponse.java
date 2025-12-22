@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class VoucherResponse extends BaseDTO {
+public class UserVoucherResponse extends BaseDTO {
 
     private String code;
     private String name;
@@ -24,6 +24,7 @@ public class VoucherResponse extends BaseDTO {
     private BigDecimal discountValue;
     private BigDecimal maxDiscountAmount;
     private BigDecimal minOrderTotal;
+    private Integer activeUsesForUser;
 
     private LocalDateTime startAt;
     private LocalDateTime endAt;

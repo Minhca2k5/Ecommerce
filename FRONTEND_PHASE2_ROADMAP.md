@@ -16,6 +16,13 @@ Quy tắc UI/UX bắt buộc (áp dụng cho tất cả milestone từ M3 trở 
 
 ---
 
+## Phase 2 Status (Project)
+- Status: Completed
+- Notes:
+  - UI/UX polish and responsive audit completed.
+  - Endpoint coverage summary: `frontend/docs/ENDPOINT_COVERAGE.md`.
+  - Optional PWA deferred to a later phase.
+
 ## 0) Chuẩn bị (bắt buộc)
 
 ### 0.1) Chạy backend (có Swagger + test API)

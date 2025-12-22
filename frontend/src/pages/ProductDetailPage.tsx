@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiGetOrNull } from "@/lib/apiClient";
 import { ApiError } from "@/lib/apiError";
 import { formatCurrency } from "@/lib/format";
-import { asArray, getNumber, getString, isRecord } from "@/lib/safe";
+import { asArray, getBoolean, getNumber, getString, isRecord } from "@/lib/safe";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/app/AuthProvider";
@@ -20,6 +20,7 @@ import { addWishlist } from "@/lib/wishlistApi";
 import { createMyReview, deleteMyReview, listMyReviews, updateMyReviewComment, updateMyReviewRating, type ReviewResponse } from "@/lib/reviewApi";
 import { getErrorMessage } from "@/lib/errors";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import Modal from "@/components/Modal";
 
 export default function ProductDetailPage() {
   const auth = useAuth();
@@ -44,6 +45,11 @@ export default function ProductDetailPage() {
   const [isSavingReview, setIsSavingReview] = useState(false);
   const [isWishlistWorking, setIsWishlistWorking] = useState(false);
   const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
+  const [activeImageId, setActiveImageId] = useState<number | null>(null);
+  const [isImageDetailOpen, setIsImageDetailOpen] = useState(false);
+  const [imageDetail, setImageDetail] = useState<unknown>(null);
+  const [imageDetailError, setImageDetailError] = useState<string | null>(null);
+  const [isImageDetailLoading, setIsImageDetailLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -108,7 +114,9 @@ export default function ProductDetailPage() {
         const primaryUrl =
           getString(primary, "url", "imageUrl") ??
           getString(p, "primaryImageUrl", "imageUrl", "thumbnailUrl");
+        const primaryId = getNumber(primary, "id");
         setActiveImageUrl(primaryUrl ?? null);
+        setActiveImageId(primaryId ?? null);
 
         if (auth.isAuthenticated && resolvedId) {
           addRecentView({ productId: Number(resolvedId) }).catch(() => {
@@ -258,29 +266,45 @@ export default function ProductDetailPage() {
     }
   }
 
+  async function openImageDetails() {
+    if (!resolvedId || !activeImageId) return;
+    setIsImageDetailOpen(true);
+    setImageDetail(null);
+    setImageDetailError(null);
+    setIsImageDetailLoading(true);
+    try {
+      const d = await apiGetOrNull<unknown>(`/api/public/products/${resolvedId}/images/${activeImageId}`);
+      setImageDetail(d);
+    } catch (e) {
+      setImageDetailError(getErrorMessage(e, "Failed to load image details."));
+    } finally {
+      setIsImageDetailLoading(false);
+    }
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">Product</div>
-          <h1 className="text-2xl font-bold tracking-tight">{productName}</h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <div className="text-xl font-bold text-primary">
-              {formatCurrency(price, currency)}
-            </div>
-            {status ? (
-              <Badge variant="secondary" className="bg-background/70 backdrop-blur">
-                {status}
-              </Badge>
-            ) : null}
-            <div className="flex items-center gap-2">
-              <RatingStars rating={rating} />
-              <span className="text-xs text-muted-foreground">#{resolvedId}</span>
+    <div className="space-y-8">
+      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Product</div>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{productName}</h1>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <div className="text-xl font-bold text-primary">{formatCurrency(price, currency)}</div>
+              {status ? (
+                <Badge variant="secondary" className="bg-background/70 backdrop-blur">
+                  {status}
+                </Badge>
+              ) : null}
+              <div className="flex items-center gap-2">
+                <RatingStars rating={rating} />
+                <span className="text-xs text-muted-foreground">#{resolvedId}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="secondary">
             <Link to="/products">
               <span className="inline-flex items-center gap-2">
@@ -299,23 +323,28 @@ export default function ProductDetailPage() {
           </Button>
           {auth.isAuthenticated ? (
             <Button
-              className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+              className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
               onClick={() => addToCart(resolvedId, 1)}
               disabled={!resolvedId || isWorking || Boolean(error) || isLoading}
             >
               Add to cart
             </Button>
           ) : (
-            <Button asChild className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
+            <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
               <Link to="/login">Add to cart</Link>
             </Button>
           )}
           {auth.isAuthenticated ? (
-            <Button variant="outline" className="rounded-xl" onClick={onAddWishlist} disabled={!resolvedId || isWishlistWorking || Boolean(error) || isLoading}>
+            <Button
+              variant="outline"
+              className="h-10 rounded-xl bg-background/70 backdrop-blur"
+              onClick={onAddWishlist}
+              disabled={!resolvedId || isWishlistWorking || Boolean(error) || isLoading}
+            >
               Wishlist
             </Button>
           ) : null}
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
             <Link to={`/products?categoryId=${getNumber(product, "categoryId") ?? ""}`}>
               <span className="inline-flex items-center gap-2">
                 <svg
@@ -332,8 +361,9 @@ export default function ProductDetailPage() {
               </span>
             </Link>
           </Button>
+          </div>
         </div>
-      </div>
+      </section>
 
       {isLoading ? (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -345,7 +375,7 @@ export default function ProductDetailPage() {
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-3">
-            <div className="group overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-background to-background shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+            <div className="group overflow-hidden rounded-3xl border bg-background/70 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg">
               <div className="aspect-square">
                 <SafeImage
                   src={activeImageUrl}
@@ -357,32 +387,43 @@ export default function ProductDetailPage() {
             </div>
 
             {images.length ? (
-              <div className="flex gap-2 overflow-auto pb-1">
-                {images.map((img, idx) => {
-                  const url = getString(img, "url", "imageUrl");
-                  if (!url) return null;
-                  const active = activeImageUrl === url;
-                  return (
-                    <button
-                      key={String(idx)}
-                      type="button"
-                      onClick={() => setActiveImageUrl(url)}
-                      className={`h-16 w-16 overflow-hidden rounded-lg border transition ${
-                        active
-                          ? "border-primary ring-2 ring-primary/30"
-                          : "hover:border-foreground/20"
-                      }`}
-                      title={active ? "Selected" : "Select image"}
-                    >
-                      <SafeImage
-                        src={url}
-                        alt=""
-                        fallbackKey={`${resolvedId}-${idx}`}
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  );
-                })}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-muted-foreground">Gallery</div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-9 rounded-xl bg-background/70 backdrop-blur"
+                    onClick={() => void openImageDetails()}
+                    disabled={!activeImageId}
+                  >
+                    Image details
+                  </Button>
+                </div>
+                <div className="flex gap-2 overflow-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
+                  {images.map((img, idx) => {
+                    const url = getString(img, "url", "imageUrl");
+                    if (!url) return null;
+                    const imgId = getNumber(img, "id");
+                    const active = activeImageUrl === url;
+                    return (
+                      <button
+                        key={String(idx)}
+                        type="button"
+                        onClick={() => {
+                          setActiveImageUrl(url);
+                          setActiveImageId(imgId ?? null);
+                        }}
+                        className={`h-16 w-16 shrink-0 snap-start overflow-hidden rounded-xl border bg-background/70 transition ${
+                          active ? "border-primary ring-2 ring-primary/30" : "hover:border-foreground/20"
+                        }`}
+                        title={active ? "Selected" : "Select image"}
+                      >
+                        <SafeImage src={url} alt="" fallbackKey={`${resolvedId}-${idx}`} className="h-full w-full object-cover" />
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             ) : (
               <div className="text-sm text-muted-foreground">No images</div>
@@ -390,7 +431,7 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="space-y-4">
-            <Card className="shine">
+            <Card className="shine bg-background/70 backdrop-blur">
               <CardHeader>
                 <CardTitle className="text-base">Description</CardTitle>
               </CardHeader>
@@ -403,7 +444,7 @@ export default function ProductDetailPage() {
               </CardContent>
             </Card>
 
-            <Card className="shine">
+            <Card className="shine bg-background/70 backdrop-blur">
               <CardHeader>
                 <CardTitle className="text-base">Reviews</CardTitle>
               </CardHeader>
@@ -592,6 +633,31 @@ export default function ProductDetailPage() {
           void onDeleteReview(id).finally(() => setDeleteReviewId(null));
         }}
       />
+
+      <Modal isOpen={isImageDetailOpen} onClose={() => setIsImageDetailOpen(false)} title="Image details">
+        <div className="space-y-3">
+          {isImageDetailLoading ? <div className="text-sm text-muted-foreground">Loading...</div> : null}
+          {imageDetailError ? (
+            <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{imageDetailError}</div>
+          ) : null}
+          {imageDetail ? (
+            <div className="rounded-2xl border bg-background/70 p-3 text-sm backdrop-blur">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Image ID</span>
+                <span className="font-medium">#{getNumber(imageDetail, "id") ?? "-"}</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-muted-foreground">Primary</span>
+                <span className="font-medium">{String(getBoolean(imageDetail, "isPrimary") ?? false)}</span>
+              </div>
+              <div className="mt-2 break-all text-xs text-muted-foreground">{getString(imageDetail, "url", "imageUrl") ?? "-"}</div>
+            </div>
+          ) : null}
+          <Button variant="outline" className="h-10 w-full rounded-xl bg-background/70 backdrop-blur" onClick={() => setIsImageDetailOpen(false)}>
+            Close
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

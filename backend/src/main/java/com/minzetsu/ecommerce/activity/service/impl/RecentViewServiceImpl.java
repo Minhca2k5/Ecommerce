@@ -33,7 +33,7 @@ public class RecentViewServiceImpl implements RecentViewService {
 
     private RecentViewResponse toResponseWithUrl(RecentView recentView) {
         RecentViewResponse response = recentViewMapper.toResponse(recentView);
-        Long productId = response.getId();
+        Long productId = response.getProductId();
         Optional<ProductImage> mainImage = productImageRepository.findByIsPrimaryTrueAndProductId(productId);
         mainImage.ifPresent(image -> response.setUrl(image.getUrl()));
         return response;

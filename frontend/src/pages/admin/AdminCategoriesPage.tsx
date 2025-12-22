@@ -146,8 +146,8 @@ export default function AdminCategoriesPage() {
             <Input value={qParentId} onChange={(e) => setQParentId(e.target.value)} placeholder="Parent ID..." className="rounded-xl" />
           </div>
 
-          <div className="overflow-hidden rounded-2xl border">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+            <table className="min-w-[760px] w-full text-sm">
               <thead className="bg-muted/40 text-left text-xs text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3">Category</th>

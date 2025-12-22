@@ -44,18 +44,21 @@ export default function PasswordPage() {
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">Account</div>
-          <div className="text-3xl font-semibold tracking-tight">Change password</div>
-          <div className="mt-1 text-sm text-muted-foreground">Keep your account secure with a strong password.</div>
+      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Account</div>
+            <div className="text-3xl font-semibold tracking-tight">Change password</div>
+            <div className="mt-1 text-sm text-muted-foreground">Keep your account secure with a strong password.</div>
+          </div>
+          <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
+            <Link to="/me">Back</Link>
+          </Button>
         </div>
-        <Button asChild variant="outline" className="rounded-xl">
-          <Link to="/me">Back</Link>
-        </Button>
-      </div>
+      </section>
 
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden bg-background/70 backdrop-blur">
         <div className="pointer-events-none absolute inset-0 opacity-25 [background:radial-gradient(60%_60%_at_20%_20%,rgba(239,68,68,.12),transparent),radial-gradient(50%_60%_at_70%_40%,rgba(168,85,247,.16),transparent)]" />
         <CardHeader className="relative">
           <CardTitle>Password</CardTitle>
@@ -65,7 +68,7 @@ export default function PasswordPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Old password</label>
               <Input
-                className="rounded-xl"
+                className="rounded-xl bg-background/70 backdrop-blur"
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
                 type={showPassword ? "text" : "password"}
@@ -76,7 +79,7 @@ export default function PasswordPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">New password</label>
               <Input
-                className="rounded-xl"
+                className="rounded-xl bg-background/70 backdrop-blur"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 type={showPassword ? "text" : "password"}
@@ -88,7 +91,7 @@ export default function PasswordPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Confirm password</label>
               <Input
-                className="rounded-xl"
+                className="rounded-xl bg-background/70 backdrop-blur"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 type={showPassword ? "text" : "password"}
@@ -104,7 +107,7 @@ export default function PasswordPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="rounded-xl border bg-background/70 px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="pressable rounded-xl border bg-background/70 px-3 py-2 text-sm text-muted-foreground shadow-sm backdrop-blur hover:bg-muted hover:text-foreground"
               >
                 {showPassword ? "Hide passwords" : "Show passwords"}
               </button>
@@ -115,13 +118,13 @@ export default function PasswordPage() {
             ) : null}
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate("/me")}>
+              <Button type="button" variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur" onClick={() => navigate("/me")}>
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={!canSubmit}
-                className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+                className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
               >
                 {isSaving ? "Updating..." : "Update password"}
               </Button>
@@ -132,4 +135,3 @@ export default function PasswordPage() {
     </div>
   );
 }
-

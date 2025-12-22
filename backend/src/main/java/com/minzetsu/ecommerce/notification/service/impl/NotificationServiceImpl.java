@@ -57,8 +57,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final List<NotificationType> publicKeys = new ArrayList<>(
             List.of(
                     NotificationType.PRODUCT,
-                    NotificationType.CATEGORY,
-                    NotificationType.VOUCHER
+                    NotificationType.CATEGORY
             )
     );
 

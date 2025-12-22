@@ -35,6 +35,13 @@ export default function AdminUsersPage() {
   const [details, setDetails] = useState<AdminUser | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartUserId, setCartUserId] = useState<number | null>(null);
+  const [cart, setCart] = useState<Record<string, unknown> | null>(null);
+  const [cartItems, setCartItems] = useState<Record<string, unknown>[]>([]);
+  const [isCartLoading, setIsCartLoading] = useState(false);
+  const [cartError, setCartError] = useState<string | null>(null);
+
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -86,6 +93,41 @@ export default function AdminUsersPage() {
       setIsDetailsOpen(true);
     } catch (e) {
       toast.push({ variant: "error", title: "Load failed", message: getErrorMessage(e, "Failed to load user details.") });
+    }
+  }
+
+  async function openCart(userId: number) {
+    if (!userId) return;
+    setIsCartOpen(true);
+    setCartUserId(userId);
+    setCart(null);
+    setCartItems([]);
+    setCartError(null);
+    setIsCartLoading(true);
+    try {
+      const res = await adminGet<Record<string, unknown>>(`/api/admin/users/${userId}/cart`);
+      setCart(res ?? null);
+      const embedded = (res as any)?.items ?? (res as any)?.cartItems ?? null;
+      setCartItems(Array.isArray(embedded) ? embedded : []);
+    } catch (e) {
+      setCartError(getErrorMessage(e, "Failed to load cart."));
+    } finally {
+      setIsCartLoading(false);
+    }
+  }
+
+  async function loadCartItemsAll() {
+    const cartId = getNumber(cart, "id") ?? 0;
+    if (!cartId) return;
+    setIsCartLoading(true);
+    setCartError(null);
+    try {
+      const items = await adminGet<Record<string, unknown>[]>(`/api/admin/carts/${cartId}/items/all`);
+      setCartItems(Array.isArray(items) ? items : []);
+    } catch (e) {
+      setCartError(getErrorMessage(e, "Failed to load cart items."));
+    } finally {
+      setIsCartLoading(false);
     }
   }
 
@@ -166,8 +208,8 @@ export default function AdminUsersPage() {
             </select>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+            <table className="min-w-[760px] w-full text-sm">
               <thead className="bg-muted/50 text-xs text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">User</th>
@@ -213,6 +255,9 @@ export default function AdminUsersPage() {
                           <div className="flex justify-end gap-2">
                             <Button variant="outline" className="h-9 rounded-xl" onClick={() => openDetails(id)} disabled={!id}>
                               Details
+                            </Button>
+                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => void openCart(id)} disabled={!id}>
+                              Cart
                             </Button>
                             <Button
                               variant="outline"
@@ -328,6 +373,54 @@ export default function AdminUsersPage() {
           </div>
           <div className="flex justify-end">
             <Button variant="outline" className="rounded-xl" onClick={() => setIsDetailsOpen(false)}>
+              Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={isCartOpen} title={cartUserId ? `User #${cartUserId} cart` : "Cart"} onClose={() => setIsCartOpen(false)}>
+        <div className="space-y-3">
+          {isCartLoading ? <div className="text-sm text-muted-foreground">Loading...</div> : null}
+          {cartError ? (
+            <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{cartError}</div>
+          ) : null}
+          {cart ? (
+            <div className="rounded-2xl border bg-background/60 p-4">
+              <div className="text-sm font-semibold">Cart #{getNumber(cart, "id") ?? "-"}</div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                Currency: {getString(cart, "currency") ?? "-"} • Items: {getNumber(cart, "itemCount") ?? getNumber(cart, "itemsCount") ?? cartItems.length}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-sm font-medium">Items</div>
+            <Button variant="outline" className="h-9 rounded-xl bg-background/70 backdrop-blur" disabled={isCartLoading || !cart} onClick={() => void loadCartItemsAll()}>
+              Load items (all)
+            </Button>
+          </div>
+          {cartItems.length ? (
+            <div className="space-y-2">
+              {cartItems.slice(0, 20).map((it, idx) => (
+                <div key={String((it as any)?.id ?? idx)} className="flex items-start justify-between gap-3 rounded-2xl border bg-background/60 p-3">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold">{getString(it, "productName") ?? "Item"}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      productId: {getNumber(it, "productId") ?? "-"} • qty: {getNumber(it, "quantity") ?? "-"}
+                    </div>
+                  </div>
+                  <div className="text-sm font-semibold">{getNumber(it, "lineTotal") ?? "-"}</div>
+                </div>
+              ))}
+              {cartItems.length > 20 ? <div className="text-xs text-muted-foreground">Showing first 20 items.</div> : null}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground">No items loaded.</div>
+          )}
+
+          <div className="flex justify-end">
+            <Button variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur" onClick={() => setIsCartOpen(false)}>
               Close
             </Button>
           </div>

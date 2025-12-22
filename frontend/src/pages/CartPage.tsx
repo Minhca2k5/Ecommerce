@@ -172,7 +172,7 @@ export default function CartPage() {
         title="Your cart is empty"
         description="Add products you love, then come back to checkout."
         action={
-          <Button asChild className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
             <Link to="/products">Continue shopping</Link>
           </Button>
         }
@@ -182,44 +182,47 @@ export default function CartPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">Checkout</div>
-          <div className="text-3xl font-semibold tracking-tight">Your cart</div>
-          <div className="mt-1 text-sm text-muted-foreground">Adjust quantities and proceed to checkout.</div>
+      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Checkout</div>
+            <div className="text-3xl font-semibold tracking-tight">Your cart</div>
+            <div className="mt-1 text-sm text-muted-foreground">Adjust quantities and proceed to checkout.</div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur" onClick={() => setIsClearOpen(true)}>
+              Clear cart
+            </Button>
+            <Button className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={() => navigate("/checkout")}>
+              Checkout
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" className="rounded-xl" onClick={() => setIsClearOpen(true)}>
-            Clear cart
-          </Button>
-          <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={() => navigate("/checkout")}>
-            Checkout
-          </Button>
-        </div>
-      </div>
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        <Card className="h-fit shine">
+        <Card className="h-fit shine bg-background/70 backdrop-blur">
           <CardHeader>
             <CardTitle className="text-base">Items</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex gap-2">
               <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search in cart..." className="rounded-xl" />
-              <Button variant="outline" className="rounded-xl" onClick={onSearch} disabled={!cartId}>
+              <Button variant="outline" className="rounded-xl bg-background/70 backdrop-blur" onClick={onSearch} disabled={!cartId}>
                 Search
               </Button>
             </div>
 
             <div className="space-y-3">
               {items.map((item) => (
-                <div key={String(item.id ?? item.productId)} className="flex gap-3 rounded-2xl border bg-background/60 p-3 backdrop-blur">
+                <div key={String(item.id ?? item.productId)} className="pressable group flex gap-3 rounded-2xl border bg-background/70 p-3 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg">
                   <div className="h-20 w-20 overflow-hidden rounded-xl border bg-muted">
                     <SafeImage
                       src={item.url ?? ""}
                       alt={item.productName || "Product"}
                       fallbackKey={String(item.id ?? item.productId ?? "cart")}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
                     />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -233,25 +236,25 @@ export default function CartPage() {
 
                     <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div className="inline-flex items-center gap-2">
-                        <Button type="button" variant="outline" className="h-9 w-9 rounded-xl px-0" onClick={() => bumpQty(item, -1)}>
+                        <Button type="button" variant="outline" className="h-9 w-9 rounded-xl bg-background/70 px-0 backdrop-blur" onClick={() => bumpQty(item, -1)}>
                           -
                         </Button>
                         <input
                           value={String(item.quantity ?? 1)}
                           onChange={(e) => setQtyAbsolute(item, Number(e.target.value || "1"))}
-                          className="h-9 w-14 rounded-xl border bg-background text-center text-sm"
+                          className="h-9 w-14 rounded-xl border bg-background/70 text-center text-sm shadow-sm backdrop-blur focus:outline-none focus:ring-2 focus:ring-primary/30"
                           inputMode="numeric"
                         />
-                        <Button type="button" variant="outline" className="h-9 w-9 rounded-xl px-0" onClick={() => bumpQty(item, 1)}>
+                        <Button type="button" variant="outline" className="h-9 w-9 rounded-xl bg-background/70 px-0 backdrop-blur" onClick={() => bumpQty(item, 1)}>
                           +
                         </Button>
                       </div>
 
                       <div className="flex gap-2">
-                        <Button asChild variant="outline" className="rounded-xl">
+                        <Button asChild variant="outline" className="rounded-xl bg-background/70 backdrop-blur">
                           <Link to={`/products/${item.productId ?? ""}`}>View</Link>
                         </Button>
-                        <Button variant="outline" className="rounded-xl border-rose-500/20 text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(item)}>
+                        <Button variant="outline" className="rounded-xl border-rose-500/20 bg-background/70 text-rose-700 hover:bg-rose-500/10 backdrop-blur" onClick={() => setDeleteTarget(item)}>
                           Remove
                         </Button>
                       </div>
@@ -263,7 +266,7 @@ export default function CartPage() {
           </CardContent>
         </Card>
 
-        <Card className="sticky top-24 overflow-hidden">
+        <Card className="sticky top-24 overflow-hidden bg-background/70 backdrop-blur shadow-sm">
           <CardHeader className="relative">
             <CardTitle>Summary</CardTitle>
           </CardHeader>
@@ -285,7 +288,7 @@ export default function CartPage() {
               <span>Total</span>
               <span>{money(summary.total, currency)}</span>
             </div>
-            <Button className="w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={() => navigate("/checkout")}>
+            <Button className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={() => navigate("/checkout")}>
               Proceed to checkout
             </Button>
           </CardContent>

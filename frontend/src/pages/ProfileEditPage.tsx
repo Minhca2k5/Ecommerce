@@ -113,7 +113,7 @@ export default function ProfileEditPage() {
         title="Couldn’t load profile"
         description={error}
         action={
-          <Button onClick={() => window.location.reload()} className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button onClick={() => window.location.reload()} className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
             Retry
           </Button>
         }
@@ -123,18 +123,21 @@ export default function ProfileEditPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">Account</div>
-          <div className="text-3xl font-semibold tracking-tight">Edit profile</div>
-          <div className="mt-1 text-sm text-muted-foreground">Update your personal details.</div>
+      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Account</div>
+            <div className="text-3xl font-semibold tracking-tight">Edit profile</div>
+            <div className="mt-1 text-sm text-muted-foreground">Update your personal details.</div>
+          </div>
+          <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
+            <Link to="/me">Back</Link>
+          </Button>
         </div>
-        <Button asChild variant="outline" className="rounded-xl">
-          <Link to="/me">Back</Link>
-        </Button>
-      </div>
+      </section>
 
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden bg-background/70 backdrop-blur">
         <div className="pointer-events-none absolute inset-0 opacity-25 [background:radial-gradient(60%_60%_at_20%_20%,rgba(168,85,247,.18),transparent),radial-gradient(50%_60%_at_70%_40%,rgba(16,185,129,.14),transparent)]" />
         <CardHeader className="relative">
           <CardTitle>Details</CardTitle>
@@ -144,22 +147,22 @@ export default function ProfileEditPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Username</label>
-                <Input className="rounded-xl" value={username} onChange={(e) => setUsername(e.target.value)} />
+                <Input className="rounded-xl bg-background/70 backdrop-blur" value={username} onChange={(e) => setUsername(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Email</label>
-                <Input className="rounded-xl" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input className="rounded-xl bg-background/70 backdrop-blur" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Full name</label>
-                <Input className="rounded-xl" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                <Input className="rounded-xl bg-background/70 backdrop-blur" value={fullName} onChange={(e) => setFullName(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Phone</label>
-                <Input className="rounded-xl" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <Input className="rounded-xl bg-background/70 backdrop-blur" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
             </div>
 
@@ -168,13 +171,13 @@ export default function ProfileEditPage() {
             ) : null}
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate("/me")}>
+              <Button type="button" variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur" onClick={() => navigate("/me")}>
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={!canSave}
-                className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+                className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
               >
                 {isSaving ? "Saving..." : "Save changes"}
               </Button>
@@ -183,7 +186,7 @@ export default function ProfileEditPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-rose-500/20">
+      <Card className="border-rose-500/20 bg-background/70 backdrop-blur">
         <CardHeader>
           <CardTitle className="text-rose-700">Danger zone</CardTitle>
         </CardHeader>
@@ -194,7 +197,7 @@ export default function ProfileEditPage() {
           <Button
             type="button"
             onClick={() => setIsDeleteOpen(true)}
-            className="rounded-xl bg-rose-600 text-white hover:bg-rose-600/90"
+            className="h-10 rounded-xl bg-rose-600 text-white hover:bg-rose-600/90"
           >
             Delete account
           </Button>
@@ -214,4 +217,3 @@ export default function ProfileEditPage() {
     </div>
   );
 }
-

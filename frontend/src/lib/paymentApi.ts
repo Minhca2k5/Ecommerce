@@ -29,3 +29,6 @@ export function createPayment(orderId: number, request: PaymentRequest) {
   return apiJson<PaymentResponse>(`/api/users/me/orders/${orderId}/payments`, { method: "POST", auth: true, body: request });
 }
 
+export function getPayment(orderId: number, paymentId: number) {
+  return apiJson<PaymentResponse>(`/api/users/me/orders/${orderId}/payments/${paymentId}`, { method: "GET", auth: true });
+}

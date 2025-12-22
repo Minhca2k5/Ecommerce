@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-do
 import { useAuth } from "@/app/AuthProvider";
 import { useToast } from "@/app/ToastProvider";
 import { useNotifications } from "@/app/NotificationProvider";
+import { useTheme } from "@/app/ThemeProvider";
 import { getNotificationRoute } from "@/lib/notificationRoute";
 import { getAvailableRoles, getSelectedRole, setSelectedRole } from "@/lib/roleSelection";
 
@@ -15,6 +16,7 @@ export default function AppLayout() {
   const auth = useAuth();
   const toast = useToast();
   const notifications = useNotifications();
+  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -58,15 +60,15 @@ export default function AppLayout() {
     <div className="relative min-h-dvh flex flex-col overflow-hidden bg-background">
       <div className="pointer-events-none absolute inset-0 animated-aurora opacity-70" />
       <header className="sticky top-0 z-50 border-b bg-background/75 backdrop-blur supports-[backdrop-filter]:bg-background/50">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap">
           <Link
             to={isAdminRoute ? "/admin" : "/"}
-            className="font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500"
+            className="shrink-0 font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500"
           >
             Ecommerce
           </Link>
 
-          <nav className="flex items-center gap-4 text-sm">
+          <nav className="w-full flex flex-wrap items-center gap-2 text-sm sm:w-auto sm:ml-auto sm:flex-nowrap sm:justify-end">
             <NavLink to={isAdminRoute ? "/admin" : "/"} end className={navLinkClassName}>
               <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
@@ -201,6 +203,35 @@ export default function AppLayout() {
                     </div>
                   ) : null}
                 </div>
+
+                <button
+                  type="button"
+                  className="rounded-full px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground ring-1 ring-transparent hover:ring-primary/10"
+                  onClick={() => theme.toggle()}
+                  aria-label="Toggle theme"
+                  title={theme.resolvedTheme === "dark" ? "Switch to light" : "Switch to dark"}
+                >
+                  <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
+                    {theme.resolvedTheme === "dark" ? (
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 18a6 6 0 1 1 0-12a6 6 0 0 1 0 12z" />
+                        <path d="M12 2v2" />
+                        <path d="M12 20v2" />
+                        <path d="M4.93 4.93l1.41 1.41" />
+                        <path d="M17.66 17.66l1.41 1.41" />
+                        <path d="M2 12h2" />
+                        <path d="M20 12h2" />
+                        <path d="M4.93 19.07l1.41-1.41" />
+                        <path d="M17.66 6.34l1.41-1.41" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 12.8A8.5 8.5 0 0 1 11.2 3a6.5 6.5 0 1 0 9.8 9.8z" />
+                      </svg>
+                    )}
+                    <span className="hidden sm:inline">{theme.resolvedTheme === "dark" ? "Light" : "Dark"}</span>
+                  </span>
+                </button>
               </>
             ) : null}
 

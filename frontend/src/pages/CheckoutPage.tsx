@@ -176,7 +176,7 @@ export default function CheckoutPage() {
         title="Nothing to checkout"
         description="Your cart is empty."
         action={
-          <Button asChild className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
             <Link to="/products">Browse products</Link>
           </Button>
         }
@@ -190,7 +190,7 @@ export default function CheckoutPage() {
         title="Add an address first"
         description="Checkout requires at least one delivery address."
         action={
-          <Button asChild className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
             <Link to="/me/addresses">Go to address book</Link>
           </Button>
         }
@@ -200,20 +200,23 @@ export default function CheckoutPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">Checkout</div>
-          <div className="text-3xl font-semibold tracking-tight">Place your order</div>
-          <div className="mt-1 text-sm text-muted-foreground">Confirm address and create the order.</div>
+      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Checkout</div>
+            <div className="text-3xl font-semibold tracking-tight">Place your order</div>
+            <div className="mt-1 text-sm text-muted-foreground">Confirm address, extras, and create the order.</div>
+          </div>
+          <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
+            <Link to="/cart">Back to cart</Link>
+          </Button>
         </div>
-        <Button asChild variant="outline" className="rounded-xl">
-          <Link to="/cart">Back to cart</Link>
-        </Button>
-      </div>
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-4">
-          <Card className="overflow-hidden">
+          <Card className="overflow-hidden bg-background/70 backdrop-blur">
             <CardHeader className="relative">
               <CardTitle>Delivery address</CardTitle>
             </CardHeader>
@@ -228,7 +231,7 @@ export default function CheckoutPage() {
                       type="button"
                       onClick={() => setSelectedAddressId(id)}
                       className={[
-                        "rounded-2xl border p-3 text-left transition pressable",
+                        "pressable rounded-2xl border p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md",
                         active ? "border-primary bg-primary/10 ring-1 ring-primary/20" : "bg-background/70 hover:bg-muted",
                       ].join(" ")}
                     >
@@ -243,43 +246,43 @@ export default function CheckoutPage() {
                   );
                 })}
               </div>
-              <Button asChild variant="outline" className="rounded-xl">
+              <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
                 <Link to="/me/addresses">Manage addresses</Link>
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-background/70 backdrop-blur">
             <CardHeader>
               <CardTitle>Extras</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <div className="text-xs font-medium text-muted-foreground">Shipping fee</div>
-                <Input className="rounded-xl" value={shippingFee} onChange={(e) => setShippingFee(e.target.value)} inputMode="numeric" />
+                <Input className="rounded-xl bg-background/70 backdrop-blur" value={shippingFee} onChange={(e) => setShippingFee(e.target.value)} inputMode="numeric" />
               </div>
               <div className="space-y-2">
                 <div className="text-xs font-medium text-muted-foreground">Voucher code (optional)</div>
                 <div className="flex gap-2">
-                  <Input className="rounded-xl" value={voucherCode} onChange={(e) => setVoucherCode(e.target.value)} placeholder="e.g. SAVE10" />
-                  <Button type="button" variant="outline" className="rounded-xl" onClick={checkVoucher} disabled={voucherStatus === "checking" || !voucherCode.trim()}>
+                  <Input className="rounded-xl bg-background/70 backdrop-blur" value={voucherCode} onChange={(e) => setVoucherCode(e.target.value)} placeholder="e.g. SAVE10" />
+                  <Button type="button" variant="outline" className="rounded-xl bg-background/70 backdrop-blur" onClick={checkVoucher} disabled={voucherStatus === "checking" || !voucherCode.trim()}>
                     {voucherStatus === "checking" ? "Checking..." : "Apply"}
                   </Button>
                 </div>
                 {voucherStatus === "valid" && appliedVoucher ? (
-                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
+                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 backdrop-blur">
                     Applied: <span className="font-medium">{appliedVoucher.code}</span> — {appliedVoucher.name || "Voucher"}
                   </div>
                 ) : null}
                 {voucherStatus === "invalid" && voucherError ? (
-                  <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-700">{voucherError}</div>
+                  <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-700 backdrop-blur">{voucherError}</div>
                 ) : null}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="sticky top-24 overflow-hidden">
+        <Card className="sticky top-24 overflow-hidden bg-background/70 backdrop-blur shadow-sm">
           <CardHeader className="relative">
             <CardTitle>Order summary</CardTitle>
           </CardHeader>
@@ -298,7 +301,7 @@ export default function CheckoutPage() {
               <span>{money(total, currency)}</span>
             </div>
 
-            <Button disabled={!canSubmit} onClick={placeOrder} className="w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
+            <Button disabled={!canSubmit} onClick={placeOrder} className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
               {isSubmitting ? "Placing..." : "Place order"}
             </Button>
           </CardContent>

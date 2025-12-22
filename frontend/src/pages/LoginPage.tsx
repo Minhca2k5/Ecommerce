@@ -82,7 +82,16 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto max-w-md space-y-4">
-      <Card className="overflow-hidden">
+      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+        <div className="relative">
+          <div className="text-sm text-muted-foreground">Welcome</div>
+          <div className="mt-1 text-3xl font-semibold tracking-tight">Sign in</div>
+          <div className="mt-1 text-sm text-muted-foreground">Access your cart, orders, and admin tools (if available).</div>
+        </div>
+      </section>
+
+      <Card className="overflow-hidden bg-background/70 backdrop-blur">
         <div className="pointer-events-none absolute inset-0 opacity-30 [background:radial-gradient(60%_60%_at_30%_20%,rgba(168,85,247,.25),transparent),radial-gradient(50%_60%_at_70%_40%,rgba(16,185,129,.18),transparent)]" />
         <CardHeader className="relative">
           <CardTitle className="flex items-center justify-between">
@@ -99,7 +108,7 @@ export default function LoginPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
                 autoComplete="username"
-                className="rounded-xl"
+                className="rounded-xl bg-background/70 backdrop-blur"
               />
             </div>
 
@@ -112,7 +121,7 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   autoComplete="current-password"
-                  className="rounded-xl pr-20"
+                  className="rounded-xl pr-20 bg-background/70 backdrop-blur"
                 />
                 <button
                   type="button"
@@ -133,7 +142,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={!canSubmit}
-              className="w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95 active:scale-[0.99]"
+              className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95 active:scale-[0.99]"
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>

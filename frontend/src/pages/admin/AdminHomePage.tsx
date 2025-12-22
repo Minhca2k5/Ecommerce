@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminNav } from "@/admin/adminNav";
+import { Link } from "react-router-dom";
 
 export default function AdminHomePage() {
   const groups = Array.from(new Set(adminNav.filter((i) => i.to !== "/admin").map((i) => i.group)));
@@ -16,7 +17,7 @@ export default function AdminHomePage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         {groups.map((g) => (
-          <Card key={g} className="border bg-background/75 shadow-sm backdrop-blur">
+          <Card key={g} className="shine border bg-background/75 shadow-sm backdrop-blur">
             <CardHeader>
               <CardTitle className="text-base">{g}</CardTitle>
             </CardHeader>
@@ -24,14 +25,14 @@ export default function AdminHomePage() {
               {adminNav
                 .filter((i) => i.group === g && i.to !== "/admin")
                 .map((i) => (
-                  <a
+                  <Link
                     key={i.to}
-                    href={i.to}
-                    className="inline-flex items-center gap-2 rounded-xl border bg-background/60 px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                    to={i.to}
+                    className="pressable inline-flex items-center gap-2 rounded-xl border bg-background/60 px-3 py-2 text-sm text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground hover:shadow-md"
                   >
                     <i.icon className="h-4 w-4" />
                     {i.label}
-                  </a>
+                  </Link>
                 ))}
             </CardContent>
           </Card>
@@ -40,4 +41,3 @@ export default function AdminHomePage() {
     </div>
   );
 }
-

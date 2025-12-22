@@ -11,8 +11,10 @@ import { getErrorMessage } from "@/lib/errors";
 import { formatCurrency } from "@/lib/format";
 import { getNumber } from "@/lib/safe";
 import { getMyOrder, type OrderResponse } from "@/lib/orderApi";
-import { createPayment, listPayments, type PaymentResponse } from "@/lib/paymentApi";
+import { createPayment, getPayment, listPayments, type PaymentResponse } from "@/lib/paymentApi";
 import { useNotifications } from "@/app/NotificationProvider";
+import Modal from "@/components/Modal";
+import { apiJson } from "@/lib/http";
 
 function statusBadge(status?: string) {
   const normalized = (status || "PENDING").toUpperCase();
@@ -40,6 +42,15 @@ export default function OrderDetailPage() {
   const [method, setMethod] = useState("COD");
   const [providerTxnId, setProviderTxnId] = useState("");
   const [isPaying, setIsPaying] = useState(false);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [paymentDetail, setPaymentDetail] = useState<PaymentResponse | null>(null);
+  const [paymentDetailError, setPaymentDetailError] = useState<string | null>(null);
+  const [isPaymentDetailLoading, setIsPaymentDetailLoading] = useState(false);
+
+  const [itemsMode, setItemsMode] = useState<"embedded" | "endpoint">("embedded");
+  const [endpointItems, setEndpointItems] = useState<any[] | null>(null);
+  const [isItemsLoading, setIsItemsLoading] = useState(false);
+  const [itemsError, setItemsError] = useState<string | null>(null);
 
   const currency = order?.currency || "VND";
   const voucherId = useMemo(() => getNumber(order, "voucherId"), [order]);
@@ -93,6 +104,39 @@ export default function OrderDetailPage() {
     }
   }
 
+  async function openPayment(paymentId?: number) {
+    const id = Number(paymentId ?? 0);
+    if (!orderId || !id) return;
+    setIsPaymentOpen(true);
+    setPaymentDetail(null);
+    setPaymentDetailError(null);
+    setIsPaymentDetailLoading(true);
+    try {
+      const detail = await getPayment(orderId, id);
+      setPaymentDetail(detail);
+    } catch (e) {
+      setPaymentDetailError(getErrorMessage(e, "Failed to load payment."));
+    } finally {
+      setIsPaymentDetailLoading(false);
+    }
+  }
+
+  async function loadItemsFromEndpoint() {
+    if (!orderId) return;
+    setItemsMode("endpoint");
+    setIsItemsLoading(true);
+    setItemsError(null);
+    try {
+      const list = await apiJson<any[]>(`/api/users/me/orders/${orderId}/items/all`, { method: "GET", auth: true });
+      setEndpointItems(list ?? []);
+    } catch (e) {
+      setItemsError(getErrorMessage(e, "Failed to load order items."));
+      setEndpointItems([]);
+    } finally {
+      setIsItemsLoading(false);
+    }
+  }
+
   if (!orderId) return <EmptyState title="Invalid order" description="Missing orderId." />;
   if (isLoading) return <div className="space-y-4"><LoadingCard /><LoadingCard /></div>;
   if (error || !order) {
@@ -109,50 +153,86 @@ export default function OrderDetailPage() {
     );
   }
 
-  const items = (order.items ?? []) as any[];
+  const embeddedItems = (order.items ?? []) as any[];
+  const items = itemsMode === "endpoint" ? (endpointItems ?? []) : embeddedItems;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">Order</div>
-          <div className="text-3xl font-semibold tracking-tight">Order #{order.id}</div>
-          <div className="mt-1 text-sm text-muted-foreground">
+      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Order</div>
+            <div className="text-3xl font-semibold tracking-tight">Order #{order.id}</div>
+            <div className="mt-1 text-sm text-muted-foreground">
             {items.length} items • {formatCurrency(Number(order.totalAmount ?? 0), currency)} • {statusBadge(order.status)}
+            </div>
+        </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur" onClick={() => navigate("/orders")}>
+            Back
+            </Button>
+            <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
+              <Link to="/products">Shop more</Link>
+            </Button>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="rounded-xl" onClick={() => navigate("/orders")}>
-            Back
-          </Button>
-          <Button asChild className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
-            <Link to="/products">Shop more</Link>
-          </Button>
-        </div>
-      </div>
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        <Card className="shine">
+        <Card className="shine bg-background/70 backdrop-blur">
           <CardHeader>
-            <CardTitle className="text-base">Items</CardTitle>
+            <CardTitle className="flex items-center justify-between gap-2 text-base">
+              <span>Items</span>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8 rounded-lg bg-background/70 px-2 text-xs backdrop-blur"
+                  onClick={() => {
+                    setItemsMode("embedded");
+                    setEndpointItems(null);
+                    setItemsError(null);
+                  }}
+                  disabled={itemsMode === "embedded"}
+                >
+                  Embedded
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-8 rounded-lg bg-background/70 px-2 text-xs backdrop-blur"
+                  onClick={() => void loadItemsFromEndpoint()}
+                  disabled={isItemsLoading || itemsMode === "endpoint"}
+                >
+                  Load via API
+                </Button>
+              </div>
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {items.length ? (
+            {itemsMode === "endpoint" && isItemsLoading ? (
+              <div className="text-sm text-muted-foreground">Loading items...</div>
+            ) : itemsMode === "endpoint" && itemsError ? (
+              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{itemsError}</div>
+            ) : items.length ? (
               items.map((it, idx) => (
-                <div key={String(it?.id ?? idx)} className="flex gap-3 rounded-2xl border bg-background/60 p-3 backdrop-blur">
+                <div key={String(it?.id ?? idx)} className="pressable group flex gap-3 rounded-2xl border bg-background/70 p-3 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg">
                   <div className="h-16 w-16 overflow-hidden rounded-xl border bg-muted">
                     <SafeImage
                       src={it?.url ?? ""}
                       alt={it?.productName ?? "Product"}
                       fallbackKey={String(it?.id ?? it?.productId ?? idx)}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
                     />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{it?.productName ?? "Product"}</div>
                     <div className="mt-1 text-xs text-muted-foreground">Qty: {it?.quantity ?? 1}</div>
                     <div className="mt-2">
-                      <Button asChild variant="outline" className="rounded-xl">
+                      <Button asChild variant="outline" className="rounded-xl bg-background/70 backdrop-blur">
                         <Link to={`/products/${it?.productId ?? ""}`}>View product</Link>
                       </Button>
                     </div>
@@ -167,7 +247,7 @@ export default function OrderDetailPage() {
         </Card>
 
         <div className="space-y-4">
-          <Card>
+          <Card className="bg-background/70 backdrop-blur">
             <CardHeader>
               <CardTitle>Payment</CardTitle>
             </CardHeader>
@@ -192,9 +272,9 @@ export default function OrderDetailPage() {
               </div>
               <div className="space-y-2">
                 <div className="text-xs font-medium text-muted-foreground">Provider txn id (optional)</div>
-                <Input className="rounded-xl" value={providerTxnId} onChange={(e) => setProviderTxnId(e.target.value)} placeholder="e.g. VNPAY-..." />
+                <Input className="rounded-xl bg-background/70 backdrop-blur" value={providerTxnId} onChange={(e) => setProviderTxnId(e.target.value)} placeholder="e.g. VNPAY-..." />
               </div>
-              <Button disabled={isPaying} onClick={onCreatePayment} className="w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
+              <Button disabled={isPaying} onClick={onCreatePayment} className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
                 {isPaying ? "Creating..." : "Create payment"}
               </Button>
               <div className="text-xs text-muted-foreground">
@@ -203,20 +283,25 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-background/70 backdrop-blur">
             <CardHeader>
               <CardTitle className="text-base">Payments</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {payments.length ? (
                 payments.map((p) => (
-                  <div key={String(p.id)} className="flex items-center justify-between rounded-xl border bg-background/60 px-3 py-2">
+                  <button
+                    key={String(p.id)}
+                    type="button"
+                    className="pressable flex w-full items-center justify-between rounded-xl border bg-background/60 px-3 py-2 text-left shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:shadow-md"
+                    onClick={() => void openPayment(Number(p.id ?? 0))}
+                  >
                     <div className="min-w-0">
                       <div className="text-sm font-medium">{p.method || "Payment"} • {formatCurrency(Number(p.amount ?? 0), p.orderCurrency || currency)}</div>
                       <div className="text-xs text-muted-foreground truncate">{p.providerTxnId || "-"}</div>
                     </div>
                     <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground ring-1 ring-border">{(p.status || "INITIATED").toUpperCase()}</span>
-                  </div>
+                  </button>
                 ))
               ) : (
                 <div className="text-sm text-muted-foreground">No payments yet.</div>
@@ -225,6 +310,27 @@ export default function OrderDetailPage() {
           </Card>
         </div>
       </div>
+
+      <Modal isOpen={isPaymentOpen} onClose={() => setIsPaymentOpen(false)} title="Payment details">
+        <div className="space-y-3">
+          {isPaymentDetailLoading ? <div className="text-sm text-muted-foreground">Loading...</div> : null}
+          {paymentDetailError ? (
+            <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{paymentDetailError}</div>
+          ) : null}
+          {paymentDetail ? (
+            <div className="grid gap-2 text-sm">
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Payment ID</span><span className="font-medium">#{paymentDetail.id ?? "-"}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Method</span><span className="font-medium">{paymentDetail.method || "-"}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Status</span><span className="font-medium">{String(paymentDetail.status || "-").toUpperCase()}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Amount</span><span className="font-medium">{formatCurrency(Number(paymentDetail.amount ?? 0), paymentDetail.orderCurrency || currency)}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Provider txn</span><span className="font-medium truncate max-w-[220px]">{paymentDetail.providerTxnId || "-"}</span></div>
+            </div>
+          ) : null}
+          <Button variant="outline" className="h-10 w-full rounded-xl bg-background/70 backdrop-blur" onClick={() => setIsPaymentOpen(false)}>
+            Close
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

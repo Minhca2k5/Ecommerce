@@ -30,16 +30,16 @@ This document outlines the roadmap for the development of the E-commerce system,
     *   Ensure database data integrity.
 
 ## Phase 2: Frontend Development (Early Integration)
-**Status: In Progress**
+**Status: Completed**
 **Focus:** Building the User Interface to validate Backend APIs and visualize the system flow. This helps identify redundant endpoints or missing data early.
 
-*   [ ] **Setup & Architecture**:
+*   [x] **Setup & Architecture**:
     *   [x] Initialize React project (Vite + React + TypeScript).
     *   [x] Setup UI foundation (TailwindCSS + shadcn/ui).
     *   [x] Setup routing + base layout (M2).
     *   [x] Setup API Client (Fetch) + typed errors.
-    *   [ ] Setup server-state (React Query) + client-state (Zustand).
-*   [ ] **Customer Storefront (User View)**:
+    *   [ ] Setup server-state (React Query) + client-state (Zustand). (Deferred to Phase 3)
+*   [x] **Customer Storefront (User View)**:
     *   [x] Home Page (Banners, Product Lists + pagination).
     *   [x] Product Search & Detail Pages (filters + pagination + detail view).
     *   [x] Reviews UX (create multiple reviews, inline edit/delete, instant rating updates).
@@ -48,7 +48,7 @@ This document outlines the roadmap for the development of the E-commerce system,
     *   [x] Cart & Checkout Flow.
     *   [x] User Profile & Address Book (CRUD + set default).
     *   [x] User Order History.
-*   [ ] **Admin Dashboard (Management View)**:
+*   [x] **Admin Dashboard (Management View)**:
     *   [x] Product & Category Management.
     *   [x] Order Processing.
     *   [x] User Management.
@@ -56,16 +56,18 @@ This document outlines the roadmap for the development of the E-commerce system,
     *   [x] Inventory Management (Warehouses, Inventories).
     *   [x] Notifications + Reviews (Admin view).
     *   [x] Admin Profile routes (under `/admin/profile`).
-*   [ ] **API Namespace Convention**:
+*   [x] **API Namespace Convention**:
     *   Public storefront APIs under `/api/public/**`.
     *   Auth APIs under `/api/auth/**`.
     *   User APIs under `/api/users/me/**`.
     *   Admin APIs under `/api/admin/**`.
-*   [ ] **Feedback Loop**:
+*   [x] **Feedback Loop**:
     *   Refine Backend APIs based on Frontend requirements (e.g., missing fields in DTOs, pagination adjustments).
-*   [ ] **Phase 2 Review**:
+*   [x] **Phase 2 Review**:
     *   Manual testing of full user journeys (Register -> Search -> Add to Cart -> Checkout).
     *   Verify UI responsiveness and error display.
+    *   [x] Frontend docs: `frontend/README.md` + endpoint coverage summary.
+    *   [x] Responsive audit (mobile/tablet): admin tables scroll + admin mobile navigation.
 
 ## Phase 3: Performance & Scalability
 **Status: Pending**

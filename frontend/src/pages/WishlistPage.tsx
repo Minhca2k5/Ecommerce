@@ -92,55 +92,59 @@ export default function WishlistPage() {
   }
 
   if (isLoading) return <div className="space-y-4"><LoadingCard /><LoadingCard /></div>;
-  if (error) return <EmptyState title="Couldn't load wishlist" description={error} action={<Button onClick={refresh} className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">Retry</Button>} />;
-  if (!items.length) return <EmptyState title="Wishlist is empty" description="Save products you love for later." action={<Button asChild className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white"><Link to="/products">Browse products</Link></Button>} />;
+  if (error) return <EmptyState title="Couldn't load wishlist" description={error} action={<Button onClick={refresh} className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">Retry</Button>} />;
+  if (!items.length) return <EmptyState title="Wishlist is empty" description="Save products you love for later." action={<Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white"><Link to="/products">Browse products</Link></Button>} />;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">Account</div>
-          <div className="text-3xl font-semibold tracking-tight">Wishlist</div>
-          <div className="mt-1 text-sm text-muted-foreground">Your saved products.</div>
+      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Account</div>
+            <div className="text-3xl font-semibold tracking-tight">Wishlist</div>
+            <div className="mt-1 text-sm text-muted-foreground">Your saved products for later.</div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur" onClick={() => setIsClearOpen(true)}>
+              Clear all
+            </Button>
+            <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+              <Link to="/products">Shop</Link>
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="rounded-xl" onClick={() => setIsClearOpen(true)}>
-            Clear all
-          </Button>
-          <Button asChild className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
-            <Link to="/products">Shop</Link>
-          </Button>
-        </div>
-      </div>
+      </section>
 
-      <Card className="shine">
+      <Card className="shine bg-background/70 backdrop-blur">
         <CardHeader>
           <CardTitle className="text-base">Search</CardTitle>
         </CardHeader>
         <CardContent>
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search wishlist..." className="rounded-xl" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search wishlist..." className="rounded-xl bg-background/70 backdrop-blur" />
         </CardContent>
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((w) => (
-          <Card key={String(w.id)} className="pressable overflow-hidden">
+          <Card key={String(w.id)} className="pressable shine group overflow-hidden bg-background/70 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg">
             <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-primary/15 via-background to-background">
               <SafeImage
                 src={w.url || ""}
                 alt={w.productName || "Product"}
                 fallbackKey={String(w.id ?? w.productId ?? "wish")}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
               />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-black/0 opacity-90" />
             </div>
             <CardContent className="space-y-2 p-4">
               <div className="font-semibold line-clamp-2">{w.productName || "Product"}</div>
               <div className="text-sm text-primary font-bold">{money(w.productPrice, w.productCurrency)}</div>
               <div className="flex gap-2">
-                <Button asChild variant="outline" className="w-full rounded-xl">
+                <Button asChild variant="outline" className="w-full rounded-xl bg-background/70 backdrop-blur">
                   <Link to={`/products/${w.productId ?? ""}`}>View</Link>
                 </Button>
-                <Button variant="outline" className="w-full rounded-xl border-rose-500/20 text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(w)}>
+                <Button variant="outline" className="w-full rounded-xl border-rose-500/20 bg-background/70 text-rose-700 hover:bg-rose-500/10 backdrop-blur" onClick={() => setDeleteTarget(w)}>
                   Remove
                 </Button>
               </div>

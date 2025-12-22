@@ -47,7 +47,7 @@ export default function NotificationsPage() {
         title="No notifications"
         description="You're all caught up."
         action={
-          <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={() => navigate("/")}>
+          <Button className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={() => navigate("/")}>
             Go home
           </Button>
         }
@@ -57,28 +57,31 @@ export default function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">Account</div>
-          <div className="text-3xl font-semibold tracking-tight">Notifications</div>
-          <div className="mt-1 text-sm text-muted-foreground">Click a notification to open the referenced page.</div>
+      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Account</div>
+            <div className="text-3xl font-semibold tracking-tight">Notifications</div>
+            <div className="mt-1 text-sm text-muted-foreground">Click a notification to open the referenced page.</div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur" onClick={() => notifications.markAllRead()}>
+              Mark all read
+            </Button>
+            <Button variant="outline" className="h-10 rounded-xl border-rose-500/20 bg-background/70 text-rose-700 hover:bg-rose-500/10 backdrop-blur" onClick={() => notifications.clear()}>
+              Clear all
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" className="rounded-xl" onClick={() => notifications.markAllRead()}>
-            Mark all read
-          </Button>
-          <Button variant="outline" className="rounded-xl border-rose-500/20 text-rose-700 hover:bg-rose-500/10" onClick={() => notifications.clear()}>
-            Clear all
-          </Button>
-        </div>
-      </div>
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {sorted.map((n) => (
           <Card
             key={String(n.id)}
             className={[
-              "pressable relative overflow-hidden",
+              "pressable relative overflow-hidden bg-background/70 backdrop-blur shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg",
               n.isRead ? "opacity-90 ring-1 ring-border/40" : "shine ring-1 ring-primary/25",
             ].join(" ")}
             onClick={() => {
@@ -120,7 +123,7 @@ export default function NotificationsPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-xl"
+                  className="rounded-xl bg-background/70 backdrop-blur"
                   onClick={(e) => {
                     e.stopPropagation();
                     const id = Number(n.id ?? 0);
@@ -131,7 +134,7 @@ export default function NotificationsPage() {
                 </Button>
                 <Button
                   type="button"
-                  className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+                  className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
                   onClick={(e) => {
                     e.stopPropagation();
                     const id = Number(n.id ?? 0);

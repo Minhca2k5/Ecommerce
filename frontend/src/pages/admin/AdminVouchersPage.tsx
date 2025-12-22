@@ -224,8 +224,8 @@ export default function AdminVouchersPage() {
             </select>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+            <table className="min-w-[760px] w-full text-sm">
               <thead className="bg-muted/50 text-xs text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Voucher</th>

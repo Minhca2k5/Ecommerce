@@ -33,7 +33,7 @@ public class WishlistServiceImpl implements WishlistService {
 
     private WishlistResponse toResponseWithUrl(Wishlist wishlist) {
         WishlistResponse response = wishlistMapper.toResponse(wishlist);
-        Long productId = response.getId();
+        Long productId = response.getProductId();
         Optional<ProductImage> mainImage = productImageRepository.findByIsPrimaryTrueAndProductId(productId);
         mainImage.ifPresent(image -> response.setUrl(image.getUrl()));
         return response;

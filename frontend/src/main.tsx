@@ -5,15 +5,18 @@ import App from "./App";
 import { AuthProvider } from "@/app/AuthProvider";
 import { ToastProvider } from "@/app/ToastProvider";
 import { NotificationProvider } from "@/app/NotificationProvider";
+import { ThemeProvider } from "@/app/ThemeProvider";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ToastProvider>
-      <AuthProvider>
-        <NotificationProvider>
-          <App />
-        </NotificationProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <App />
+          </NotificationProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ToastProvider>
   </StrictMode>
 );

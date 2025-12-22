@@ -80,7 +80,7 @@ export default function OrdersPage() {
         title="No orders yet"
         description="Place your first order from the cart."
         action={
-          <Button asChild className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
             <Link to="/products">Browse products</Link>
           </Button>
         }
@@ -90,24 +90,27 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">Account</div>
-          <div className="text-3xl font-semibold tracking-tight">Orders</div>
-          <div className="mt-1 text-sm text-muted-foreground">Track your order history and payment status.</div>
+      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Account</div>
+            <div className="text-3xl font-semibold tracking-tight">Orders</div>
+            <div className="mt-1 text-sm text-muted-foreground">Track your order history and payment status.</div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
+              <Link to="/cart">Cart</Link>
+            </Button>
+            <Button
+              className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+              onClick={() => toast.push({ variant: "default", title: "Tip", message: "Open an order to create a payment." })}
+            >
+              How to pay
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline" className="rounded-xl">
-            <Link to="/cart">Cart</Link>
-          </Button>
-          <Button
-            className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
-            onClick={() => toast.push({ variant: "default", title: "Tip", message: "Open an order to create a payment." })}
-          >
-            How to pay
-          </Button>
-        </div>
-      </div>
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {sorted.map((order) => (
@@ -132,4 +135,3 @@ export default function OrdersPage() {
     </div>
   );
 }
-

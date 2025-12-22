@@ -1,9 +1,9 @@
 # E-commerce System (Backend + Frontend Phase 2)
 
 > **Branch:** `phase2`  
-> **Status:** Phase 2 In Progress (Frontend integration)  
+> **Status:** Phase 2 Completed (Frontend integration)  
 > **Author:** Phan Đình Minh (Minzetsu)  
-> **Last Updated:** December 18, 2025
+> **Last Updated:** December 21, 2025
 
 ## Overview
 This repository is an end-to-end E-commerce system:
@@ -43,4 +43,3 @@ This repository is an end-to-end E-commerce system:
 ## Roadmap
 - Frontend Phase 2 roadmap: `FRONTEND_PHASE2_ROADMAP.md`
 - High-level project plan: `PROJECT_PLAN.md`
-

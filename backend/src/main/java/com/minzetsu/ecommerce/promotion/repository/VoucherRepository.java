@@ -13,7 +13,7 @@ import java.util.List;
 
 @Repository
 public interface VoucherRepository extends JpaRepository<Voucher, Long>, JpaSpecificationExecutor<Voucher> {
-    List<Voucher> findByCodeContainingIgnoreCaseAndStatus(String code, VoucherStatus status);
-    Page<Voucher> findByMinOrderTotalLessThanEqualAndStatus(BigDecimal minOrderTotal, VoucherStatus status, Pageable pageable);
+    List<Voucher> findByCodeContainingIgnoreCase(String code);
+    Page<Voucher> findByMinOrderTotalLessThanEqual(BigDecimal minOrderTotal, Pageable pageable);
 
 }

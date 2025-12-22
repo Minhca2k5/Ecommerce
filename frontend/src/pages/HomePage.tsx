@@ -129,13 +129,25 @@ export default function HomePage() {
   const topPageItems = topProducts.slice(topStart, topEnd);
 
   return (
-    <div className="space-y-8">
-      <section className="shine rounded-2xl border bg-gradient-to-br from-primary/30 via-background to-background p-6">
-        <div className="max-w-2xl space-y-2">
-          <div className="text-sm text-muted-foreground">Storefront</div>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Discover products you'll love
-          </h1>
+    <div className="space-y-10">
+      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur sm:p-8">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/25 via-fuchsia-500/10 to-emerald-500/10" />
+        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-primary/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-emerald-500/15 blur-3xl" />
+        <div className="relative max-w-2xl space-y-3">
+          <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-background/70 px-3 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            Storefront
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Discover products you'll love</h1>
+          <div className="flex flex-col gap-2 pt-1 sm:flex-row">
+            <Button asChild className="h-10 rounded-xl">
+              <Link to="/products">Browse products</Link>
+            </Button>
+            <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
+              <Link to="/categories">Explore categories</Link>
+            </Button>
+          </div>
           <p className="text-sm text-muted-foreground">
             Browse trending items, explore categories, and check product details — powered by your
             backend APIs.
@@ -150,22 +162,22 @@ export default function HomePage() {
               <div className="text-sm text-muted-foreground">For you</div>
               <div className="text-xl font-semibold tracking-tight">Recently viewed</div>
             </div>
-            <Button asChild variant="outline" className="rounded-xl">
+            <Button asChild variant="outline" className="h-9 rounded-xl bg-background/70 backdrop-blur">
               <Link to="/products">Browse</Link>
             </Button>
           </div>
-          <div className="flex gap-3 overflow-auto pb-1">
+          <div className="flex gap-3 overflow-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
             {recentViews.slice(0, 12).map((rv) => (
-              <Link key={String(rv.id)} to={`/products/${rv.productId ?? ""}`} className="w-56 shrink-0">
-                <div className="shine overflow-hidden rounded-2xl border bg-background/60 backdrop-blur">
+              <Link key={String(rv.id)} to={`/products/${rv.productId ?? ""}`} className="group w-60 shrink-0 snap-start">
+                <div className="pressable shine overflow-hidden rounded-2xl border bg-background/70 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg">
                   <div className="aspect-[4/3] overflow-hidden bg-muted">
                     <SafeImage
                       src={rv.url || ""}
                       alt={rv.productName || "Product"}
                       fallbackKey={String(rv.id ?? rv.productId ?? "recent")}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
                     />
-                    </div>
+                  </div>
                   <div className="p-3">
                     <div className="truncate text-sm font-semibold">{rv.productName || "Product"}</div>
                     <div className="mt-1 text-xs text-muted-foreground">Tap to open</div>
@@ -228,17 +240,17 @@ export default function HomePage() {
 
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold tracking-tight">Banners</h2>
-              <a
-                href="/products"
-                className="text-sm text-primary underline-offset-4 hover:underline"
-              >
-                Browse products
-              </a>
+              <div>
+                <div className="text-sm text-muted-foreground">Highlights</div>
+                <h2 className="text-lg font-semibold tracking-tight">Banners</h2>
+              </div>
+              <Button asChild variant="outline" className="h-9 rounded-xl bg-background/70 backdrop-blur">
+                <Link to="/products">Browse products</Link>
+              </Button>
             </div>
 
             {banners.length ? (
-              <div className="flex gap-3 overflow-auto pb-2">
+              <div className="flex gap-3 overflow-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
                 {banners.map((b, index) => {
                   const title = getString(b, "title") ?? `Banner #${index + 1}`;
                   const imageUrl = getString(b, "imageUrl", "image", "url");
@@ -252,17 +264,18 @@ export default function HomePage() {
                   return (
                     <div
                       key={String(index)}
-                      className="group relative min-w-[320px] overflow-hidden rounded-xl border bg-card shadow-sm"
+                      className="group relative min-w-[340px] snap-start overflow-hidden rounded-2xl border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                     >
                       {isInternal ? (
                         <Link to={targetPath} className="block">
-                          <div className="aspect-[16/7] bg-gradient-to-br from-primary/20 via-background to-background">
+                          <div className="relative aspect-[16/7] bg-gradient-to-br from-primary/20 via-background to-background">
                             <SafeImage
                               src={imageUrl}
                               alt={title}
                               fallbackKey={`banner-${index}`}
                               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                             />
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
                           </div>
                           <div className="p-4">
                             <div className="line-clamp-1 text-sm font-semibold">{title}</div>
@@ -273,13 +286,14 @@ export default function HomePage() {
                         </Link>
                       ) : (
                         <a href={targetUrl} className="block">
-                          <div className="aspect-[16/7] bg-gradient-to-br from-primary/20 via-background to-background">
+                          <div className="relative aspect-[16/7] bg-gradient-to-br from-primary/20 via-background to-background">
                             <SafeImage
                               src={imageUrl}
                               alt={title}
                               fallbackKey={`banner-${index}`}
                               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                             />
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
                           </div>
                           <div className="p-4">
                             <div className="line-clamp-1 text-sm font-semibold">{title}</div>

@@ -1,0 +1,171 @@
+# Endpoint Coverage (Frontend Phase 2)
+
+This file lists the backend endpoints currently called by the React frontend, grouped by namespace.
+
+> Note: Paths below reflect usage in `frontend/src/**` and are intended as an audit/coverage summary.
+>
+> Status: Phase 2 Completed (December 21, 2025)
+
+## Public (`/api/public/**`)
+- `GET /api/public/home` (Home)
+- Products
+  - `GET /api/public/products` (list + filters + paging)
+  - `GET /api/public/products/top-rating`
+  - `GET /api/public/products/most-favorite`
+  - `GET /api/public/products/most-viewed`
+  - `GET /api/public/products/best-selling`
+  - `GET /api/public/products/{productId}`
+  - `GET /api/public/products/slug/{slug}`
+  - `GET /api/public/products/{productId}/images`
+  - `GET /api/public/products/{productId}/images/primary`
+  - `GET /api/public/products/{productId}/images/{imageId}`
+  - `GET /api/public/products/{productId}/reviews`
+- Categories
+  - `GET /api/public/categories` (list)
+  - `GET /api/public/categories/{categoryId}/details`
+  - `GET /api/public/categories/slug/{slug}/details`
+  - `GET /api/public/categories/{categoryId}/subcategories`
+- Banners
+  - `GET /api/public/banners`
+
+## Auth (`/api/auth/**`)
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+- `POST /api/auth/refresh-token`
+
+## User (`/api/users/me/**`)
+- Profile
+  - `GET /api/users/me`
+  - `GET /api/users/me/details`
+  - `PUT /api/users/me`
+  - `PATCH /api/users/me/password`
+  - `DELETE /api/users/me`
+- Addresses
+  - `GET /api/users/me/addresses`
+  - `GET /api/users/me/addresses/{addressId}`
+  - `POST /api/users/me/addresses`
+  - `PUT /api/users/me/addresses/{addressId}`
+  - `DELETE /api/users/me/addresses/{addressId}`
+  - `PUT /api/users/me/addresses/default/{addressId}`
+  - `GET /api/users/me/addresses/default`
+- Cart
+  - `GET /api/users/me/carts`
+  - `POST /api/users/me/carts`
+  - `GET /api/users/me/carts/{cartId}/items`
+  - `POST /api/users/me/carts/{cartId}/items`
+  - `PUT /api/users/me/carts/{cartId}/items/return`
+  - `DELETE /api/users/me/carts/{cartId}/items/{cartItemId}`
+  - `DELETE /api/users/me/carts/{cartId}/items`
+- Orders + payments
+  - `GET /api/users/me/orders`
+  - `GET /api/users/me/orders/{orderId}`
+  - `POST /api/users/me/orders`
+  - `GET /api/users/me/orders/{orderId}/items/all`
+  - `GET /api/users/me/orders/{orderId}/payments`
+  - `POST /api/users/me/orders/{orderId}/payments`
+  - `GET /api/users/me/orders/{orderId}/payments/{paymentId}`
+- Vouchers + voucher uses
+  - `GET /api/users/me/vouchers`
+  - `POST /api/users/me/vouchers/apply`
+  - `GET /api/users/me/voucher-uses`
+- Wishlist
+  - `GET /api/users/me/wishlists`
+  - `POST /api/users/me/wishlists`
+  - `DELETE /api/users/me/wishlists/{wishlistId}`
+- Search logs + recent views
+  - `GET /api/users/me/search-logs`
+  - `POST /api/users/me/search-logs`
+  - `DELETE /api/users/me/search-logs`
+  - `GET /api/users/me/recent-views`
+  - `POST /api/users/me/recent-views`
+- Notifications
+  - `GET /api/users/me/notifications`
+  - `POST /api/users/me/notifications`
+  - `PUT /api/users/me/notifications/{notificationId}/read`
+  - `PUT /api/users/me/notifications/{notificationId}/hidden`
+  - `PUT /api/users/me/notifications/user`
+- Reviews
+  - `POST /api/users/me/reviews`
+  - `PUT /api/users/me/reviews/{reviewId}`
+  - `DELETE /api/users/me/reviews/{reviewId}`
+
+## Admin (`/api/admin/**`)
+- Products
+  - `GET /api/admin/products`
+  - `POST /api/admin/products`
+  - `PUT /api/admin/products/{productId}`
+  - `PUT /api/admin/products/{productId}/status`
+  - `DELETE /api/admin/products/{productId}`
+- Categories
+  - `GET /api/admin/categories`
+  - `POST /api/admin/categories`
+  - `PUT /api/admin/categories/{categoryId}`
+  - `DELETE /api/admin/categories/{categoryId}`
+- Product images
+  - `GET /api/admin/product-images/product/{productId}`
+  - `GET /api/admin/product-images/product/{productId}/primary`
+  - `POST /api/admin/product-images`
+  - `PATCH /api/admin/product-images/{imageId}/url`
+  - `PATCH /api/admin/product-images/{imageId}/primary`
+  - `DELETE /api/admin/product-images/{imageId}`
+- Orders + items
+  - `GET /api/admin/orders`
+  - `GET /api/admin/orders/{orderId}`
+  - `PUT /api/admin/orders/{orderId}/status`
+  - `GET /api/admin/order-items`
+  - `GET /api/admin/order-items/{orderItemId}`
+- Payments
+  - `GET /api/admin/payments`
+  - `GET /api/admin/payments/{paymentId}`
+  - `PATCH /api/admin/payments/{paymentId}/status`
+- Users + roles + addresses
+  - `GET /api/admin/users`
+  - `GET /api/admin/users/{userId}/details`
+  - `GET /api/admin/users/{userId}/cart`
+  - `GET /api/admin/users/exists/{username|email}`
+  - `POST /api/admin/users`
+  - `DELETE /api/admin/users/{userId}`
+  - `GET /api/admin/roles`
+  - `GET /api/admin/roles/by-name`
+  - `POST /api/admin/roles`
+  - `DELETE /api/admin/roles/{roleId}`
+  - `GET /api/admin/addresses`
+  - `GET /api/admin/addresses/default/{userId}`
+- Inventory + warehouses
+  - `GET /api/admin/warehouses`
+  - `GET /api/admin/warehouses/{warehouseId}/details`
+  - `POST /api/admin/warehouses`
+  - `PUT /api/admin/warehouses/{warehouseId}`
+  - `PATCH /api/admin/warehouses/{warehouseId}/status`
+  - `DELETE /api/admin/warehouses/{warehouseId}`
+  - `GET /api/admin/inventories`
+  - `GET /api/admin/inventories/{inventoryId}`
+  - `POST /api/admin/inventories`
+  - `PUT /api/admin/inventories/{inventoryId}`
+  - `DELETE /api/admin/inventories/{inventoryId}`
+- Marketing
+  - `GET /api/admin/banners`
+  - `GET /api/admin/banners/{bannerId}`
+  - `POST /api/admin/banners`
+  - `PUT /api/admin/banners/{bannerId}`
+  - `DELETE /api/admin/banners/{bannerId}`
+  - `GET /api/admin/vouchers`
+  - `GET /api/admin/vouchers/{voucherId}`
+  - `POST /api/admin/vouchers`
+  - `PUT /api/admin/vouchers/{voucherId}`
+  - `DELETE /api/admin/vouchers/{voucherId}`
+  - `GET /api/admin/voucher-uses`
+  - `GET /api/admin/voucher-uses/user/{userId}`
+  - `GET /api/admin/voucher-uses/order/{orderId}`
+  - `GET /api/admin/voucher-uses/voucher/{voucherId}`
+- Notifications + reviews
+  - `GET /api/admin/notifications`
+  - `GET /api/admin/notifications/{notificationId}`
+  - `POST /api/admin/notifications`
+  - `PUT /api/admin/notifications/{notificationId}`
+  - `GET /api/admin/notifications/filter`
+  - `GET /api/admin/reviews`
+  - `GET /api/admin/reviews/{reviewId}`
+
+- Admin carts (extra)
+  - `GET /api/admin/carts/{cartId}/items/all`
