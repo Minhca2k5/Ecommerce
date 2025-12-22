@@ -21,6 +21,7 @@ Quy tắc UI/UX bắt buộc (áp dụng cho tất cả milestone từ M3 trở 
 - Notes:
   - UI/UX polish and responsive audit completed.
   - Endpoint coverage summary: `frontend/docs/ENDPOINT_COVERAGE.md`.
+  - Voucher UX updated: My Vouchers page + checkout voucher picker (eligible list by min order + search by code).
   - Optional PWA deferred to a later phase.
 
 ## 0) Chuẩn bị (bắt buộc)

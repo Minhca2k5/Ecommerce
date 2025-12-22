@@ -38,6 +38,10 @@ npm run preview
   - Token contains admin authority/role, and
   - `selectedRole === "ADMIN"` (chosen by the user).
 
+## Vouchers
+- `My vouchers`: `/me/vouchers` (browse eligible vouchers + search by code).
+- Checkout: click `Apply voucher` to open eligible list + search by code (Shopee-like picker).
+
 ## Theme
 - Light/Dark toggle is available in the header (persisted locally).
 

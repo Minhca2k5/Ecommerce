@@ -75,6 +75,7 @@ public class OrderServiceImpl implements OrderService {
                     "discountAmount", BigDecimal.ZERO
             );
         }
+        System.out.println("Shipping Fee: " + shippingFee);
         Voucher voucher = voucherService.getVoucherById(voucherId);
         VoucherDiscountType discountType = voucher.getDiscountType();
         BigDecimal discountValue = voucher.getDiscountValue();
@@ -82,27 +83,30 @@ public class OrderServiceImpl implements OrderService {
                 .map(item -> item.getUnitPriceSnapshot()
                         .multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal originTotal = Amount.add(shippingFee);
+        BigDecimal discountAmount;
         if (discountType == VoucherDiscountType.FIXED) {
             if (Amount.compareTo(discountValue) < 0) {
+                discountAmount = Amount;
                 Amount = BigDecimal.ZERO;
             } else {
+                discountAmount = discountValue;
                 Amount = Amount.subtract(discountValue);
             }
         } else if (discountType == VoucherDiscountType.PERCENT) {
-            BigDecimal discountAmount = Amount.multiply(discountValue).divide(BigDecimal.valueOf(100));
+            discountAmount = Amount.multiply(discountValue).divide(BigDecimal.valueOf(100));
             BigDecimal maxDiscount = voucher.getMaxDiscountAmount();
             if (maxDiscount != null && discountAmount.compareTo(maxDiscount) > 0) {
                 discountAmount = maxDiscount;
             }
             Amount = Amount.subtract(discountAmount);
         } else {
+            discountAmount = shippingFee;
             shippingFee = BigDecimal.ZERO;
         }
         BigDecimal totalAmount = Amount.add(shippingFee);
         return Map.of(
                 "totalAmount", totalAmount,
-                "discountAmount", originTotal.subtract(totalAmount)
+                "discountAmount", discountAmount
         );
     }
 
@@ -185,28 +189,35 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse createOrderResponse(OrderRequest request, Long userId) {
-        request.setUserId(userId);
-        Long cartId = cartService.getCartByUserId(userId).getId();
-        request.setCartId(cartId);
-        validateUserAndCart(userId, cartId);
-
+        Map<String, BigDecimal> totals = handleVoucherDiscount(request, userId);
         User user = userService.getUserById(userId);
-        List<CartItem> cartItems = cartItemService.getCartItemsByActiveProductTrueAndCartId(cartId, ProductStatus.ACTIVE);
-
         Order order = orderMapper.toEntity(request);
         order.setUser(user);
-        BigDecimal shippingFee = request.getShippingFee();
         Long voucherId = request.getVoucherId();
         if (voucherId != null) {
             Voucher voucher = voucherService.getVoucherById(voucherId);
             order.setVoucher(voucher);
         }
-        order.setTotalAmount(calculateTotalAmount(cartItems, shippingFee, voucherId).get("totalAmount"));
-        order.setDiscountAmount(calculateTotalAmount(cartItems, shippingFee, voucherId).get("discountAmount"));
+        order.setTotalAmount(totals.get("totalAmount"));
+        order.setDiscountAmount(totals.get("discountAmount"));
         Order savedOrder = orderRepository.save(order);
-        List<OrderItem> orderItems = createOrderItemsService.createOrderItems(savedOrder, cartId);
+        List<OrderItem> orderItems = createOrderItemsService.createOrderItems(savedOrder, request.getCartId());
         List<OrderItemResponse> orderItemResponses = orderItemMapper.toResponseList(orderItems);
-
         return orderMapper.toFullResponse(savedOrder, orderItemResponses);
+    }
+
+    @Override
+    public BigDecimal getDisCountAmount(OrderRequest request, Long userId) {
+        return handleVoucherDiscount(request, userId).get("discountAmount");
+    }
+
+    private Map<String, BigDecimal> handleVoucherDiscount(OrderRequest request, Long userId) {
+        request.setUserId(userId);
+        Long cartId = cartService.getCartByUserId(userId).getId();
+        request.setCartId(cartId);
+        validateUserAndCart(userId, cartId);
+        List<CartItem> cartItems = cartItemService.getCartItemsByActiveProductTrueAndCartId(cartId, ProductStatus.ACTIVE);
+        BigDecimal shippingFee = request.getShippingFee();
+        return calculateTotalAmount(cartItems, shippingFee, request.getVoucherId());
     }
 }

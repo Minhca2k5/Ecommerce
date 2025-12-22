@@ -6,17 +6,47 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/app/ToastProvider";
+import { useNotifications } from "@/app/NotificationProvider";
 import { getErrorMessage } from "@/lib/errors";
 import { formatCurrency } from "@/lib/format";
 import { getOrCreateCart, type CartResponse } from "@/lib/cartApi";
 import { createMyOrder } from "@/lib/orderApi";
 import { getDefaultAddress, listAddresses, type AddressResponse } from "@/lib/userApi";
-import { useNotifications } from "@/app/NotificationProvider";
-import { getVouchersByCode, type VoucherResponse } from "@/lib/voucherApi";
+import { filterMyVouchersByMinOrderAmount, getMyVouchersByCode, type VoucherResponse } from "@/lib/voucherApi";
 
-function money(value: number | undefined, currency: string | undefined) {
-  if (value === undefined || value === null) return "-";
-  return formatCurrency(value, currency || "VND");
+function money(value: number, currency: string) {
+  return formatCurrency(Number.isFinite(value) ? value : 0, currency || "VND");
+}
+
+function toNumber(value: number | string | undefined) {
+  if (value === undefined || value === null) return 0;
+  const n = typeof value === "string" ? Number(value) : value;
+  return Number.isFinite(n) ? n : 0;
+}
+
+function estimateDiscount(subtotal: number, shipping: number, voucher: VoucherResponse | null) {
+  if (!voucher) return 0;
+  const type = (voucher.discountType || "").toUpperCase();
+  if (type === "FREE_SHIPPING") return shipping;
+  if (type === "FIXED") return Math.max(0, Math.min(subtotal, toNumber(voucher.discountValue)));
+  if (type === "PERCENT") {
+    const raw = (subtotal * toNumber(voucher.discountValue)) / 100;
+    const max = voucher.maxDiscountAmount !== undefined && voucher.maxDiscountAmount !== null ? toNumber(voucher.maxDiscountAmount) : Infinity;
+    return Math.max(0, Math.min(raw, max));
+  }
+  return 0;
+}
+
+function voucherDiscountLabel(v: VoucherResponse) {
+  const type = (v.discountType || "").toUpperCase();
+  if (type === "FREE_SHIPPING") return "Free shipping";
+  if (type === "PERCENT") {
+    const pct = toNumber(v.discountValue);
+    const max = v.maxDiscountAmount !== undefined && v.maxDiscountAmount !== null ? ` (max ${formatCurrency(toNumber(v.maxDiscountAmount), "VND")})` : "";
+    return `${pct}%${max}`;
+  }
+  if (type === "FIXED") return formatCurrency(toNumber(v.discountValue), "VND");
+  return type || "Voucher";
 }
 
 export default function CheckoutPage() {
@@ -28,16 +58,32 @@ export default function CheckoutPage() {
   const [addresses, setAddresses] = useState<AddressResponse[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
   const [shippingFee, setShippingFee] = useState<string>("0");
-  const [voucherCode, setVoucherCode] = useState<string>("");
-  const [voucherStatus, setVoucherStatus] = useState<"idle" | "checking" | "valid" | "invalid">("idle");
-  const [voucherError, setVoucherError] = useState<string | null>(null);
+
   const [appliedVoucher, setAppliedVoucher] = useState<VoucherResponse | null>(null);
+  const [isVoucherPickerOpen, setIsVoucherPickerOpen] = useState(false);
+  const [voucherView, setVoucherView] = useState<"eligible" | "search">("eligible");
+
+  const [eligiblePage, setEligiblePage] = useState(0);
+  const [eligibleTotalPages, setEligibleTotalPages] = useState(1);
+  const [eligibleItems, setEligibleItems] = useState<VoucherResponse[]>([]);
+  const [eligibleLoading, setEligibleLoading] = useState(false);
+  const [eligibleError, setEligibleError] = useState<string | null>(null);
+
+  const [searchCode, setSearchCode] = useState("");
+  const [searchResults, setSearchResults] = useState<VoucherResponse[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currency = cart?.currency || "VND";
-  const total = Number(cart?.totalAmount ?? cart?.itemsSubtotal ?? 0) + Math.max(0, Number(shippingFee || "0"));
+  const subtotal = Number(cart?.itemsSubtotal ?? cart?.totalAmount ?? 0);
+  const shipping = Math.max(0, Number(shippingFee || "0"));
+  const originTotal = subtotal + shipping;
+  const discount = estimateDiscount(subtotal, shipping, appliedVoucher);
+  const total = Math.max(0, originTotal - discount);
 
   const canSubmit = useMemo(() => {
     if (isSubmitting) return false;
@@ -71,6 +117,45 @@ export default function CheckoutPage() {
     };
   }, []);
 
+  async function loadEligibleVouchers(nextPage: number) {
+    setEligibleLoading(true);
+    setEligibleError(null);
+    try {
+      const res = await filterMyVouchersByMinOrderAmount(originTotal, { page: nextPage, size: 5 });
+      setEligibleItems(res.content ?? []);
+      setEligibleTotalPages(Number(res.totalPages ?? 1) || 1);
+      setEligiblePage(nextPage);
+    } catch (e) {
+      setEligibleError(getErrorMessage(e, "Failed to load eligible vouchers."));
+    } finally {
+      setEligibleLoading(false);
+    }
+  }
+
+  async function runVoucherSearch() {
+    const code = searchCode.trim();
+    if (!code) return;
+    setVoucherView("search");
+    setSearchLoading(true);
+    setSearchError(null);
+    try {
+      const res = await getMyVouchersByCode(code);
+      setSearchResults(res ?? []);
+    } catch (e) {
+      setSearchError(getErrorMessage(e, "Search failed."));
+    } finally {
+      setSearchLoading(false);
+    }
+  }
+
+  async function resetVoucherSearch() {
+    setSearchCode("");
+    setSearchResults([]);
+    setSearchError(null);
+    setVoucherView("eligible");
+    await loadEligibleVouchers(0);
+  }
+
   async function placeOrder() {
     if (!cart?.id || !selectedAddressId) return;
     setIsSubmitting(true);
@@ -80,7 +165,7 @@ export default function CheckoutPage() {
         cartId: Number(cart.id),
         addressIdSnapshot: Number(selectedAddressId),
         ...(voucherId ? { voucherId } : {}),
-        shippingFee: Math.max(0, Number(shippingFee || "0")),
+        shippingFee: shipping,
         currency,
         status: "PENDING",
       });
@@ -96,54 +181,12 @@ export default function CheckoutPage() {
           referenceId: orderId,
           referenceType: "ORDER",
         });
-
-        if (voucherId) {
-          notifications.push({
-            type: "VOUCHER",
-            title: "Voucher applied",
-            message: `Applied code ${appliedVoucher?.code || ""} to your order.`,
-            referenceId: voucherId,
-            referenceType: "VOUCHER",
-          });
-        }
       }
       navigate(orderId ? `/orders/${orderId}` : "/orders", { replace: true });
     } catch (e) {
       toast.push({ variant: "error", title: "Checkout failed", message: getErrorMessage(e, "Failed to place order.") });
     } finally {
       setIsSubmitting(false);
-    }
-  }
-
-  async function checkVoucher() {
-    const code = voucherCode.trim();
-    setAppliedVoucher(null);
-    setVoucherError(null);
-    if (!code) {
-      setVoucherStatus("idle");
-      return;
-    }
-    setVoucherStatus("checking");
-    try {
-      const list = await getVouchersByCode(code);
-      const voucher = (list ?? [])[0] ?? null;
-      if (!voucher?.id) {
-        setVoucherStatus("invalid");
-        setVoucherError("Voucher not found or inactive.");
-        return;
-      }
-      setAppliedVoucher(voucher);
-      setVoucherStatus("valid");
-      notifications.push({
-        type: "VOUCHER",
-        title: "Voucher found",
-        message: `Code ${voucher.code} is ready to use at checkout.`,
-        referenceId: Number(voucher.id),
-        referenceType: "VOUCHER",
-      });
-    } catch (e) {
-      setVoucherStatus("invalid");
-      setVoucherError(getErrorMessage(e, "Failed to validate voucher."));
     }
   }
 
@@ -262,21 +305,44 @@ export default function CheckoutPage() {
                 <Input className="rounded-xl bg-background/70 backdrop-blur" value={shippingFee} onChange={(e) => setShippingFee(e.target.value)} inputMode="numeric" />
               </div>
               <div className="space-y-2">
-                <div className="text-xs font-medium text-muted-foreground">Voucher code (optional)</div>
-                <div className="flex gap-2">
-                  <Input className="rounded-xl bg-background/70 backdrop-blur" value={voucherCode} onChange={(e) => setVoucherCode(e.target.value)} placeholder="e.g. SAVE10" />
-                  <Button type="button" variant="outline" className="rounded-xl bg-background/70 backdrop-blur" onClick={checkVoucher} disabled={voucherStatus === "checking" || !voucherCode.trim()}>
-                    {voucherStatus === "checking" ? "Checking..." : "Apply"}
+                <div className="text-xs font-medium text-muted-foreground">Voucher</div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-xl bg-background/70 backdrop-blur"
+                    onClick={() => {
+                      setIsVoucherPickerOpen(true);
+                      setVoucherView("eligible");
+                      setSearchCode("");
+                      setSearchResults([]);
+                      setSearchError(null);
+                      void loadEligibleVouchers(0);
+                    }}
+                  >
+                    {appliedVoucher?.id ? "Change voucher" : "Apply voucher"}
+                  </Button>
+                  {appliedVoucher?.id ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-xl bg-background/70 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 backdrop-blur"
+                      onClick={() => setAppliedVoucher(null)}
+                    >
+                      Remove
+                    </Button>
+                  ) : null}
+                  <Button asChild variant="outline" className="rounded-xl bg-background/70 backdrop-blur">
+                    <Link to="/me/vouchers">My vouchers</Link>
                   </Button>
                 </div>
-                {voucherStatus === "valid" && appliedVoucher ? (
+                {appliedVoucher?.id ? (
                   <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 backdrop-blur">
                     Applied: <span className="font-medium">{appliedVoucher.code}</span> — {appliedVoucher.name || "Voucher"}
                   </div>
-                ) : null}
-                {voucherStatus === "invalid" && voucherError ? (
-                  <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-700 backdrop-blur">{voucherError}</div>
-                ) : null}
+                ) : (
+                  <div className="text-xs text-muted-foreground">Pick a voucher from the eligible list, or search by code.</div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -289,11 +355,15 @@ export default function CheckoutPage() {
           <CardContent className="relative space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span>{money(Number(cart.itemsSubtotal ?? 0), currency)}</span>
+              <span>{money(subtotal, currency)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Shipping</span>
-              <span>{money(Math.max(0, Number(shippingFee || "0")), currency)}</span>
+              <span>{money(shipping, currency)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Discount</span>
+              <span className={discount > 0 ? "text-emerald-600" : ""}>- {money(discount, currency)}</span>
             </div>
             <div className="h-px bg-border" />
             <div className="flex items-center justify-between text-base font-semibold">
@@ -307,6 +377,164 @@ export default function CheckoutPage() {
           </CardContent>
         </Card>
       </div>
+
+      {isVoucherPickerOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm sm:items-center"
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsVoucherPickerOpen(false);
+          }}
+        >
+          <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-3xl border bg-background/90 shadow-xl backdrop-blur max-h-[85vh]">
+            <div className="flex items-center justify-between gap-3 border-b p-4">
+              <div>
+                <div className="text-sm text-muted-foreground">Checkout</div>
+                <div className="text-lg font-semibold">Select a voucher</div>
+              </div>
+              <div className="flex items-center gap-2">
+                {voucherView === "search" ? (
+                  <Button
+                    variant="outline"
+                    className="h-9 rounded-xl bg-background/70 backdrop-blur"
+                    onClick={() => {
+                      void resetVoucherSearch();
+                    }}
+                  >
+                    Reset
+                  </Button>
+                ) : null}
+                <Button variant="outline" className="h-9 rounded-xl bg-background/70 backdrop-blur" onClick={() => setIsVoucherPickerOpen(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-4 p-4 overflow-auto">
+              <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="space-y-1">
+                  <div className="text-sm font-medium">Search by code</div>
+                  <div className="text-xs text-muted-foreground">Search overrides the eligible list until you reset.</div>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    className="h-10 w-56 rounded-xl bg-background/70 backdrop-blur"
+                    value={searchCode}
+                    onChange={(e) => {
+                      setSearchCode(e.target.value);
+                      setSearchResults([]);
+                      setSearchError(null);
+                    }}
+                    placeholder="e.g. SAVE10"
+                  />
+                  <Button className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={runVoucherSearch} disabled={!searchCode.trim() || searchLoading}>
+                    {searchLoading ? "Searching..." : "Search"}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-medium">{voucherView === "search" ? "Search results" : "Eligible vouchers"}</div>
+                  {voucherView === "eligible" ? (
+                    <div className="text-xs text-muted-foreground">Based on current order total: {money(originTotal, currency)}</div>
+                  ) : (
+                    <div className="text-xs text-muted-foreground">
+                      Code: <span className="font-medium text-foreground">{searchCode.trim() || "-"}</span>
+                    </div>
+                  )}
+                </div>
+                {voucherView === "eligible" ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      className="h-9 rounded-xl"
+                      disabled={eligibleLoading || eligiblePage <= 0}
+                      onClick={() => void loadEligibleVouchers(Math.max(0, eligiblePage - 1))}
+                    >
+                      Prev
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-9 rounded-xl"
+                      disabled={eligibleLoading || eligiblePage + 1 >= eligibleTotalPages}
+                      onClick={() => void loadEligibleVouchers(Math.min(eligibleTotalPages - 1, eligiblePage + 1))}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+
+              {voucherView === "search" && searchError ? (
+                <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-700">{searchError}</div>
+              ) : null}
+              {voucherView === "eligible" && eligibleError ? (
+                <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-700">{eligibleError}</div>
+              ) : null}
+
+              {voucherView === "eligible" && eligibleLoading ? (
+                <div className="space-y-2">
+                  <div className="h-20 animate-pulse rounded-2xl border bg-muted" />
+                  <div className="h-20 animate-pulse rounded-2xl border bg-muted" />
+                </div>
+              ) : voucherView === "search" && searchLoading ? (
+                <div className="space-y-2">
+                  <div className="h-20 animate-pulse rounded-2xl border bg-muted" />
+                  <div className="h-20 animate-pulse rounded-2xl border bg-muted" />
+                </div>
+              ) : (voucherView === "search" ? searchResults : eligibleItems).length === 0 ? (
+                <div className="rounded-2xl border bg-background/60 p-3 text-sm text-muted-foreground">
+                  {voucherView === "search" ? "No vouchers found for this code." : "No eligible vouchers for this order total."}
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-[55vh] overflow-auto pr-1">
+                  {(voucherView === "search" ? searchResults : eligibleItems).map((v) => {
+                    const id = Number(v.id ?? 0);
+                    const remaining = typeof v.activeUsesForUser === "number" ? v.activeUsesForUser : undefined;
+                    const disabled = remaining !== undefined && remaining <= 0;
+                    return (
+                      <button
+                        key={String(id || v.code)}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => {
+                          if (disabled) return;
+                          setAppliedVoucher(v);
+                          setIsVoucherPickerOpen(false);
+                          toast.push({ variant: "success", title: "Voucher selected", message: v.code ? `Applied ${v.code}.` : "Voucher applied." });
+                        }}
+                        className={[
+                          "w-full rounded-2xl border bg-background/60 p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md",
+                          disabled ? "opacity-60" : "hover:bg-muted",
+                          appliedVoucher?.id && v.id && Number(appliedVoucher.id) === Number(v.id) ? "border-primary ring-1 ring-primary/20" : "",
+                        ].join(" ")}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="font-medium">{v.name || v.code || "Voucher"}</div>
+                            <div className="mt-1 text-xs text-muted-foreground">
+                              {v.code ? `Code: ${v.code}` : ""} {v.discountType ? `• ${voucherDiscountLabel(v)}` : ""}
+                            </div>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <div className="text-xs text-muted-foreground">Remaining</div>
+                            <div className="mt-1 rounded-full bg-primary/10 px-2 py-1 text-xs ring-1 ring-primary/20">{remaining ?? "-"}</div>
+                          </div>
+                        </div>
+                        {v.minOrderTotal !== undefined && v.minOrderTotal !== null ? (
+                          <div className="mt-2 text-xs text-muted-foreground">Min order: {formatCurrency(toNumber(v.minOrderTotal), currency)}</div>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

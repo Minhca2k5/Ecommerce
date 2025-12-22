@@ -19,6 +19,8 @@ import OrdersPage from "@/pages/OrdersPage";
 import OrderDetailPage from "@/pages/OrderDetailPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import VoucherUsesPage from "@/pages/VoucherUsesPage";
+import MyVouchersPage from "@/pages/MyVouchersPage";
+import MyVoucherDetailPage from "@/pages/MyVoucherDetailPage";
 import WishlistPage from "@/pages/WishlistPage";
 import SearchLogsPage from "@/pages/SearchLogsPage";
 import RequireAdmin from "@/app/RequireAdmin";
@@ -67,6 +69,8 @@ export const router = createBrowserRouter([
           { path: "me/edit", element: <ProfileEditPage /> },
           { path: "me/password", element: <PasswordPage /> },
           { path: "me/addresses", element: <AddressesPage /> },
+          { path: "me/vouchers", element: <MyVouchersPage /> },
+          { path: "me/vouchers/:voucherId", element: <MyVoucherDetailPage /> },
           { path: "me/voucher-uses", element: <VoucherUsesPage /> },
           { path: "me/wishlist", element: <WishlistPage /> },
           { path: "me/search-logs", element: <SearchLogsPage /> },

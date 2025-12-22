@@ -8,6 +8,7 @@ import com.minzetsu.ecommerce.order.entity.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface OrderService {
@@ -21,4 +22,5 @@ public interface OrderService {
     List<OrderResponse> getOrderResponsesByUserId(Long userId);
     OrderResponse getFullOrderResponseByIdAndUserId(Long id, Long userId);
     OrderResponse createOrderResponse(OrderRequest request, Long userId);
+    BigDecimal getDisCountAmount(OrderRequest request, Long userId);
 }

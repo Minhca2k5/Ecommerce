@@ -65,8 +65,9 @@ This file lists the backend endpoints currently called by the React frontend, gr
   - `POST /api/users/me/orders/{orderId}/payments`
   - `GET /api/users/me/orders/{orderId}/payments/{paymentId}`
 - Vouchers + voucher uses
-  - `GET /api/users/me/vouchers`
-  - `POST /api/users/me/vouchers/apply`
+  - `GET /api/users/me/vouchers?code=...`
+  - `GET /api/users/me/vouchers/filter?minOrderAmount=...` (eligible list for checkout + paging)
+  - `GET /api/users/me/vouchers/{voucherId}`
   - `GET /api/users/me/voucher-uses`
 - Wishlist
   - `GET /api/users/me/wishlists`

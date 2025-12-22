@@ -351,6 +351,16 @@ export default function AppLayout() {
                             type="button"
                             onClick={() => {
                               setIsMenuOpen(false);
+                              navigate("/me/vouchers");
+                            }}
+                            className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            My vouchers
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsMenuOpen(false);
                               navigate("/me/voucher-uses");
                             }}
                             className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"

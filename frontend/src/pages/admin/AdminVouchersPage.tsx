@@ -230,6 +230,7 @@ export default function AdminVouchersPage() {
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Voucher</th>
                   <th className="px-4 py-3 text-left font-medium">Type</th>
+                  <th className="px-4 py-3 text-left font-medium">Remaining</th>
                   <th className="px-4 py-3 text-left font-medium">Status</th>
                   <th className="px-4 py-3 text-right font-medium">Actions</th>
                 </tr>
@@ -238,20 +239,21 @@ export default function AdminVouchersPage() {
                 {isLoading ? (
                   Array.from({ length: 6 }).map((_, i) => (
                     <tr key={i} className="border-t">
-                      <td className="px-4 py-3" colSpan={4}>
+                      <td className="px-4 py-3" colSpan={5}>
                         <div className="h-4 w-full animate-pulse rounded bg-muted" />
                       </td>
                     </tr>
                   ))
                 ) : !items.length ? (
                   <tr className="border-t">
-                    <td className="px-4 py-6 text-center text-muted-foreground" colSpan={4}>
+                    <td className="px-4 py-6 text-center text-muted-foreground" colSpan={5}>
                       No vouchers found.
                     </td>
                   </tr>
                 ) : (
                   items.map((v) => {
                     const id = getNumber(v, "id") ?? 0;
+                    const remaining = typeof v["activeUses"] === "number" ? Number(v["activeUses"]) : null;
                     return (
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
@@ -261,6 +263,9 @@ export default function AdminVouchersPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3">{getString(v, "discountType") ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          <span className="rounded-full bg-primary/10 px-2 py-1 text-xs ring-1 ring-primary/20">{remaining ?? "-"}</span>
+                        </td>
                         <td className="px-4 py-3">
                           <span className="rounded-full border bg-background/60 px-3 py-1 text-xs">{getString(v, "status") ?? "-"}</span>
                         </td>

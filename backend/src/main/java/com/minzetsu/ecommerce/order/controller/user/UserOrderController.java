@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -46,6 +47,19 @@ public class UserOrderController {
     ) {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(orderService.getFullOrderResponseByIdAndUserId(orderId, userId));
+    }
+
+    @Operation(
+            summary = "Lấy số tiền giảm giá khi áp dụng voucher cho đơn hàng mới",
+            description = "Tính toán và trả về số tiền giảm giá khi người dùng hiện tại áp dụng một voucher cụ thể cho đơn hàng mới."
+    )
+    @GetMapping("/voucher-discount")
+    public ResponseEntity<BigDecimal> getVoucherDiscountForCurrentUserOrder(
+            @Valid @RequestBody OrderRequest request
+    ) {
+        Long userId = getCurrentUserId();
+        BigDecimal discountAmount = orderService.getDisCountAmount(request, userId);
+        return ResponseEntity.ok(discountAmount);
     }
 
     @Operation(
