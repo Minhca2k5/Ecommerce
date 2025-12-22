@@ -8,11 +8,10 @@ import com.minzetsu.ecommerce.cart.mapper.CartItemMapper;
 import com.minzetsu.ecommerce.cart.repository.CartItemRepository;
 import com.minzetsu.ecommerce.cart.service.CartItemService;
 import com.minzetsu.ecommerce.cart.service.CartService;
+import com.minzetsu.ecommerce.cart.service.GetUrlForCartService;
 import com.minzetsu.ecommerce.inventory.service.InventoryService;
 import com.minzetsu.ecommerce.product.entity.Product;
-import com.minzetsu.ecommerce.product.entity.ProductImage;
 import com.minzetsu.ecommerce.product.entity.ProductStatus;
-import com.minzetsu.ecommerce.product.repository.ProductImageRepository;
 import com.minzetsu.ecommerce.product.service.ProductService;
 import com.minzetsu.ecommerce.common.exception.InsufficientNumberException;
 import com.minzetsu.ecommerce.common.exception.InvalidObjectException;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 @Service
@@ -37,21 +35,8 @@ public class CartItemServiceImpl implements CartItemService {
     private final ProductService productService;
     private final CartService cartService;
     private final InventoryService inventoryService;
-    private final ProductImageRepository productImageRepository;
+    private final GetUrlForCartService getUrlForCartService;
 
-    private CartItemResponse toResponseWithUrl(CartItem cartItem) {
-        CartItemResponse response = cartItemMapper.toResponse(cartItem);
-        Long productId = response.getId();
-        Optional<ProductImage> mainImage = productImageRepository.findByIsPrimaryTrueAndProductId(productId);
-        mainImage.ifPresent(image -> response.setUrl(image.getUrl()));
-        return response;
-    }
-
-    private List<CartItemResponse> toResponseListWithUrl(List<CartItem> cartItems) {
-        return cartItems.stream()
-                .map(this::toResponseWithUrl)
-                .toList();
-    }
 
     private void validateCartAndProduct(Long cartId, Long productId) {
         if (!cartService.existsById(cartId)) {
@@ -164,7 +149,7 @@ public class CartItemServiceImpl implements CartItemService {
     public Page<CartItemResponse> getCartItemResponsesByCartId(Long cartId, Long userId, Pageable pageable) {
         Cart cart = resolveCart(cartId, userId);
         Page<CartItem> cartItemsPage = getCartItemsByCartId(cart.getId(), pageable);
-        return cartItemsPage.map(this::toResponseWithUrl);
+        return cartItemsPage.map(getUrlForCartService::toResponseWithUrl);
     }
 
     @Override
@@ -172,7 +157,7 @@ public class CartItemServiceImpl implements CartItemService {
     public List<CartItemResponse> getCartItemResponsesByCartId(Long cartId, Long userId) {
         Cart cart = resolveCart(cartId, userId);
         List<CartItem> cartItems = getCartItemsByCartId(cart.getId());
-        return toResponseListWithUrl(cartItems);
+        return getUrlForCartService.toResponseListWithUrl(cartItems);
     }
 
     @Override
@@ -181,7 +166,7 @@ public class CartItemServiceImpl implements CartItemService {
         CartItem cartItem = (userId != null)
                 ? getCartItemByIdAndUserId(id, userId)
                 : getCartItemById(id);
-        return toResponseWithUrl(cartItem);
+        return getUrlForCartService.toResponseWithUrl(cartItem);
     }
 
     @Override
@@ -199,7 +184,7 @@ public class CartItemServiceImpl implements CartItemService {
                 .map(existingItem -> updateExistingItem(existingItem, quantity, isReturned, productId))
                 .orElseGet(() -> createNewCartItem(request, cartId, productId, quantity));
 
-        return toResponseWithUrl(cartItem);
+        return getUrlForCartService.toResponseWithUrl(cartItem);
     }
 
     private CartItem updateExistingItem(CartItem existingItem, int quantity, boolean isReturned, Long productId) {
@@ -226,7 +211,7 @@ public class CartItemServiceImpl implements CartItemService {
     @Override
     @Transactional(readOnly = true)
     public List<CartItemResponse> getCarItemResponsesByProductName(String productName, Long userId) {
-        return toResponseListWithUrl(
+        return getUrlForCartService.toResponseListWithUrl(
                 cartItemRepository.findByProductName(productName, userId)
         );
     }

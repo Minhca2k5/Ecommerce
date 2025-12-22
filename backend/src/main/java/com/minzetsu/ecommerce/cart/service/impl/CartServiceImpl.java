@@ -3,11 +3,11 @@ package com.minzetsu.ecommerce.cart.service.impl;
 import com.minzetsu.ecommerce.cart.dto.response.CartItemResponse;
 import com.minzetsu.ecommerce.cart.dto.response.CartResponse;
 import com.minzetsu.ecommerce.cart.entity.Cart;
-import com.minzetsu.ecommerce.cart.mapper.CartItemMapper;
 import com.minzetsu.ecommerce.cart.mapper.CartMapper;
 import com.minzetsu.ecommerce.cart.repository.CartItemRepository;
 import com.minzetsu.ecommerce.cart.repository.CartRepository;
 import com.minzetsu.ecommerce.cart.service.CartService;
+import com.minzetsu.ecommerce.cart.service.GetUrlForCartService;
 import com.minzetsu.ecommerce.common.exception.AlreadyExistException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.user.entity.User;
@@ -27,8 +27,8 @@ public class CartServiceImpl implements CartService {
     private final CartRepository cartRepository;
     private final CartMapper cartMapper;
     private final UserService userService;
-    private final CartItemMapper cartItemMapper;
     private final CartItemRepository cartItemRepository;
+    private final GetUrlForCartService getUrlForCartService;
 
     private void validateUser(Long userId) {
         if (!userService.existsById(userId)) {
@@ -41,7 +41,7 @@ public class CartServiceImpl implements CartService {
     }
 
     private CartResponse buildFullCartResponse(Cart cart) {
-        List<CartItemResponse> cartItems = cartItemMapper.toResponseList(
+        List<CartItemResponse> cartItems = getUrlForCartService.toResponseListWithUrl(
                 cartItemRepository.findByCartIdOrderByUpdatedAtDesc(cart.getId())
         );
         BigDecimal discount = BigDecimal.ZERO;

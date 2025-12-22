@@ -51,3 +51,9 @@ export function getMyOrder(orderId: number) {
 export function createMyOrder(request: OrderRequest) {
   return apiJson<OrderResponseAfterCreating>("/api/users/me/orders", { method: "POST", auth: true, body: request });
 }
+
+export function getMyVoucherDiscount(request: OrderRequest) {
+  // Backend endpoint calculates discount amount for an order draft (voucher preview).
+  // Using POST because browsers do not send request bodies with GET.
+  return apiJson<number>("/api/users/me/orders/voucher-discount", { method: "POST", auth: true, body: request });
+}

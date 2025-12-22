@@ -53,7 +53,7 @@ public class UserOrderController {
             summary = "Lấy số tiền giảm giá khi áp dụng voucher cho đơn hàng mới",
             description = "Tính toán và trả về số tiền giảm giá khi người dùng hiện tại áp dụng một voucher cụ thể cho đơn hàng mới."
     )
-    @GetMapping("/voucher-discount")
+    @PostMapping("/voucher-discount")
     public ResponseEntity<BigDecimal> getVoucherDiscountForCurrentUserOrder(
             @Valid @RequestBody OrderRequest request
     ) {

@@ -10,7 +10,7 @@ import { useNotifications } from "@/app/NotificationProvider";
 import { getErrorMessage } from "@/lib/errors";
 import { formatCurrency } from "@/lib/format";
 import { getOrCreateCart, type CartResponse } from "@/lib/cartApi";
-import { createMyOrder } from "@/lib/orderApi";
+import { createMyOrder, getMyVoucherDiscount } from "@/lib/orderApi";
 import { getDefaultAddress, listAddresses, type AddressResponse } from "@/lib/userApi";
 import { filterMyVouchersByMinOrderAmount, getMyVouchersByCode, type VoucherResponse } from "@/lib/voucherApi";
 
@@ -22,19 +22,6 @@ function toNumber(value: number | string | undefined) {
   if (value === undefined || value === null) return 0;
   const n = typeof value === "string" ? Number(value) : value;
   return Number.isFinite(n) ? n : 0;
-}
-
-function estimateDiscount(subtotal: number, shipping: number, voucher: VoucherResponse | null) {
-  if (!voucher) return 0;
-  const type = (voucher.discountType || "").toUpperCase();
-  if (type === "FREE_SHIPPING") return shipping;
-  if (type === "FIXED") return Math.max(0, Math.min(subtotal, toNumber(voucher.discountValue)));
-  if (type === "PERCENT") {
-    const raw = (subtotal * toNumber(voucher.discountValue)) / 100;
-    const max = voucher.maxDiscountAmount !== undefined && voucher.maxDiscountAmount !== null ? toNumber(voucher.maxDiscountAmount) : Infinity;
-    return Math.max(0, Math.min(raw, max));
-  }
-  return 0;
 }
 
 function voucherDiscountLabel(v: VoucherResponse) {
@@ -77,12 +64,15 @@ export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [discountAmount, setDiscountAmount] = useState<number>(0);
+  const [discountStatus, setDiscountStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [discountError, setDiscountError] = useState<string | null>(null);
 
   const currency = cart?.currency || "VND";
   const subtotal = Number(cart?.itemsSubtotal ?? cart?.totalAmount ?? 0);
   const shipping = Math.max(0, Number(shippingFee || "0"));
   const originTotal = subtotal + shipping;
-  const discount = estimateDiscount(subtotal, shipping, appliedVoucher);
+  const discount = Math.max(0, Number(discountAmount || 0));
   const total = Math.max(0, originTotal - discount);
 
   const canSubmit = useMemo(() => {
@@ -132,6 +122,29 @@ export default function CheckoutPage() {
     }
   }
 
+  async function refreshDiscount(nextVoucherId?: number | null) {
+    if (!cart?.id || !selectedAddressId) return;
+    const voucherId = nextVoucherId ?? (appliedVoucher?.id ? Number(appliedVoucher.id) : null);
+    setDiscountStatus("loading");
+    setDiscountError(null);
+    try {
+      const value = await getMyVoucherDiscount({
+        cartId: Number(cart.id),
+        addressIdSnapshot: Number(selectedAddressId),
+        shippingFee: shipping,
+        currency,
+        status: "PENDING",
+        ...(voucherId ? { voucherId: Number(voucherId) } : {}),
+      });
+      setDiscountAmount(Math.max(0, Number(value ?? 0)));
+      setDiscountStatus("idle");
+    } catch (e) {
+      setDiscountStatus("error");
+      setDiscountError(getErrorMessage(e, "Failed to calculate discount."));
+      setDiscountAmount(0);
+    }
+  }
+
   async function runVoucherSearch() {
     const code = searchCode.trim();
     if (!code) return;
@@ -155,6 +168,13 @@ export default function CheckoutPage() {
     setVoucherView("eligible");
     await loadEligibleVouchers(0);
   }
+
+  useEffect(() => {
+    if (!cart?.id || !selectedAddressId) return;
+    const t = window.setTimeout(() => void refreshDiscount(null), 250);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart?.id, selectedAddressId, shippingFee, appliedVoucher?.id]);
 
   async function placeOrder() {
     if (!cart?.id || !selectedAddressId) return;
@@ -327,7 +347,10 @@ export default function CheckoutPage() {
                       type="button"
                       variant="outline"
                       className="rounded-xl bg-background/70 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 backdrop-blur"
-                      onClick={() => setAppliedVoucher(null)}
+                      onClick={() => {
+                        setAppliedVoucher(null);
+                        void refreshDiscount(null);
+                      }}
                     >
                       Remove
                     </Button>
@@ -365,6 +388,8 @@ export default function CheckoutPage() {
               <span className="text-muted-foreground">Discount</span>
               <span className={discount > 0 ? "text-emerald-600" : ""}>- {money(discount, currency)}</span>
             </div>
+            {discountStatus === "loading" ? <div className="text-xs text-muted-foreground">Calculating discount…</div> : null}
+            {discountStatus === "error" && discountError ? <div className="text-xs text-rose-600">{discountError}</div> : null}
             <div className="h-px bg-border" />
             <div className="flex items-center justify-between text-base font-semibold">
               <span>Total</span>
@@ -502,6 +527,7 @@ export default function CheckoutPage() {
                         onClick={() => {
                           if (disabled) return;
                           setAppliedVoucher(v);
+                          void refreshDiscount(Number(v.id ?? 0));
                           setIsVoucherPickerOpen(false);
                           toast.push({ variant: "success", title: "Voucher selected", message: v.code ? `Applied ${v.code}.` : "Voucher applied." });
                         }}
