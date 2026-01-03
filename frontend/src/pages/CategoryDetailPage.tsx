@@ -10,6 +10,7 @@ import { getNumber, getString } from "@/lib/safe";
 import { categoryMetaBySlug, defaultCategoryMeta } from "@/lib/categoryMeta";
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { getErrorMessage } from "@/lib/errors";
 
 type Category = unknown;
 type Product = unknown;
@@ -77,7 +78,7 @@ export default function CategoryDetailPage() {
         setProductPage(pageData ?? null);
       } catch (e) {
         if (!isMounted) return;
-        setError(e instanceof Error ? e.message : "Unknown error");
+        setError(getErrorMessage(e, "Failed to load category."));
       } finally {
         if (!isMounted) return;
         setIsLoading(false);
@@ -90,7 +91,7 @@ export default function CategoryDetailPage() {
     };
   }, [categoryIdNumber, isSlugRoute, slugValue, page, size]);
 
-  const title = getString(category, "name", "title") ?? `Category #${categoryIdNumber}`;
+  const title = getString(category, "name", "title") ?? "Category";
   const resolvedCategoryId = getNumber(category, "id") ?? categoryIdNumber;
   const products = productPage?.content ?? [];
 
@@ -129,7 +130,7 @@ export default function CategoryDetailPage() {
                 ) : (
                   subcategories.map((s, idx) => {
                     const id = getNumber(s, "id") ?? idx + 1;
-                    const name = getString(s, "name", "title") ?? `Category #${id}`;
+                    const name = getString(s, "name", "title") ?? "Category";
                     const slug = getString(s, "slug");
                     const meta = (slug && categoryMetaBySlug[slug]) || defaultCategoryMeta;
                     const href = `/categories/${id}`;

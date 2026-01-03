@@ -6,6 +6,7 @@ import { apiGet, buildQuery } from "@/lib/apiClient";
 import { categoryMetaBySlug, defaultCategoryMeta } from "@/lib/categoryMeta";
 import type { SpringPage } from "@/lib/pagination";
 import { getNumber, getString } from "@/lib/safe";
+import { getErrorMessage } from "@/lib/errors";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -30,7 +31,7 @@ export default function CategoriesPage() {
         setData(page);
       } catch (e) {
         if (!isMounted) return;
-        setError(e instanceof Error ? e.message : "Unknown error");
+        setError(getErrorMessage(e, "Failed to load categories."));
       } finally {
         if (!isMounted) return;
         setIsLoading(false);
@@ -71,7 +72,7 @@ export default function CategoriesPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((c) => {
             const id = getNumber(c, "id") ?? 0;
-            const name = getString(c, "name", "title") ?? `Category #${id}`;
+            const name = getString(c, "name", "title") ?? "Category";
             const slug = getString(c, "slug");
             const href = `/categories/${id}`;
             const meta = (slug && categoryMetaBySlug[slug]) || defaultCategoryMeta;

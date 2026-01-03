@@ -118,13 +118,13 @@ export default function OrdersPage() {
             <div className="pointer-events-none absolute inset-0 opacity-20 [background:radial-gradient(60%_60%_at_20%_20%,rgba(59,130,246,.16),transparent),radial-gradient(50%_60%_at_75%_40%,rgba(168,85,247,.12),transparent)]" />
             <CardHeader className="relative flex flex-row items-start justify-between gap-3">
               <div>
-                <CardTitle>Order #{order.id}</CardTitle>
+                <CardTitle>Order</CardTitle>
                 <div className="mt-1 text-sm text-muted-foreground">Total • {formatCurrency(Number(order.totalAmount ?? 0), order.currency || "VND")}</div>
               </div>
               {statusBadge(order.status)}
             </CardHeader>
             <CardContent className="relative flex items-center justify-between">
-              <div className="text-xs text-muted-foreground">Address snapshot: {order.addressIdSnapshot ?? "-"}</div>
+              <div className="text-xs text-muted-foreground">Delivery address saved with this order</div>
               <Button asChild className="rounded-xl bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
                 <Link to={`/orders/${order.id}`}>View</Link>
               </Button>

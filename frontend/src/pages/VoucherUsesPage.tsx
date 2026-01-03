@@ -27,8 +27,8 @@ export default function VoucherUsesPage() {
   const [voucherIdFilter, setVoucherIdFilter] = useState("");
 
   const title = useMemo(() => {
-    if (orderIdFilter.trim()) return `Voucher uses for order #${orderIdFilter.trim()}`;
-    if (voucherIdFilter.trim()) return `Voucher uses for voucher #${voucherIdFilter.trim()}`;
+    if (orderIdFilter.trim()) return "Voucher uses (filtered)";
+    if (voucherIdFilter.trim()) return "Voucher uses (filtered)";
     return "Voucher uses";
   }, [orderIdFilter, voucherIdFilter]);
 
@@ -141,12 +141,12 @@ export default function VoucherUsesPage() {
             <Card key={String(u.id)} className="pressable shine overflow-hidden bg-background/70 backdrop-blur shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
               <CardHeader className="flex flex-row items-start justify-between gap-3">
                 <div>
-                  <CardTitle className="text-base">Voucher #{u.voucherId ?? "-"}</CardTitle>
+                  <CardTitle className="text-base">Voucher use</CardTitle>
                   <div className="mt-1 text-sm text-muted-foreground">Discount: {money(u.discountAmount)}</div>
                 </div>
                 {u.orderId ? (
                   <Button asChild variant="outline" className="rounded-xl bg-background/70 backdrop-blur">
-                    <Link to={`/orders/${u.orderId}`}>Order #{u.orderId}</Link>
+                    <Link to={`/orders/${u.orderId}`}>View order</Link>
                   </Button>
                 ) : null}
               </CardHeader>

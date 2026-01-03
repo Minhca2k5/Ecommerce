@@ -74,7 +74,7 @@ export default function MyVoucherDetailPage() {
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-sm text-muted-foreground">My vouchers</div>
-            <div className="text-3xl font-semibold tracking-tight">{item.name || item.code || `Voucher #${id}`}</div>
+            <div className="text-3xl font-semibold tracking-tight">{item.name || item.code || "Voucher"}</div>
             <div className="mt-1 text-sm text-muted-foreground">{item.code ? `Code: ${item.code}` : "Code unavailable"}</div>
           </div>
           <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
@@ -140,4 +140,3 @@ export default function MyVoucherDetailPage() {
     </div>
   );
 }
-

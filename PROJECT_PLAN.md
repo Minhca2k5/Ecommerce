@@ -69,23 +69,35 @@ This document outlines the roadmap for the development of the E-commerce system,
     *   [x] Frontend docs: `frontend/README.md` + endpoint coverage summary.
     *   [x] Responsive audit (mobile/tablet): admin tables scroll + admin mobile navigation.
 
-## Phase 3: Performance & Scalability
+## Phase 3: Performance, Scalability & Reliability
 **Status: Pending**
-**Focus:** Optimizing response times and handling high traffic.
+**Focus:** Measurable latency improvements and stability under load.
 
+*   [ ] **Define SLOs + Benchmarks**:
+    *   Choose critical endpoints/journeys (Home, Product Detail, Search, Cart, Checkout, Orders).
+    *   Capture baseline (p95 latency, error rate, throughput) before optimizations.
 *   [ ] **Caching Strategy**:
     *   Integrate **Redis**.
-    *   Cache heavy read operations: Homepage data, Product details, Category trees.
-    *   Implement Cache Eviction policies.
+    *   Cache heavy read operations: Home aggregate, Product details, Category tree, Banners/Vouchers.
+    *   Define cache keys + TTL and an invalidation strategy on write operations.
+    *   Prevent cache stampede for hot keys (soft TTL / locking).
 *   [ ] **Database Optimization**:
-    *   Analyze and optimize slow queries (N+1 problem).
-    *   Add necessary Indexes.
-    *   Connection Pooling configuration (HikariCP).
+    *   Profile and optimize slow queries (N+1, over-fetching).
+    *   Add/validate indexes for common filters/sorts and order history queries.
+    *   Tune connection pooling configuration (HikariCP) and set slow query thresholds.
 *   [ ] **Asynchronous Processing**:
-    *   Offload non-critical tasks (Sending Emails, Push Notifications) to background threads or Message Queues (RabbitMQ/Kafka).
+    *   Start with in-process async + outbox pattern where needed; introduce MQ only if justified by load.
+    *   Offload non-critical tasks (email/notifications, exports, cleanup jobs).
+*   [ ] **Resilience Hardening**:
+    *   Add timeouts + safe retries (backoff) + circuit breaker for external calls.
+    *   Add rate limiting for expensive endpoints.
+    *   Graceful degradation (serve cached home if DB is slow).
+*   [ ] **Observability Foundation**:
+    *   Structured logging + request correlation id.
+    *   Metrics (latency, error rate, DB pool, cache hit rate) + basic dashboards.
+    *   Tracing for critical flows (checkout).
 *   [ ] **Phase 3 Review**:
-    *   Benchmark response times (Before vs After Caching).
-    *   Stress test critical endpoints (Home, Product Detail) to ensure stability under load.
+    *   Before/after benchmark report + load test summary + cache hit rate + top slow queries addressed.
 
 ## Phase 4: Advanced Features & Integrations
 **Status: Pending**
@@ -93,11 +105,14 @@ This document outlines the roadmap for the development of the E-commerce system,
 
 *   [ ] **Payment Gateway Integration**:
     *   Integrate VNPay / Momo / Stripe / PayPal.
-    *   Handle IPN (Instant Payment Notification) callbacks securely.
+    *   Handle IPN/Webhook callbacks securely (signature verification + replay protection).
+    *   Idempotency for payment initiation and callbacks.
+    *   Payment state machine (PENDING/PAID/FAILED/CANCELED/REFUNDED) + audit log.
 *   [ ] **Advanced Search Engine**:
     *   Integrate **Elasticsearch** for full-text search, fuzzy matching, and faceting.
+    *   Indexing pipeline (backfill + incremental updates) and fallback when ES is unavailable.
 *   [ ] **Real-time Features**:
-    *   WebSocket implementation for Order Status updates and Chat support.
+    *   WebSocket for order status updates and admin notifications (chat can be deferred unless needed).
 *   [ ] **Phase 4 Review**:
     *   Sandbox Testing: Verify Payment Gateway flows (Success/Failure/Cancel).
     *   Verify Search accuracy and relevance.
@@ -106,10 +121,14 @@ This document outlines the roadmap for the development of the E-commerce system,
 **Status: Pending**
 **Focus:** Verifying system correctness and reliability.
 
-*   [ ] **Unit Testing**: Write JUnit/Mockito tests for critical Service logic (Order calculation, Inventory checks).
-*   [ ] **Integration Testing**: Test API endpoints using `MockMvc` or TestContainers.
-*   [ ] **Load Testing**: Simulate high traffic using JMeter or k6.
-*   [ ] **API Documentation**: Finalize Swagger/OpenAPI specs for Frontend developers.
+*   [ ] **Unit Testing**: JUnit/Mockito for critical Service logic (pricing/discounts, inventory reservation, order totals, RBAC rules).
+*   [ ] **Integration Testing**: `MockMvc` + TestContainers (DB/Redis); verify auth flows and security boundaries.
+*   [ ] **E2E Testing**:
+    *   Playwright/Cypress flows: register/login, browse/search, cart, checkout, order history, admin product edit.
+*   [ ] **Load Testing**: Simulate high traffic using JMeter or k6, aligned with Phase 3 SLOs.
+*   [ ] **API Documentation**: Finalize Swagger/OpenAPI specs + examples + consistent error model.
+*   [ ] **Release Readiness**:
+    *   Migration dry-run, backup/restore drill, and rollback plan.
 
 ## Phase 6: DevOps & Deployment
 **Status: Pending**
@@ -118,8 +137,13 @@ This document outlines the roadmap for the development of the E-commerce system,
 *   [ ] **Containerization**:
     *   Create `Dockerfile` for the Spring Boot application.
     *   Create `docker-compose.yml` for the full stack (App, MySQL, Redis, etc.).
+    *   Add staging/prod compose variants or overlays as needed.
 *   [ ] **CI/CD Pipeline**:
-    *   Setup GitHub Actions or Jenkins for automated building and testing.
+    *   Setup GitHub Actions or Jenkins for build/test.
+    *   Staging deploy + smoke tests, then promote to production.
 *   [ ] **Monitoring & Logging**:
     *   Centralized logging (ELK Stack or Loki).
     *   Metrics monitoring (Prometheus + Grafana).
+    *   Alerts on SLO burn (latency/error spikes), DB pool exhaustion, cache failures.
+*   [ ] **Secrets & Environments**:
+    *   Separate dev/staging/prod configs and secrets management strategy.

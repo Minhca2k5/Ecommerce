@@ -180,6 +180,12 @@ export default function CheckoutPage() {
     if (!cart?.id || !selectedAddressId) return;
     setIsSubmitting(true);
     try {
+      const itemNames = (cart?.items ?? [])
+        .map((it: any) => String(it?.productName ?? it?.name ?? it?.title ?? "").trim())
+        .filter(Boolean);
+      const preview = itemNames.slice(0, 3).join(", ");
+      const suffix = itemNames.length > 3 ? ", ..." : "";
+
       const voucherId = appliedVoucher?.id ? Number(appliedVoucher.id) : undefined;
       const created = await createMyOrder({
         cartId: Number(cart.id),
@@ -196,8 +202,8 @@ export default function CheckoutPage() {
       if (orderId) {
         notifications.push({
           type: "ORDER",
-          title: `Order #${orderId} created`,
-          message: `Your order is pending. Total: ${formatCurrency(Number(created.totalAmount ?? 0), created.currency || currency)}.`,
+          title: "Order created",
+          message: `Items: ${preview || "Your cart"}${suffix} • Total: ${formatCurrency(Number(created.totalAmount ?? 0), created.currency || currency)} • Tap to view details.`,
           referenceId: orderId,
           referenceType: "ORDER",
         });

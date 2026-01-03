@@ -19,7 +19,7 @@ export default function ProductCard({
   const auth = useAuth();
   const { addToCart, isWorking } = useCartActions();
   const id = getNumber(product, "id") ?? 0;
-  const name = getString(product, "name", "title") ?? `Product #${id}`;
+  const name = getString(product, "name", "title") ?? "Product";
   const price = getNumber(product, "salePrice", "price");
   const currency = getString(product, "currency");
   const rating = getNumber(product, "recentlyAverageRating", "rating");

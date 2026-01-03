@@ -12,6 +12,7 @@ import CategoryIcon from "@/components/CategoryIcon";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/app/AuthProvider";
 import { listMyRecentViews, type RecentViewResponse } from "@/lib/recentViewApi";
+import { getErrorMessage } from "@/lib/errors";
 
 type Banner = unknown;
 type Product = unknown;
@@ -33,7 +34,7 @@ export default function HomePage() {
     useState<(typeof topListOptions)[number]["key"]>("top-rating");
   const [topProducts, setTopProducts] = useState<Product[]>([]);
   const [topPage, setTopPage] = useState(0);
-  const [topPageSize, setTopPageSize] = useState(9);
+  const topPageSize = 6;
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +58,7 @@ export default function HomePage() {
         setHomeCategories((data as any)?.categories ?? []);
       } catch (e) {
         if (!isMounted) return;
-        setError(e instanceof Error ? e.message : "Unknown error");
+        setError(getErrorMessage(e, "Failed to load homepage."));
       } finally {
         if (!isMounted) return;
         setIsLoading(false);
@@ -106,7 +107,7 @@ export default function HomePage() {
         setTopProducts(top ?? []);
       } catch (e) {
         if (!isMounted) return;
-        setError(e instanceof Error ? e.message : "Unknown error");
+        setError(getErrorMessage(e, "Failed to load products."));
       }
     }
 
@@ -212,7 +213,7 @@ export default function HomePage() {
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {homeCategories.slice(0, 8).map((c, idx) => {
                   const id = getNumber(c, "id") ?? idx + 1;
-                  const name = getString(c, "name") ?? `Category #${id}`;
+                  const name = getString(c, "name") ?? "Category";
                   const slug = getString(c, "slug");
                   const meta = (slug && categoryMetaBySlug[slug]) || defaultCategoryMeta;
                   return (
@@ -331,23 +332,6 @@ export default function HomePage() {
                   </select>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="text-xs text-muted-foreground">Show:</div>
-                  <select
-                    className="h-9 cursor-pointer rounded-md border bg-background px-3 text-sm shadow-sm transition hover:bg-muted"
-                    value={String(topPageSize)}
-                    onChange={(e) => {
-                      const next = Number(e.target.value);
-                      setTopPageSize(Number.isFinite(next) ? next : 9);
-                      setTopPage(0);
-                    }}
-                  >
-                    <option value="6">6</option>
-                    <option value="9">9</option>
-                    <option value="12">12</option>
-                    <option value="18">18</option>
-                  </select>
-                </div>
               </div>
             </div>
 

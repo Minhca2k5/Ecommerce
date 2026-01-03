@@ -204,36 +204,37 @@ export default function AppLayout() {
                   ) : null}
                 </div>
 
-                <button
-                  type="button"
-                  className="rounded-full px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground ring-1 ring-transparent hover:ring-primary/10"
-                  onClick={() => theme.toggle()}
-                  aria-label="Toggle theme"
-                  title={theme.resolvedTheme === "dark" ? "Switch to light" : "Switch to dark"}
-                >
-                  <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
-                    {theme.resolvedTheme === "dark" ? (
-                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 18a6 6 0 1 1 0-12a6 6 0 0 1 0 12z" />
-                        <path d="M12 2v2" />
-                        <path d="M12 20v2" />
-                        <path d="M4.93 4.93l1.41 1.41" />
-                        <path d="M17.66 17.66l1.41 1.41" />
-                        <path d="M2 12h2" />
-                        <path d="M20 12h2" />
-                        <path d="M4.93 19.07l1.41-1.41" />
-                        <path d="M17.66 6.34l1.41-1.41" />
-                      </svg>
-                    ) : (
-                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 12.8A8.5 8.5 0 0 1 11.2 3a6.5 6.5 0 1 0 9.8 9.8z" />
-                      </svg>
-                    )}
-                    <span className="hidden sm:inline">{theme.resolvedTheme === "dark" ? "Light" : "Dark"}</span>
-                  </span>
-                </button>
               </>
             ) : null}
+
+            <button
+              type="button"
+              className="rounded-full px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground ring-1 ring-transparent hover:ring-primary/10"
+              onClick={() => theme.toggle()}
+              aria-label="Toggle theme"
+              title={theme.resolvedTheme === "dark" ? "Switch to light" : "Switch to dark"}
+            >
+              <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
+                {theme.resolvedTheme === "dark" ? (
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 18a6 6 0 1 1 0-12a6 6 0 0 1 0 12z" />
+                    <path d="M12 2v2" />
+                    <path d="M12 20v2" />
+                    <path d="M4.93 4.93l1.41 1.41" />
+                    <path d="M17.66 17.66l1.41 1.41" />
+                    <path d="M2 12h2" />
+                    <path d="M20 12h2" />
+                    <path d="M4.93 19.07l1.41-1.41" />
+                    <path d="M17.66 6.34l1.41-1.41" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 12.8A8.5 8.5 0 0 1 11.2 3a6.5 6.5 0 1 0 9.8 9.8z" />
+                  </svg>
+                )}
+                <span className="hidden sm:inline">{theme.resolvedTheme === "dark" ? "Light" : "Dark"}</span>
+              </span>
+            </button>
 
             {!auth.isAuthenticated ? (
               <NavLink to="/login" className={navLinkClassName}>

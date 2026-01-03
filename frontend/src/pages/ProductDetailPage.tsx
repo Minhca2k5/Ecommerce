@@ -139,7 +139,7 @@ export default function ProductDetailPage() {
         if (e instanceof ApiError && e.status === 404) {
           setError("Product not found");
         } else {
-          setError(e instanceof Error ? e.message : "Unknown error");
+          setError(getErrorMessage(e, "Failed to load product."));
         }
       } finally {
         if (!isMounted) return;
@@ -181,7 +181,7 @@ export default function ProductDetailPage() {
         referenceType: "PRODUCT",
       });
     } catch (e) {
-      toast.push({ variant: "error", title: "Wishlist failed", message: getErrorMessage(e, "Failed to add to wishlist.") });
+      toast.push({ variant: "error", title: "Wishlist failed", message: getErrorMessage(e, "This product is already in your wishlist.") });
     } finally {
       setIsWishlistWorking(false);
     }
@@ -299,7 +299,7 @@ export default function ProductDetailPage() {
               ) : null}
               <div className="flex items-center gap-2">
                 <RatingStars rating={rating} />
-                <span className="text-xs text-muted-foreground">#{resolvedId}</span>
+                <span className="text-xs text-muted-foreground">Verified</span>
               </div>
             </div>
           </div>
@@ -643,8 +643,8 @@ export default function ProductDetailPage() {
           {imageDetail ? (
             <div className="rounded-2xl border bg-background/70 p-3 text-sm backdrop-blur">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Image ID</span>
-                <span className="font-medium">#{getNumber(imageDetail, "id") ?? "-"}</span>
+                <span className="text-muted-foreground">Image</span>
+                <span className="font-medium">Details</span>
               </div>
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-muted-foreground">Primary</span>

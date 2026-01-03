@@ -87,10 +87,30 @@ export default function OrderDetailPage() {
         ...(discountAmount !== undefined ? { discountAmount } : {}),
       });
       toast.push({ variant: "success", title: "Payment created", message: "Payment created for this order." });
+      const itemNamesFrom = (list: any[]) =>
+        (list ?? [])
+          .map((it) => {
+            const direct = String(it?.productName ?? it?.name ?? it?.title ?? "").trim();
+            if (direct) return direct;
+            const nested = String(it?.product?.name ?? it?.product?.title ?? it?.productNameSnapshot ?? it?.productSnapshotName ?? "").trim();
+            return nested;
+          })
+          .filter(Boolean);
+
+      let itemNames = itemNamesFrom((order?.items ?? []) as any[]);
+      if (!itemNames.length) {
+        const fromEndpoint = await apiJson<any[]>(`/api/users/me/orders/${orderId}/items/all`, { method: "GET", auth: true }).catch(() => []);
+        itemNames = itemNamesFrom(fromEndpoint ?? []);
+      }
+
+      const preview = itemNames.slice(0, 3).join(", ");
+      const suffix = itemNames.length > 3 ? ", ..." : "";
       notifications.push({
         type: "PAYMENT",
-        title: `Payment created for order #${orderId}`,
-        message: `Method: ${method}. You can track status in this order.`,
+        title: "Payment created",
+        message: preview
+          ? `Items: ${preview}${suffix} • Method: ${method} • Tap to view details.`
+          : `Payment created • Method: ${method} • Tap to view details.`,
         referenceId: orderId,
         referenceType: "ORDER",
       });
@@ -98,7 +118,7 @@ export default function OrderDetailPage() {
       const updated = await listPayments(orderId).catch(() => []);
       setPayments(updated);
     } catch (e) {
-      toast.push({ variant: "error", title: "Payment failed", message: getErrorMessage(e, "Failed to create payment.") });
+      toast.push({ variant: "error", title: "Payment failed", message: getErrorMessage(e, "Couldn't create payment. Please try again later.") });
     } finally {
       setIsPaying(false);
     }
@@ -163,7 +183,7 @@ export default function OrderDetailPage() {
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-sm text-muted-foreground">Order</div>
-            <div className="text-3xl font-semibold tracking-tight">Order #{order.id}</div>
+            <div className="text-3xl font-semibold tracking-tight">Order details</div>
             <div className="mt-1 text-sm text-muted-foreground">
             {items.length} items • {formatCurrency(Number(order.totalAmount ?? 0), currency)} • {statusBadge(order.status)}
             </div>
@@ -319,7 +339,7 @@ export default function OrderDetailPage() {
           ) : null}
           {paymentDetail ? (
             <div className="grid gap-2 text-sm">
-              <div className="flex items-center justify-between"><span className="text-muted-foreground">Payment ID</span><span className="font-medium">#{paymentDetail.id ?? "-"}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Payment</span><span className="font-medium">Details</span></div>
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Method</span><span className="font-medium">{paymentDetail.method || "-"}</span></div>
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Status</span><span className="font-medium">{String(paymentDetail.status || "-").toUpperCase()}</span></div>
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Amount</span><span className="font-medium">{formatCurrency(Number(paymentDetail.amount ?? 0), paymentDetail.orderCurrency || currency)}</span></div>

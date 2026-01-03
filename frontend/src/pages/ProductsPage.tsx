@@ -11,6 +11,7 @@ import { useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/app/AuthProvider";
 import { addSearchLog } from "@/lib/searchLogApi";
+import { getErrorMessage } from "@/lib/errors";
 
 type ProductSummary = unknown;
 type CategorySummary = unknown;
@@ -58,7 +59,7 @@ export default function ProductsPage() {
         setCategories(categoryPage?.content ?? []);
       } catch (e) {
         if (!isMounted) return;
-        setError(e instanceof Error ? e.message : "Unknown error");
+        setError(getErrorMessage(e, "Failed to load products."));
       } finally {
         if (!isMounted) return;
         setIsLoading(false);

@@ -96,7 +96,7 @@ export default function AdminLayout() {
                 </select>
               </div>
             </div>
-            <div className="hidden lg:block text-xs text-muted-foreground">ROLE_ADMIN protected</div>
+            <div className="hidden lg:block text-xs text-muted-foreground">Admin</div>
           </div>
 
           <Outlet />
