@@ -17,5 +17,6 @@ public class ReviewRequest {
     @Min(value = 1, message = "Rating must be >= 1")
     @Max(value = 5, message = "Rating must be <= 5")
     private Integer rating = 5;
+    @NotBlank(message = "Comment is required")
     private String comment;
 }

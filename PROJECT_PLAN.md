@@ -38,7 +38,7 @@ This document outlines the roadmap for the development of the E-commerce system,
     *   [x] Setup UI foundation (TailwindCSS + shadcn/ui).
     *   [x] Setup routing + base layout (M2).
     *   [x] Setup API Client (Fetch) + typed errors.
-    *   [ ] Setup server-state (React Query) + client-state (Zustand). (Deferred to Phase 3)
+    *   [x] Defer server-state (React Query) + client-state (Zustand) to Phase 3.
 *   [x] **Customer Storefront (User View)**:
     *   [x] Home Page (Banners, Product Lists + pagination).
     *   [x] Product Search & Detail Pages (filters + pagination + detail view).
@@ -71,33 +71,24 @@ This document outlines the roadmap for the development of the E-commerce system,
 
 ## Phase 3: Performance, Scalability & Reliability
 **Status: Pending**
-**Focus:** Measurable latency improvements and stability under load.
+**Focus:** Measurable latency improvements and stability under load. Backend-first.
 
-*   [ ] **Define SLOs + Benchmarks**:
-    *   Choose critical endpoints/journeys (Home, Product Detail, Search, Cart, Checkout, Orders).
-    *   Capture baseline (p95 latency, error rate, throughput) before optimizations.
+Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
+
+*   [ ] **Define SLOs + Benchmarks** (see `PHASE3_ROADMAP.md`):
+    *   Pick critical endpoints and capture baseline p95/error/throughput.
 *   [ ] **Caching Strategy**:
-    *   Integrate **Redis**.
-    *   Cache heavy read operations: Home aggregate, Product details, Category tree, Banners/Vouchers.
-    *   Define cache keys + TTL and an invalidation strategy on write operations.
-    *   Prevent cache stampede for hot keys (soft TTL / locking).
+    *   Integrate Redis + Spring Cache, define key/TTL/invalidation table.
 *   [ ] **Database Optimization**:
-    *   Profile and optimize slow queries (N+1, over-fetching).
-    *   Add/validate indexes for common filters/sorts and order history queries.
-    *   Tune connection pooling configuration (HikariCP) and set slow query thresholds.
-*   [ ] **Asynchronous Processing**:
-    *   Start with in-process async + outbox pattern where needed; introduce MQ only if justified by load.
-    *   Offload non-critical tasks (email/notifications, exports, cleanup jobs).
+    *   Slow query report + index list + N+1 reductions.
+*   [ ] **Async Processing**:
+    *   Offload non-critical tasks (notifications, cleanup, exports) if needed.
 *   [ ] **Resilience Hardening**:
-    *   Add timeouts + safe retries (backoff) + circuit breaker for external calls.
-    *   Add rate limiting for expensive endpoints.
-    *   Graceful degradation (serve cached home if DB is slow).
+    *   Rate limiting middleware + timeouts/retries for external calls.
 *   [ ] **Observability Foundation**:
-    *   Structured logging + request correlation id.
-    *   Metrics (latency, error rate, DB pool, cache hit rate) + basic dashboards.
-    *   Tracing for critical flows (checkout).
+    *   Request ID + structured logs + Actuator metrics.
 *   [ ] **Phase 3 Review**:
-    *   Before/after benchmark report + load test summary + cache hit rate + top slow queries addressed.
+    *   Before/after benchmark report + cache hit rate + slow query summary.
 
 ## Phase 4: Advanced Features & Integrations
 **Status: Pending**

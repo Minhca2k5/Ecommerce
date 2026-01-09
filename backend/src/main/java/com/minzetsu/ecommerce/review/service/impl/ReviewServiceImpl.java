@@ -2,6 +2,7 @@ package com.minzetsu.ecommerce.review.service.impl;
 
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
+import com.minzetsu.ecommerce.common.exception.InvalidObjectException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.service.ProductService;
@@ -70,6 +71,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public void updateReviewByComment(String comment, Long id, Long currentUserId) {
+        if (comment == null || comment.trim().isEmpty()) {
+            throw new InvalidObjectException("Comment cannot be null or empty");
+        }
         Review review = getExistingReview(id);
         validateOwnership(review, currentUserId);
         reviewRepository.updateByComment(comment, id);

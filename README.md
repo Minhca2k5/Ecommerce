@@ -42,4 +42,5 @@ This repository is an end-to-end E-commerce system:
 
 ## Roadmap
 - Frontend Phase 2 roadmap: `FRONTEND_PHASE2_ROADMAP.md`
+- Phase 3 roadmap (performance/caching/reliability): `PHASE3_ROADMAP.md`
 - High-level project plan: `PROJECT_PLAN.md`

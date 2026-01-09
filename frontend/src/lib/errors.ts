@@ -22,11 +22,26 @@ function looksLikeLeakyIdMessage(msg: string): boolean {
   return false;
 }
 
+function normalizeValidationMessage(msg: string): string | null {
+  const trimmed = msg.trim();
+  if (!trimmed) return null;
+  const lower = trimmed.toLowerCase();
+  if (lower.includes("message") && (lower.includes("not be blank") || lower.includes("must not be blank"))) {
+    return "message is not blank";
+  }
+  if (lower.includes("not be blank") || lower.includes("must not be blank")) {
+    return "message is not blank";
+  }
+  return null;
+}
+
 export function getErrorMessage(error: unknown, fallback: string) {
   const redact = shouldRedactIds();
   if (error instanceof ApiError) {
     const payload = error.payload;
     if (isRecord(payload) && typeof payload.message === "string" && payload.message.trim()) {
+      const normalized = normalizeValidationMessage(payload.message);
+      if (normalized) return normalized;
       if (!redact) return payload.message;
       return looksLikeLeakyIdMessage(payload.message) ? fallback : payload.message;
     }
@@ -34,6 +49,8 @@ export function getErrorMessage(error: unknown, fallback: string) {
   }
 
   if (error instanceof Error && error.message.trim()) {
+    const normalized = normalizeValidationMessage(error.message);
+    if (normalized) return normalized;
     if (!redact) return error.message;
     return looksLikeLeakyIdMessage(error.message) ? fallback : error.message;
   }
