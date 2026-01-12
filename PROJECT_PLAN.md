@@ -75,7 +75,7 @@ This document outlines the roadmap for the development of the E-commerce system,
 
 Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 
-*   [ ] **Define SLOs + Benchmarks** (see `PHASE3_ROADMAP.md`):
+*   [X] **Define SLOs + Benchmarks** (see `PHASE3_ROADMAP.md`):
     *   Pick critical endpoints and capture baseline p95/error/throughput.
 *   [ ] **Caching Strategy**:
     *   Integrate Redis + Spring Cache, define key/TTL/invalidation table.

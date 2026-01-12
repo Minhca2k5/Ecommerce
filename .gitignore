@@ -3,3 +3,16 @@
 
 # target
 /target/
+# perf env
+/docs/perf/k6/.env
+/docs/perf/baseline_results/
+
+# backend
+/backend/.idea/
+/backend/target/
+/backend/.vscode/
+/backend/.mvn/
+
+# frontend
+/frontend/node_modules/
+/frontend/.env
