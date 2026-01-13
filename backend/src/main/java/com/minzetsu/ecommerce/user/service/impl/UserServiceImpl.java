@@ -7,11 +7,11 @@ import com.minzetsu.ecommerce.cart.entity.CartItem;
 import com.minzetsu.ecommerce.cart.mapper.CartMapper;
 import com.minzetsu.ecommerce.cart.repository.CartItemRepository;
 import com.minzetsu.ecommerce.cart.repository.CartRepository;
+import com.minzetsu.ecommerce.inventory.service.InventoryService;
 import com.minzetsu.ecommerce.common.exception.DeletionException;
 import com.minzetsu.ecommerce.common.exception.InvalidCredentialException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
-import com.minzetsu.ecommerce.inventory.service.InventoryService;
 import com.minzetsu.ecommerce.order.dto.response.OrderResponse;
 import com.minzetsu.ecommerce.order.mapper.OrderMapper;
 import com.minzetsu.ecommerce.order.repository.OrderRepository;
@@ -40,6 +40,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,7 +49,6 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleService roleService;
-    private final InventoryService inventoryService;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final OrderRepository orderRepository;
@@ -55,6 +56,7 @@ public class UserServiceImpl implements UserService {
     private final ReviewRepository reviewRepository;
     private final AddressRepository addressRepository;
     private final CartItemRepository cartItemRepository;
+    private final InventoryService inventoryService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final AddressMapper addressMapper;
     private final ReviewMapper reviewMapper;
@@ -87,11 +89,15 @@ public class UserServiceImpl implements UserService {
         Cart cart = cartRepository.findByUserId(id).orElse(null);
         if (cart != null) {
             List<CartItem> cartItems = cartItemRepository.findByCartIdOrderByUpdatedAtDesc(cart.getId());
-            for (CartItem item : cartItems) {
-                Long productId = item.getProduct().getId();
-                Integer quantity = item.getQuantity();
-                inventoryService.updateQuantityByCartItemAmountReturned(productId, quantity);
-                cartItemRepository.delete(item);
+            if (!cartItems.isEmpty()) {
+                Map<Long, Integer> quantityByProduct = cartItems.stream()
+                        .filter(item -> item.getProduct() != null && item.getProduct().getId() != null)
+                        .collect(Collectors.groupingBy(
+                                item -> item.getProduct().getId(),
+                                Collectors.summingInt(CartItem::getQuantity)
+                        ));
+                quantityByProduct.forEach(inventoryService::updateQuantityByCartItemAmountReturned);
+                cartItemRepository.deleteAllInBatch(cartItems);
             }
         }
         cartRepository.deleteByUserId(id);

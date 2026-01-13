@@ -41,6 +41,9 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     @Query("SELECT SUM(i.reservedQty) FROM Inventory i WHERE i.product.id = :productId and i.product.status = :status and i.warehouse.isActive = true")
     Integer getTotalReservedQuantityByProductId(Long productId, ProductStatus status);
 
+    @Query("SELECT SUM(i.stockQty - i.reservedQty) FROM Inventory i WHERE i.product.id = :productId and i.product.status = :status and i.warehouse.isActive = true")
+    Integer getAvailableStockQuantityByProductId(Long productId, ProductStatus status);
+
     void deleteByProductId(Long productId);
     void deleteByWarehouseId(Long warehouseId);
 }

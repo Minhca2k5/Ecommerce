@@ -9,5 +9,6 @@
     <!-- Master changelog that includes schema and seed -->
     <include file="db/changelog/v1__schema.xml"/>
     <include file="db/changelog/v2__seed.xml"/>
+    <include file="db/changelog/v3__indexes.xml"/>
 
 </databaseChangeLog>

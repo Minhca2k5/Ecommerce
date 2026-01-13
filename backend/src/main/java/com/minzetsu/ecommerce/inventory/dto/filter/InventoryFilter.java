@@ -16,7 +16,7 @@ public class InventoryFilter implements SortableFilter {
     private Integer maxStockQty;
     private Integer minReservedQty;
     private Integer maxReservedQty;
-    private Boolean hasAvailableStock; // true nếu stockQty > reservedQty
+    private Boolean hasAvailableStock; 
 
     private LocalDateTime updatedFrom;
     private LocalDateTime updatedTo;

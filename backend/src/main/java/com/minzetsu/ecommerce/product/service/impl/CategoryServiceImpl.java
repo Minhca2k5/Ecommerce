@@ -168,7 +168,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "categoryDetail", key = "'v1:' + #id")
+    @Cacheable(cacheNames = "categoryDetail", key = "'v1:' + #id", sync = true)
     public CategoryResponse getFullCategoryResponseById(Long id) {
         Category category = getExistingCategory(id);
         List<CategoryResponse> subCategoryResponses = getSubcategoryResponsesByParentId(id);
@@ -183,7 +183,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "categoryDetail", key = "'v1:slug:' + #slug")
+    @Cacheable(cacheNames = "categoryDetail", key = "'v1:slug:' + #slug", sync = true)
     public CategoryResponse getFullCategoryResponseBySlug(String slug) {
         Category category = getExistingCategoryBySlug(slug);
         List<CategoryResponse> subCategoryResponses = getSubcategoryResponsesByParentId(category.getId());
@@ -192,7 +192,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "categoryTree", key = "'v1:parent:' + #parentId")
+    @Cacheable(cacheNames = "categoryTree", key = "'v1:parent:' + #parentId", sync = true)
     public List<CategoryResponse> getSubcategoryResponsesByParentId(Long parentId) {
         return categoryMapper.toResponseList(categoryRepository.findByParentId(parentId));
     }

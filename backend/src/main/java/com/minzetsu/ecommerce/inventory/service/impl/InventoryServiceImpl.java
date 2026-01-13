@@ -121,6 +121,12 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Integer getAvailableStockQuantityByProductId(Long productId) {
+        return inventoryRepository.getAvailableStockQuantityByProductId(productId, ProductStatus.ACTIVE);
+    }
+
+    @Override
     @Transactional
     public void updateQuantityByCartItemAmountBorrowed(Long productId, Integer amount) {
         List<Inventory> inventories = getActiveInventoriesByProductIdAndAvailableStock(productId);

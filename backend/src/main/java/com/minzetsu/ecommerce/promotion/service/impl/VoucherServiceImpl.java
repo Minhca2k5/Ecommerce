@@ -17,6 +17,8 @@ import com.minzetsu.ecommerce.promotion.repository.VoucherSpecification;
 import com.minzetsu.ecommerce.promotion.repository.VoucherUseRepository;
 import com.minzetsu.ecommerce.promotion.service.VoucherService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +51,7 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "voucherPublic", allEntries = true)
     public AdminVoucherResponse createAdminVoucherResponse(VoucherCreateRequest request) {
         Voucher voucher = voucherMapper.toEntity(request);
         voucher = voucherRepository.save(voucher);
@@ -57,6 +60,7 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "voucherPublic", allEntries = true)
     public AdminVoucherResponse updateAdminVoucherResponse(Long id, VoucherUpdateRequest request) {
         Voucher voucher = voucherRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Voucher not found"));
@@ -67,6 +71,7 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "voucherPublic", allEntries = true)
     public void deleteVoucher(Long id) {
         Voucher voucher = voucherRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Voucher not found"));
@@ -85,6 +90,11 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(
+            cacheNames = "voucherPublic",
+            key = "'v1:code:' + #code + ':user:' + #userId",
+            sync = true
+    )
     public List<UserVoucherResponse> getVoucherResponsesByCode(String code, Long userId) {
         List<Voucher> vouchers = voucherRepository.findByCodeContainingIgnoreCase(code);
         vouchers.removeIf(voucher -> !isValidVoucherForUser(voucher, userId));
@@ -93,6 +103,11 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(
+            cacheNames = "voucherPublic",
+            key = "'v1:minTotal:' + #minOrderTotal + ':page:' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort + ':user:' + #userId",
+            sync = true
+    )
     public Page<UserVoucherResponse> searchVoucherResponsesByMinOrderTotal(BigDecimal minOrderTotal, Long userId, Pageable pageable) {
         Page<Voucher> vouchers = voucherRepository.findByMinOrderTotalLessThanEqual(minOrderTotal, pageable);
         List<Voucher> filteredVouchers = vouchers.getContent().stream()
@@ -104,6 +119,11 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(
+            cacheNames = "voucherPublic",
+            key = "'v1:id:' + #id + ':user:' + #userId",
+            sync = true
+    )
     public UserVoucherResponse getVoucherResponseById(Long id, Long userId) {
         Voucher voucher = getVoucherById(id);
         if (!isValidVoucherForUser(voucher, userId)) {

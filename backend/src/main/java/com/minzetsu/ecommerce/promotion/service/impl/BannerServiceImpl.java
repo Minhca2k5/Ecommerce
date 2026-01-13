@@ -12,6 +12,7 @@ import com.minzetsu.ecommerce.promotion.repository.BannerRepository;
 import com.minzetsu.ecommerce.promotion.repository.BannerSpecification;
 import com.minzetsu.ecommerce.promotion.service.BannerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,12 @@ public class BannerServiceImpl implements BannerService {
     private final BannerMapper bannerMapper;
 
     @Override
+    @Cacheable(
+            cacheNames = "bannerPublic",
+            key = "'v1:' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort + ':' + #filter.title + ':' + #filter.isActive + ':' + #filter.position + ':' + #filter.startAtFrom + ':' + #filter.startAtTo + ':' + #filter.endAtFrom + ':' + #filter.endAtTo",
+            condition = "#isUser == true",
+            sync = true
+    )
     public Page<BannerResponse> searchBanners(BannerFilter filter, Pageable pageable, boolean isUser) {
         if (isUser) {
             filter.setIsActive(true);

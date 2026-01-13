@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {
     List<ProductImage> findByProductId(Long productId);
     Optional<ProductImage> findByIsPrimaryTrueAndProductId(Long productId);
+    @Query("SELECT pi FROM ProductImage pi WHERE pi.isPrimary = true AND pi.product.id IN :productIds")
+    List<ProductImage> findPrimaryByProductIds(List<Long> productIds);
     @Modifying
     @Query("UPDATE ProductImage pi SET pi.url = :url WHERE pi.id = :id")
     void updateByUrl(String url, Long id);

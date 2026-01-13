@@ -20,6 +20,7 @@ public interface InventoryService {
     boolean existsById(Long id);
     Integer getTotalStockQuantityByProductId(Long productId);
     Integer getTotalReservedQuantityByProductId(Long productId);
+    Integer getAvailableStockQuantityByProductId(Long productId);
     void updateQuantityByCartItemAmountBorrowed(Long productId, Integer amount);
     void updateQuantityByCartItemAmountReturned(Long productId, Integer amount);
     void updateStockQuantityById(Integer quantity, Long id);

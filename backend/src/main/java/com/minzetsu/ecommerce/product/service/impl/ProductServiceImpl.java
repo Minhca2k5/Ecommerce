@@ -83,6 +83,37 @@ public class ProductServiceImpl implements ProductService {
             }
         });
     }
+
+    private Map<Long, String> getPrimaryImageUrlMap(List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Map.of();
+        }
+        return productImageRepository.findPrimaryByProductIds(productIds).stream()
+                .filter(image -> image.getProduct() != null && image.getProduct().getId() != null)
+                .collect(Collectors.toMap(
+                        image -> image.getProduct().getId(),
+                        ProductImage::getUrl,
+                        (existing, ignored) -> existing
+                ));
+    }
+
+    private void applyUrlsToAdminResponses(List<AdminProductResponse> responses) {
+        List<Long> productIds = responses.stream()
+                .map(AdminProductResponse::getId)
+                .filter(Objects::nonNull)
+                .toList();
+        Map<Long, String> urlMap = getPrimaryImageUrlMap(productIds);
+        responses.forEach(response -> response.setUrl(urlMap.get(response.getId())));
+    }
+
+    private void applyUrlsToUserResponses(List<ProductResponse> responses) {
+        List<Long> productIds = responses.stream()
+                .map(ProductResponse::getId)
+                .filter(Objects::nonNull)
+                .toList();
+        Map<Long, String> urlMap = getPrimaryImageUrlMap(productIds);
+        responses.forEach(response -> response.setUrl(urlMap.get(response.getId())));
+    }
     private void handleFields(Long productId, Object response) {
         ProductRatingView ratingView = reviewRepository.getProductRatingViewByProductId(productId, days);
         Double recentlyAverageRating = ratingView.getAverageRating();
@@ -112,6 +143,12 @@ public class ProductServiceImpl implements ProductService {
         return response;
     }
 
+    private List<AdminProductResponse> toAdminResponseListWithUrls(List<Product> products) {
+        List<AdminProductResponse> responses = productMapper.toAdminResponseList(products);
+        applyUrlsToAdminResponses(responses);
+        return responses;
+    }
+
     private AdminProductResponse toFullAdminResponse(
             Product product,
             List<ReviewResponse> reviews,
@@ -132,10 +169,10 @@ public class ProductServiceImpl implements ProductService {
         return response;
     }
 
-    private List<ProductResponse> toUserResponseList(List<Product> products) {
-        return products.stream()
-                .map(this::toUserResponse)
-                .toList();
+    private List<ProductResponse> toUserResponseListWithUrls(List<Product> products) {
+        List<ProductResponse> responses = productMapper.toResponseList(products);
+        applyUrlsToUserResponses(responses);
+        return responses;
     }
 
     private ProductResponse toFullUserResponse(
@@ -256,31 +293,25 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public Page<AdminProductResponse> searchAdminProductResponses(ProductFilter filter, Pageable pageable) {
-        return PageableUtils.search(
-                filter,
-                pageable,
-                productRepository,
-                ProductSpecification.filter(filter),
-                this::toAdminResponse
-        );
+        Pageable sortedPageable = PageableUtils.applySorting(pageable, filter);
+        Page<Product> page = productRepository.findAll(ProductSpecification.filter(filter), sortedPageable);
+        List<AdminProductResponse> responses = toAdminResponseListWithUrls(page.getContent());
+        return new PageImpl<>(responses, sortedPageable, page.getTotalElements());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<ProductResponse> searchProductResponses(ProductFilter filter, Pageable pageable) {
         filter.setStatus("ACTIVE");
-        return PageableUtils.search(
-                filter,
-                pageable,
-                productRepository,
-                ProductSpecification.filter(filter),
-                this::toUserResponse
-        );
+        Pageable sortedPageable = PageableUtils.applySorting(pageable, filter);
+        Page<Product> page = productRepository.findAll(ProductSpecification.filter(filter), sortedPageable);
+        List<ProductResponse> responses = toUserResponseListWithUrls(page.getContent());
+        return new PageImpl<>(responses, sortedPageable, page.getTotalElements());
     }
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "productDetail", key = "'v1:' + #id")
+    @Cacheable(cacheNames = "productDetail", key = "'v1:' + #id", sync = true)
     public ProductResponse getFullProductResponseById(Long id) {
         Product product = getExistingProduct(id);
         validateActiveProduct(product);
@@ -292,7 +323,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "productDetail", key = "'v1:slug:' + #slug")
+    @Cacheable(cacheNames = "productDetail", key = "'v1:slug:' + #slug", sync = true)
     public ProductResponse getFullProductResponseBySlug(String slug) {
         Product product = getExistingProductBySlug(slug);
         validateActiveProduct(product);
@@ -374,7 +405,7 @@ public class ProductServiceImpl implements ProductService {
                 .filter(Objects::nonNull)
                 .toList();
 
-        List<ProductResponse> responses = toUserResponseList(orderedProducts);
+        List<ProductResponse> responses = toUserResponseListWithUrls(orderedProducts);
 
         IntStream.range(0, responses.size())
                 .forEach(i ->

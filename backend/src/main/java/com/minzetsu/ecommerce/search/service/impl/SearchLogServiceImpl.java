@@ -24,12 +24,6 @@ public class SearchLogServiceImpl implements SearchLogService {
     private final SearchLogMapper searchLogMapper;
     private final UserService userService;
 
-    void existsByUserId(Long userId) {
-        if (!searchLogRepository.existsByUserId(userId)) {
-            throw new NotFoundException("No search logs found for user with ID: " + userId);
-        }
-    }
-
     @Override
     @Transactional
     public SearchLogResponse addSearchLog(SearchLogRequest request, Long userId) {
@@ -51,7 +45,6 @@ public class SearchLogServiceImpl implements SearchLogService {
     @Override
     @Transactional(readOnly = true)
     public List<SearchLogResponse> getSearchLogsByKeyword(String keyword, Long userId) {
-        existsByUserId(userId);
         List<SearchLog> searchLogs = searchLogRepository.findByUserIdAndKeywordContainingIgnoreCase(userId, keyword);
         return searchLogMapper.toResponseList(searchLogs);
     }
@@ -59,7 +52,6 @@ public class SearchLogServiceImpl implements SearchLogService {
     @Override
     @Transactional(readOnly = true)
     public List<SearchLogResponse> getSearchLogsByUserId(Long userId, Pageable pageable) {
-        existsByUserId(userId);
         List<SearchLog> searchLogs = searchLogRepository.findByUserIdOrderByUpdatedAtDesc(userId, pageable);
         return searchLogMapper.toResponseList(searchLogs);
     }
@@ -67,7 +59,6 @@ public class SearchLogServiceImpl implements SearchLogService {
     @Override
     @Transactional
     public void deleteAllSearchLogsByUserId(Long userId) {
-        existsByUserId(userId);
         searchLogRepository.deleteByUserId(userId);
     }
 

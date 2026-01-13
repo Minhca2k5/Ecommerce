@@ -77,10 +77,13 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 
 *   [X] **Define SLOs + Benchmarks** (see `PHASE3_ROADMAP.md`):
     *   Pick critical endpoints and capture baseline p95/error/throughput.
-*   [ ] **Caching Strategy**:
+*   [X] **Caching Strategy**:
     *   Integrate Redis + Spring Cache, define key/TTL/invalidation table.
-*   [ ] **Database Optimization**:
+*   [X] **Database Optimization**:
     *   Slow query report + index list + N+1 reductions.
+    *   [x] Reduce redundant queries in user-mixed flow (cart/order creation, inventory updates).
+    *   [x] Review list N+1 fixes (product/user fetch) + batch cleanup on user delete.
+    *   [x] Add composite indexes for cart/order/review/wishlist/recent view/search log hot paths.
 *   [ ] **Async Processing**:
     *   Offload non-critical tasks (notifications, cleanup, exports) if needed.
 *   [ ] **Resilience Hardening**:

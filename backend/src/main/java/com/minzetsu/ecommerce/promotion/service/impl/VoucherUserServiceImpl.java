@@ -12,6 +12,7 @@ import com.minzetsu.ecommerce.promotion.service.VoucherService;
 import com.minzetsu.ecommerce.promotion.service.VoucherUseService;
 import com.minzetsu.ecommerce.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class VoucherUserServiceImpl implements VoucherUseService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = "voucherPublic", allEntries = true)
     public void createVoucherUse(Long voucherId, Long userId, Long orderId, BigDecimal discountAmount) {
         VoucherUse voucherUse = VoucherUse.builder()
                 .voucher(voucherService.getVoucherById(voucherId))

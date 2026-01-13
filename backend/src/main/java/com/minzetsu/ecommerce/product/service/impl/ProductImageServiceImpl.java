@@ -13,6 +13,7 @@ import com.minzetsu.ecommerce.product.repository.ProductImageRepository;
 import com.minzetsu.ecommerce.product.service.ProductImageService;
 import com.minzetsu.ecommerce.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,7 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
     public void deleteImageById(Long id) {
         ProductImage image = getExistingImage(id);
         productImageRepository.delete(image);
@@ -54,6 +56,7 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
     public void updateImageUrlById(String url, Long id) {
         if (!existsById(id)) {
             throw new NotFoundException("Image not found with id: " + id);
@@ -63,6 +66,7 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
     public void updateImageIsPrimaryById(Long id, Long productId) {
         ProductImage productImage = getExistingImage(id);
 
@@ -89,6 +93,7 @@ public class ProductImageServiceImpl implements ProductImageService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
     public AdminProductImageResponse createAdminProductImageResponse(ProductImageRequest request) {
         Long productId = request.getProductId();
         if (!productService.existsById(productId)) {

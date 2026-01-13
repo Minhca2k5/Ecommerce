@@ -14,12 +14,16 @@ import com.minzetsu.ecommerce.product.service.ProductService;
 import com.minzetsu.ecommerce.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +35,19 @@ public class RecentViewServiceImpl implements RecentViewService {
     private final UserService userService;
     private final ProductImageRepository productImageRepository;
 
+    private Map<Long, String> getPrimaryImageUrlMap(List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Map.of();
+        }
+        return productImageRepository.findPrimaryByProductIds(productIds).stream()
+                .filter(image -> image.getProduct() != null && image.getProduct().getId() != null)
+                .collect(Collectors.toMap(
+                        image -> image.getProduct().getId(),
+                        ProductImage::getUrl,
+                        (existing, ignored) -> existing
+                ));
+    }
+
     private RecentViewResponse toResponseWithUrl(RecentView recentView) {
         RecentViewResponse response = recentViewMapper.toResponse(recentView);
         Long productId = response.getProductId();
@@ -40,23 +57,22 @@ public class RecentViewServiceImpl implements RecentViewService {
     }
 
     private List<RecentViewResponse> toResponseListWithUrl(List<RecentView> recentViews) {
-        return recentViews.stream()
-                .map(this::toResponseWithUrl)
+        List<RecentViewResponse> responses = recentViewMapper.toResponseList(recentViews);
+        List<Long> productIds = responses.stream()
+                .map(RecentViewResponse::getProductId)
+                .filter(Objects::nonNull)
                 .toList();
-    }
-
-    void existsByUserId(Long userId) {
-        if (!recentViewRepository.existsByUserId(userId)) {
-            throw new NotFoundException("No recent views found for user with ID: " + userId);
-        }
+        Map<Long, String> urlMap = getPrimaryImageUrlMap(productIds);
+        responses.forEach(response -> response.setUrl(urlMap.get(response.getProductId())));
+        return responses;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<RecentViewResponse> getRecentViewsByUserId(Long userId, Pageable pageable) {
-        existsByUserId(userId);
         Page<RecentView> recentViewResponses = recentViewRepository.findByUserId(userId, pageable);
-        return recentViewResponses.map(this::toResponseWithUrl);
+        List<RecentViewResponse> responses = toResponseListWithUrl(recentViewResponses.getContent());
+        return new PageImpl<>(responses, recentViewResponses.getPageable(), recentViewResponses.getTotalElements());
     }
 
     @Override
@@ -100,7 +116,6 @@ public class RecentViewServiceImpl implements RecentViewService {
     @Override
     @Transactional
     public void deleteAllRecentViewsByUserId(Long userId) {
-        existsByUserId(userId);
         recentViewRepository.deleteByUserId(userId);
     }
 

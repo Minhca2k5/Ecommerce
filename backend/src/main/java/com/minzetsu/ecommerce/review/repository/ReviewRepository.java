@@ -3,6 +3,7 @@ package com.minzetsu.ecommerce.review.repository;
 import com.minzetsu.ecommerce.product.repository.projection.ProductRatingView;
 import com.minzetsu.ecommerce.review.entity.Review;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,7 +12,9 @@ import java.util.Optional;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long>, JpaSpecificationExecutor<Review> {
 
+    @EntityGraph(attributePaths = {"product", "user"})
     List<Review> findByProductIdOrderByUpdatedAtDesc(Long productId);
+    @EntityGraph(attributePaths = {"product", "user"})
     List<Review> findByUserIdOrderByUpdatedAtDesc(Long userId);
 
     @Modifying

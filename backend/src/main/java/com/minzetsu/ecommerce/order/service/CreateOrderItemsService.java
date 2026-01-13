@@ -2,7 +2,6 @@ package com.minzetsu.ecommerce.order.service;
 
 import com.minzetsu.ecommerce.cart.entity.CartItem;
 import com.minzetsu.ecommerce.cart.service.CartItemService;
-import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.order.entity.Order;
 import com.minzetsu.ecommerce.order.entity.OrderItem;
 import com.minzetsu.ecommerce.order.repository.OrderItemRepository;
@@ -23,22 +22,12 @@ public class CreateOrderItemsService {
     @Transactional
     public List<OrderItem> createOrderItems(Order order, Long cartId) {
         List<CartItem> cartItems = cartItemService.getCartItemsByCartId(cartId);
-        return cartItems.stream()
-                .map(cartItem -> createOrderItem(order, cartItem.getId()))
+        List<OrderItem> orderItems = cartItems.stream()
+                .map(cartItem -> getOrderItem(order, cartItem))
                 .toList();
-    }
-
-    private OrderItem createOrderItem(Order order, Long cartItemId) {
-        if (!cartItemService.existsById(cartItemId)) {
-            throw new NotFoundException("Cart item not found with id: " + cartItemId);
-        }
-
-        CartItem cartItem = cartItemService.getCartItemById(cartItemId);
-        OrderItem orderItem = getOrderItem(order, cartItem);
-
-        cartItemService.deleteById(cartItemId);
-
-        return orderItemRepository.save(orderItem);
+        List<OrderItem> savedOrderItems = orderItemRepository.saveAll(orderItems);
+        cartItemService.deleteByCartItems(cartItems);
+        return savedOrderItems;
     }
 
     private OrderItem getOrderItem(Order order, CartItem cartItem) {

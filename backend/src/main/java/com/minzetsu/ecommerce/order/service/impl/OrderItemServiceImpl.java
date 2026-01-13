@@ -20,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,19 @@ public class OrderItemServiceImpl implements OrderItemService {
     private final OrderService orderService;
     private final ProductImageRepository productImageRepository;
 
+    private Map<Long, String> getPrimaryImageUrlMap(List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Map.of();
+        }
+        return productImageRepository.findPrimaryByProductIds(productIds).stream()
+                .filter(image -> image.getProduct() != null && image.getProduct().getId() != null)
+                .collect(Collectors.toMap(
+                        image -> image.getProduct().getId(),
+                        ProductImage::getUrl,
+                        (existing, ignored) -> existing
+                ));
+    }
+
     private OrderItemResponse toResponseWithUrl(OrderItem orderItem) {
         OrderItemResponse response = orderItemMapper.toResponse(orderItem);
         Long productId = response.getProductId();
@@ -39,9 +55,19 @@ public class OrderItemServiceImpl implements OrderItemService {
     }
 
     private List<OrderItemResponse> toResponseListWithUrl(List<OrderItem> orderItems) {
-        return orderItems.stream()
-                .map(this::toResponseWithUrl)
+        List<OrderItemResponse> responses = orderItemMapper.toResponseList(orderItems);
+        List<Long> productIds = responses.stream()
+                .map(OrderItemResponse::getProductId)
+                .filter(Objects::nonNull)
                 .toList();
+        Map<Long, String> urlMap = getPrimaryImageUrlMap(productIds);
+        responses.forEach(response -> response.setUrl(urlMap.get(response.getProductId())));
+        return responses;
+    }
+
+    private Page<OrderItemResponse> toResponsePageWithUrl(Page<OrderItem> orderItems) {
+        List<OrderItemResponse> responses = toResponseListWithUrl(orderItems.getContent());
+        return new PageImpl<>(responses, orderItems.getPageable(), orderItems.getTotalElements());
     }
 
     private OrderItem getExistingOrderItem(Long id) {
@@ -87,13 +113,9 @@ public class OrderItemServiceImpl implements OrderItemService {
     @Override
     @Transactional(readOnly = true)
     public Page<OrderItemResponse> searchOrderItemResponses(OrderItemFilter filter, Pageable pageable) {
-        return PageableUtils.search(
-                filter,
-                pageable,
-                orderItemRepository,
-                OrderItemSpecification.filter(filter),
-                this::toResponseWithUrl
-        );
+        Pageable sortedPageable = PageableUtils.applySorting(pageable, filter);
+        Page<OrderItem> page = orderItemRepository.findAll(OrderItemSpecification.filter(filter), sortedPageable);
+        return toResponsePageWithUrl(page);
     }
 
     @Override
@@ -120,6 +142,6 @@ public class OrderItemServiceImpl implements OrderItemService {
     public Page<OrderItemResponse> getOrderItemResponsesByOrderIdAndUserId(Long orderId, Long userId, Pageable pageable) {
         orderService.getOrderByIdAndUserId(orderId, userId);
         Page<OrderItem> items = orderItemRepository.findByOrderId(orderId, pageable);
-        return items.map(this::toResponseWithUrl);
+        return toResponsePageWithUrl(items);
     }
 }

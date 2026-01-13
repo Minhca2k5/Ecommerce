@@ -14,12 +14,16 @@ import com.minzetsu.ecommerce.product.service.ProductService;
 import com.minzetsu.ecommerce.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +35,19 @@ public class WishlistServiceImpl implements WishlistService {
     private final ProductService productService;
     private final UserService userService;
 
+    private Map<Long, String> getPrimaryImageUrlMap(List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Map.of();
+        }
+        return productImageRepository.findPrimaryByProductIds(productIds).stream()
+                .filter(image -> image.getProduct() != null && image.getProduct().getId() != null)
+                .collect(Collectors.toMap(
+                        image -> image.getProduct().getId(),
+                        ProductImage::getUrl,
+                        (existing, ignored) -> existing
+                ));
+    }
+
     private WishlistResponse toResponseWithUrl(Wishlist wishlist) {
         WishlistResponse response = wishlistMapper.toResponse(wishlist);
         Long productId = response.getProductId();
@@ -40,23 +57,22 @@ public class WishlistServiceImpl implements WishlistService {
     }
 
     private List<WishlistResponse> toResponseListWithUrl(List<Wishlist> wishlists) {
-        return wishlists.stream()
-                .map(this::toResponseWithUrl)
+        List<WishlistResponse> responses = wishlistMapper.toResponseList(wishlists);
+        List<Long> productIds = responses.stream()
+                .map(WishlistResponse::getProductId)
+                .filter(Objects::nonNull)
                 .toList();
-    }
-
-    void existsByUserId(Long userId) {
-        if (!wishlistRepository.existsByUserId(userId)) {
-            throw new NotFoundException("No wishlists found for user with ID: " + userId);
-        }
+        Map<Long, String> urlMap = getPrimaryImageUrlMap(productIds);
+        responses.forEach(response -> response.setUrl(urlMap.get(response.getProductId())));
+        return responses;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<WishlistResponse> getWishlistByUserId(Long userId, Pageable pageable) {
-        existsByUserId(userId);
         Page<Wishlist> wishlists = wishlistRepository.findByUserId(userId, pageable);
-        return wishlists.map(this::toResponseWithUrl);
+        List<WishlistResponse> responses = toResponseListWithUrl(wishlists.getContent());
+        return new PageImpl<>(responses, wishlists.getPageable(), wishlists.getTotalElements());
     }
 
     @Override
@@ -96,7 +112,6 @@ public class WishlistServiceImpl implements WishlistService {
     @Override
     @Transactional
     public void clearWishlistByUserId(Long userId) {
-        existsByUserId(userId);
         wishlistRepository.deleteByUserId(userId);
     }
 

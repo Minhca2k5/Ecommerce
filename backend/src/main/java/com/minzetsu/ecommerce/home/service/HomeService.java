@@ -21,7 +21,7 @@ public class HomeService {
     private final CategoryService categoryService;
     private final ProductService productService;
 
-    @Cacheable(cacheNames = "home", key = "'v1'")
+    @Cacheable(cacheNames = "home", key = "'v1'", sync = true)
     public HomeResponse getHomeData() {
         // 1. Banners (Active, sorted by position)
         var bannerFilter = BannerFilter.builder().isActive(true).build();

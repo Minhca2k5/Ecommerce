@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -33,8 +34,10 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
             boolean isReturned
     );
 
+    @EntityGraph(attributePaths = {"product"})
     List<CartItem> findByCartIdOrderByUpdatedAtDesc(Long cartId);
     Optional<CartItem> findByCartIdAndProductId(Long cartId, Long productId);
+    @EntityGraph(attributePaths = {"product"})
     Page<CartItem> findByCartId(Long cartId, Pageable pageable);
     @Query("SELECT c FROM CartItem c JOIN FETCH c.product p WHERE p.name LIKE %:productName% and c.cart.user.id = :userId")
     List<CartItem> findByProductName(String productName, Long userId);

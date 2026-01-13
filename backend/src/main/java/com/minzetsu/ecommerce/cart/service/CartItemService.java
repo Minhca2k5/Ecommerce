@@ -14,6 +14,8 @@ public interface CartItemService {
     boolean existsById(Long id);
     void deleteByCartId(Long cartId);
     void deleteById(Long id);
+    void deleteByCartItem(CartItem cartItem);
+    void deleteByCartItems(List<CartItem> cartItems);
     List<CartItem> getCartItemsByCartId(Long cartId);
     List<CartItem> getCartItemsByActiveProductTrueAndCartId(Long cartId, ProductStatus status);
     Page<CartItem> getCartItemsByCartId(Long cartId, Pageable pageable);

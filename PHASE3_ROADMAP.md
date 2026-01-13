@@ -123,11 +123,16 @@ Add/verify indexes for:
 - `/api/public/products` filters/sorts (status, category, price, createdAt, slug)
 - order history (user_id, updated_at, status)
 - review lookup (product_id, updated_at)
+- cart/order/review/wishlist/recent-view/search-log composite indexes (user_id/cart_id + updated_at)
+Status: implemented via `v3__indexes.xml` + `db/sql/indexes.sql`.
 
 ### 3.3) Reduce chatty queries (N+1)
 - Batch query by productIds for main image and metrics.
 - Consider projection/DTO query for ranked lists.
 - Consider denormalized counters if needed.
+- Reduce redundant cart/order queries in user-mixed flow (create order, cart items, inventory updates).
+- Fix review list N+1 by fetching product/user in bulk and use batch deletes for user cart cleanup.
+Status: partial (cart/order, reviews, user cleanup done; ranked lists pending).
 
 Checkpoint:
 - 3-5 slow queries addressed with measurable improvement.

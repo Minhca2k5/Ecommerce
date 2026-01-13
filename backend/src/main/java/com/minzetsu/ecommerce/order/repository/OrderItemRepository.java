@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -15,8 +17,12 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long>, Jpa
     boolean existsByProductId(Long productId);
     boolean existsByOrderId(Long orderId);
     boolean existsById(Long id);
+    @EntityGraph(attributePaths = {"product"})
     List<OrderItem> findByOrderIdOrderByUpdatedAtDesc(Long orderId);
+    @EntityGraph(attributePaths = {"product"})
     Page<OrderItem> findByOrderId(Long orderId, Pageable pageable);
+    @EntityGraph(attributePaths = {"product"})
+    Page<OrderItem> findAll(Specification<OrderItem> spec, Pageable pageable);
 
     @Query(value = "Select sum(oi.quantity) from order_items oi join orders o on oi.order_id = o.id where oi.product_id = :productId and oi.created_at >= NOW() - INTERVAL :days DAY and o.status = 'PAID'", nativeQuery = true)
     Integer getTotalQuantitySoldByProductIdLastDays(Long productId, Integer days);

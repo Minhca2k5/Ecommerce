@@ -19,12 +19,15 @@ import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,9 +51,8 @@ public class CartItemServiceImpl implements CartItemService {
     }
 
     private int getAvailableStock(Long productId) {
-        int totalStock = inventoryService.getTotalStockQuantityByProductId(productId);
-        int reservedStock = inventoryService.getTotalReservedQuantityByProductId(productId);
-        return totalStock - reservedStock;
+        Integer available = inventoryService.getAvailableStockQuantityByProductId(productId);
+        return available == null ? 0 : available;
     }
 
     private void validateStock(Long productId, int requiredQty) {
@@ -93,24 +95,58 @@ public class CartItemServiceImpl implements CartItemService {
         System.out.println("Deleting CartItems for cartId: " + cartId);
         List<CartItem> cartItems = findOrThrow(() -> getCartItemsByCartId(cartId),
                 "No CartItems found for cartId: " + cartId);
-        cartItems.forEach(cartItem -> deleteById(cartItem.getId()));
+        cartItems.forEach(this::deleteByCartItem);
     }
 
     @Override
     @Transactional
     public void deleteById(Long id) {
-        CartItem cartItem = getCartItemById(id);
-        inventoryService.updateQuantityByCartItemAmountReturned(cartItem.getProduct().getId(), cartItem.getQuantity());
+        deleteByCartItem(getCartItemById(id));
+    }
+
+    @Override
+    @Transactional
+    public void deleteByCartItem(CartItem cartItem) {
+        Long productId = cartItem.getProduct().getId();
+        int quantity = cartItem.getQuantity();
+        Integer reserved = inventoryService.getTotalReservedQuantityByProductId(productId);
+        int returnQty = reserved == null ? 0 : Math.min(quantity, reserved);
+        if (returnQty > 0) {
+            inventoryService.updateQuantityByCartItemAmountReturned(productId, returnQty);
+        }
         cartItemRepository.delete(cartItem);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByCartItems(List<CartItem> cartItems) {
+        if (cartItems == null || cartItems.isEmpty()) {
+            return;
+        }
+        Map<Long, Integer> quantityByProduct = cartItems.stream()
+                .filter(item -> item.getProduct() != null && item.getProduct().getId() != null)
+                .collect(Collectors.groupingBy(
+                        item -> item.getProduct().getId(),
+                        Collectors.summingInt(CartItem::getQuantity)
+                ));
+        quantityByProduct.forEach((productId, quantity) -> {
+            Integer reserved = inventoryService.getTotalReservedQuantityByProductId(productId);
+            int returnQty = reserved == null ? 0 : Math.min(quantity, reserved);
+            if (returnQty > 0) {
+                inventoryService.updateQuantityByCartItemAmountReturned(productId, returnQty);
+            }
+        });
+        cartItemRepository.deleteAllInBatch(cartItems);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<CartItem> getCartItemsByCartId(Long cartId) {
-        if (!existsByCartId(cartId)) {
+        List<CartItem> cartItems = cartItemRepository.findByCartIdOrderByUpdatedAtDesc(cartId);
+        if (cartItems.isEmpty()) {
             throw new NotFoundException("No CartItems found for cartId: " + cartId);
         }
-        return cartItemRepository.findByCartIdOrderByUpdatedAtDesc(cartId);
+        return cartItems;
     }
 
     @Override
@@ -121,10 +157,11 @@ public class CartItemServiceImpl implements CartItemService {
     @Override
     @Transactional(readOnly = true)
     public Page<CartItem> getCartItemsByCartId(Long cartId, Pageable pageable) {
-        if (!existsByCartId(cartId)) {
+        Page<CartItem> page = cartItemRepository.findByCartId(cartId, pageable);
+        if (page.getTotalElements() == 0) {
             throw new NotFoundException("No CartItems found for cartId: " + cartId);
         }
-        return cartItemRepository.findByCartId(cartId, pageable);
+        return page;
     }
 
     @Override
@@ -149,7 +186,8 @@ public class CartItemServiceImpl implements CartItemService {
     public Page<CartItemResponse> getCartItemResponsesByCartId(Long cartId, Long userId, Pageable pageable) {
         Cart cart = resolveCart(cartId, userId);
         Page<CartItem> cartItemsPage = getCartItemsByCartId(cart.getId(), pageable);
-        return cartItemsPage.map(getUrlForCartService::toResponseWithUrl);
+        List<CartItemResponse> responses = getUrlForCartService.toResponseListWithUrl(cartItemsPage.getContent());
+        return new PageImpl<>(responses, cartItemsPage.getPageable(), cartItemsPage.getTotalElements());
     }
 
     @Override
