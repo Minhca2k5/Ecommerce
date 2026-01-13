@@ -18,6 +18,8 @@ import com.minzetsu.ecommerce.product.repository.ProductRepository;
 import com.minzetsu.ecommerce.product.repository.ProductSpecification;
 import com.minzetsu.ecommerce.product.service.CategoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +64,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"home", "categoryDetail", "categoryTree"}, allEntries = true)
     public void updateCategoryByNameOrSlug(Long id, String name, String slug) {
         if (!existsById(id)) {
             throw new NotFoundException("Category not found with id: " + id);
@@ -71,6 +74,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"home", "categoryDetail", "categoryTree"}, allEntries = true)
     public void deleteCategory(Long id) {
         Category category = getExistingCategory(id);
         unlinkRelationsBeforeDelete(id);
@@ -90,6 +94,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"home", "categoryDetail", "categoryTree"}, allEntries = true)
     public AdminCategoryResponse createAdminCategoryResponse(CategoryRequest request) {
         Long parentId = request.getParentId();
         if (parentId != null && !existsById(parentId)) {
@@ -163,6 +168,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "categoryDetail", key = "'v1:' + #id")
     public CategoryResponse getFullCategoryResponseById(Long id) {
         Category category = getExistingCategory(id);
         List<CategoryResponse> subCategoryResponses = getSubcategoryResponsesByParentId(id);
@@ -177,6 +183,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "categoryDetail", key = "'v1:slug:' + #slug")
     public CategoryResponse getFullCategoryResponseBySlug(String slug) {
         Category category = getExistingCategoryBySlug(slug);
         List<CategoryResponse> subCategoryResponses = getSubcategoryResponsesByParentId(category.getId());
@@ -185,6 +192,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "categoryTree", key = "'v1:parent:' + #parentId")
     public List<CategoryResponse> getSubcategoryResponsesByParentId(Long parentId) {
         return categoryMapper.toResponseList(categoryRepository.findByParentId(parentId));
     }

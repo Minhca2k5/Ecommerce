@@ -40,24 +40,6 @@ public class UserWishlistController {
     ) {
         Long userId = getCurrentUserId();
         if (productName != null && !productName.isEmpty()) {
-             // Note: Ideally service should support pagination for search too, but for now we adapt
-             // Assuming getWishlistsByProductName returns List, we might need to wrap it in Page or update service.
-             // Let's check service first. The interface says List<WishlistResponse> getWishlistsByProductName(String productName, Long userId);
-             // To keep it consistent with Page return type, we might need to update service or just return list wrapped in PageImpl.
-             // However, the original search endpoint returned List. The main endpoint returns Page.
-             // Merging them means we should probably return Page for both.
-             // Let's update the service to return Page for search as well, or just use the list for now and wrap it.
-             // But wait, the original search endpoint returned List<WishlistResponse>.
-             // If I merge, I must return one type. Page<WishlistResponse> is better.
-             // I will update the service later. For now, I'll assume I can update the service.
-             // Actually, let's check if I can just use the existing service method and wrap it.
-             // But wait, the user wants "cleaner".
-             // Let's update the controller to use a service method that handles both or just wrap.
-             // Since I cannot easily change the service implementation logic without reading it, I will try to use what I have.
-             // But wait, the return types are different (Page vs List).
-             // I should probably keep them separate if return types are different OR unify them.
-             // Unifying to Page is best.
-             // I will update the controller to return Page, and if search is used, I'll wrap the list in a Page.
              List<WishlistResponse> list = wishlistService.getWishlistsByProductName(productName, userId);
              return ResponseEntity.ok(new org.springframework.data.domain.PageImpl<>(list, pageable, list.size()));
         }

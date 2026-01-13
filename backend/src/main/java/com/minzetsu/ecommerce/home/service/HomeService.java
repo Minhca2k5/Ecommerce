@@ -8,6 +8,7 @@ import com.minzetsu.ecommerce.product.service.ProductService;
 import com.minzetsu.ecommerce.promotion.dto.filter.BannerFilter;
 import com.minzetsu.ecommerce.promotion.service.BannerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class HomeService {
     private final CategoryService categoryService;
     private final ProductService productService;
 
+    @Cacheable(cacheNames = "home", key = "'v1'")
     public HomeResponse getHomeData() {
         // 1. Banners (Active, sorted by position)
         var bannerFilter = BannerFilter.builder().isActive(true).build();

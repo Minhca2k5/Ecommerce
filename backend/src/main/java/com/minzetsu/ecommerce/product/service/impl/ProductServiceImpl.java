@@ -37,6 +37,8 @@ import com.minzetsu.ecommerce.review.dto.response.ReviewResponse;
 import com.minzetsu.ecommerce.review.mapper.ReviewMapper;
 import com.minzetsu.ecommerce.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -176,6 +178,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"home", "productDetail"}, allEntries = true)
     public void deleteProduct(Long id) {
         Product product = getExistingProduct(id);
         if (cartItemRepository.existsByProductId(id) || orderItemRepository.existsByProductId(id)) {
@@ -207,6 +210,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"home", "productDetail"}, allEntries = true)
     public void updateProductStatus(ProductStatus status, Long id) {
         if (!existsById(id)) {
             throw new NotFoundException("Product not found with id: " + id);
@@ -216,6 +220,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"home", "productDetail"}, allEntries = true)
     public AdminProductResponse createAdminProductResponse(ProductCreateRequest request) {
         Long categoryId = request.getCategoryId();
         if (!categoryService.existsById(categoryId)) {
@@ -231,6 +236,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"home", "productDetail"}, allEntries = true)
     public AdminProductResponse updateAdminProductResponse(ProductUpdateRequest request, Long id) {
         Product product = getExistingProduct(id);
         productMapper.updateEntityFromRequest(request, product);
@@ -274,6 +280,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "productDetail", key = "'v1:' + #id")
     public ProductResponse getFullProductResponseById(Long id) {
         Product product = getExistingProduct(id);
         validateActiveProduct(product);
@@ -285,6 +292,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "productDetail", key = "'v1:slug:' + #slug")
     public ProductResponse getFullProductResponseBySlug(String slug) {
         Product product = getExistingProductBySlug(slug);
         validateActiveProduct(product);

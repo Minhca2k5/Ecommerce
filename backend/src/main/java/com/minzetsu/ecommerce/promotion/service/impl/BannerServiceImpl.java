@@ -12,6 +12,7 @@ import com.minzetsu.ecommerce.promotion.repository.BannerRepository;
 import com.minzetsu.ecommerce.promotion.repository.BannerSpecification;
 import com.minzetsu.ecommerce.promotion.service.BannerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
+    @CacheEvict(cacheNames = {"bannerPublic", "home"}, allEntries = true)
     public BannerResponse createBanner(BannerCreateRequest request) {
         Banner banner = bannerMapper.toEntity(request);
         banner = bannerRepository.save(banner);
@@ -45,6 +47,7 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
+    @CacheEvict(cacheNames = {"bannerPublic", "home"}, allEntries = true)
     public BannerResponse updateBanner(Long id, BannerUpdateRequest request) {
         Banner banner = bannerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Banner not found"));
@@ -54,6 +57,7 @@ public class BannerServiceImpl implements BannerService {
     }
 
     @Override
+    @CacheEvict(cacheNames = {"bannerPublic", "home"}, allEntries = true)
     public void deleteBanner(Long id) {
         Banner banner = bannerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Banner not found"));

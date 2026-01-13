@@ -17,6 +17,7 @@ import com.minzetsu.ecommerce.review.service.ReviewService;
 import com.minzetsu.ecommerce.user.entity.User;
 import com.minzetsu.ecommerce.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +55,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
     public void deleteReview(Long id, Long currentUserId) {
         Review review = getExistingReview(id);
         validateOwnership(review, currentUserId);
@@ -62,6 +64,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
     public void updateReviewByRating(Integer rating, Long id, Long currentUserId) {
         Review review = getExistingReview(id);
         validateOwnership(review, currentUserId);
@@ -70,6 +73,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
     public void updateReviewByComment(String comment, Long id, Long currentUserId) {
         if (comment == null || comment.trim().isEmpty()) {
             throw new InvalidObjectException("Comment cannot be null or empty");
@@ -106,6 +110,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
     public ReviewResponse createReviewResponse(ReviewRequest request, Long userId) {
         request.setUserId(userId);
         Long productId = request.getProductId();
