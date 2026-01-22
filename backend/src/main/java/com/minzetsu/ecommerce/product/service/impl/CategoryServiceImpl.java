@@ -17,10 +17,12 @@ import com.minzetsu.ecommerce.product.repository.CategorySpecification;
 import com.minzetsu.ecommerce.product.repository.ProductRepository;
 import com.minzetsu.ecommerce.product.repository.ProductSpecification;
 import com.minzetsu.ecommerce.product.service.CategoryService;
+import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.*;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryMapper categoryMapper;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     private Category getExistingCategory(Long id) {
         return categoryRepository.findById(id)
@@ -70,6 +73,12 @@ public class CategoryServiceImpl implements CategoryService {
             throw new NotFoundException("Category not found with id: " + id);
         }
         categoryRepository.updateCategoryByNameOrSlug(id, name, slug);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "CATEGORY_UPDATED",
+                "CATEGORY",
+                id,
+                null
+        ));
     }
 
     @Override
@@ -79,6 +88,12 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = getExistingCategory(id);
         unlinkRelationsBeforeDelete(id);
         categoryRepository.delete(category);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "CATEGORY_DELETED",
+                "CATEGORY",
+                id,
+                null
+        ));
     }
 
     @Override
@@ -105,7 +120,14 @@ public class CategoryServiceImpl implements CategoryService {
         if (parentId != null) {
             category.setParent(getExistingCategory(parentId));
         }
-        return categoryMapper.toAdminResponse(categoryRepository.save(category));
+        Category saved = categoryRepository.save(category);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "CATEGORY_CREATED",
+                "CATEGORY",
+                saved.getId(),
+                null
+        ));
+        return categoryMapper.toAdminResponse(saved);
     }
 
     @Override

@@ -11,11 +11,13 @@ import com.minzetsu.ecommerce.promotion.mapper.BannerMapper;
 import com.minzetsu.ecommerce.promotion.repository.BannerRepository;
 import com.minzetsu.ecommerce.promotion.repository.BannerSpecification;
 import com.minzetsu.ecommerce.promotion.service.BannerService;
+import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,6 +26,7 @@ public class BannerServiceImpl implements BannerService {
 
     private final BannerRepository bannerRepository;
     private final BannerMapper bannerMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Cacheable(
@@ -50,6 +53,12 @@ public class BannerServiceImpl implements BannerService {
     public BannerResponse createBanner(BannerCreateRequest request) {
         Banner banner = bannerMapper.toEntity(request);
         banner = bannerRepository.save(banner);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "BANNER_CREATED",
+                "BANNER",
+                banner.getId(),
+                null
+        ));
         return bannerMapper.toResponse(banner);
     }
 
@@ -60,6 +69,12 @@ public class BannerServiceImpl implements BannerService {
                 .orElseThrow(() -> new NotFoundException("Banner not found"));
         bannerMapper.updateEntity(banner, request);
         banner = bannerRepository.save(banner);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "BANNER_UPDATED",
+                "BANNER",
+                banner.getId(),
+                null
+        ));
         return bannerMapper.toResponse(banner);
     }
 
@@ -69,5 +84,11 @@ public class BannerServiceImpl implements BannerService {
         Banner banner = bannerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Banner not found"));
         bannerRepository.delete(banner);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "BANNER_DELETED",
+                "BANNER",
+                id,
+                null
+        ));
     }
 }

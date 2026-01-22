@@ -16,9 +16,11 @@ import com.minzetsu.ecommerce.review.repository.ReviewSpecification;
 import com.minzetsu.ecommerce.review.service.ReviewService;
 import com.minzetsu.ecommerce.user.entity.User;
 import com.minzetsu.ecommerce.user.service.UserService;
+import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.*;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper reviewMapper;
     private final ProductService productService;
     private final UserService userService;
+    private final ApplicationEventPublisher eventPublisher;
 
     private Review getExistingReview(Long id) {
         return reviewRepository.findById(id)
@@ -60,6 +63,12 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = getExistingReview(id);
         validateOwnership(review, currentUserId);
         reviewRepository.delete(review);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "REVIEW_DELETED",
+                "REVIEW",
+                id,
+                currentUserId
+        ));
     }
 
     @Override
@@ -69,6 +78,12 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = getExistingReview(id);
         validateOwnership(review, currentUserId);
         reviewRepository.updateByRating(rating, id);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "REVIEW_UPDATED",
+                "REVIEW",
+                id,
+                currentUserId
+        ));
     }
 
     @Override
@@ -81,6 +96,12 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = getExistingReview(id);
         validateOwnership(review, currentUserId);
         reviewRepository.updateByComment(comment, id);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "REVIEW_UPDATED",
+                "REVIEW",
+                id,
+                currentUserId
+        ));
     }
 
     @Override
@@ -125,6 +146,12 @@ public class ReviewServiceImpl implements ReviewService {
         review.setUser(user);
 
         Review savedReview = reviewRepository.save(review);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "REVIEW_CREATED",
+                "REVIEW",
+                savedReview.getId(),
+                userId
+        ));
         return reviewMapper.toResponse(savedReview);
     }
 

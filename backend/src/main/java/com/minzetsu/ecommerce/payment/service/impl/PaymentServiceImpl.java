@@ -16,8 +16,10 @@ import com.minzetsu.ecommerce.payment.repository.PaymentRepository;
 import com.minzetsu.ecommerce.payment.repository.PaymentSpecification;
 import com.minzetsu.ecommerce.payment.service.PaymentService;
 import com.minzetsu.ecommerce.promotion.service.VoucherUseService;
+import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
     private final OrderService orderService;
     private final VoucherUseService voucherUseService;
+    private final ApplicationEventPublisher eventPublisher;
 
     private Payment getExistingPayment(Long id) {
         return paymentRepository.findById(id)
@@ -45,6 +48,12 @@ public class PaymentServiceImpl implements PaymentService {
             throw new NotFoundException("Payment not found with id: " + id);
         }
         paymentRepository.updateByStatusAndId(status, id);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "PAYMENT_STATUS_UPDATED",
+                "PAYMENT",
+                id,
+                null
+        ));
     }
 
     @Override
@@ -113,6 +122,12 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setOrder(order);
 
         Payment savedPayment = paymentRepository.save(payment);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "PAYMENT_CREATED",
+                "PAYMENT",
+                savedPayment.getId(),
+                userId
+        ));
         Long voucherId = request.getVoucherId();
         BigDecimal discountAmount = request.getDiscountAmount();
         if (voucherId != null && discountAmount != null) {

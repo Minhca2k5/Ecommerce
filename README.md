@@ -1,7 +1,7 @@
-# E-commerce System (Backend + Frontend Phase 2)
+# E-commerce System (Phase 3)
 
-> **Branch:** `phase2`  
-> **Status:** Phase 2 Completed (Frontend integration)  
+> **Branch:** `phase3`  
+> **Status:** Phase 3 Completed (Performance/Scalability/Reliability)  
 > **Author:** Phan Đình Minh (Minzetsu)  
 > **Last Updated:** December 21, 2025
 
@@ -41,6 +41,6 @@ This repository is an end-to-end E-commerce system:
 3. Open: `http://localhost:5173`
 
 ## Roadmap
-- Frontend Phase 2 roadmap: `FRONTEND_PHASE2_ROADMAP.md`
 - Phase 3 roadmap (performance/caching/reliability): `PHASE3_ROADMAP.md`
+- Phase 3 report: `docs/perf/phase3_report.md`
 - High-level project plan: `PROJECT_PLAN.md`

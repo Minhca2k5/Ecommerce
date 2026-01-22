@@ -11,12 +11,12 @@ Guiding principles:
 - Cache with explicit key/TTL/invalidation to avoid stale data and stampede.
 - Any Phase 3 change must include minimal logging/metrics + rollback note.
 
-Current notes:
-- No Redis/Spring Cache yet.
-- No correlation id, metrics dashboard, or tracing.
-- `HomeService` aggregates multiple services per request; good cache candidate.
-- `ProductService` computes multiple metrics per product; possible N+1 or chatty
-  queries when listing/ranking.
+Current notes (updated):
+- Redis + Spring Cache integrated for read-heavy endpoints.
+- Correlation id added; Actuator metrics enabled (structured logs in place).
+- Home/Product detail cached with stale-if-error fallback.
+- Circuit breaker enabled for outbound webhook calls.
+- Ranked list N+1 addressed; batch/EntityGraph paths in use.
 
 ---
 
@@ -132,7 +132,7 @@ Status: implemented via `v3__indexes.xml` + `db/sql/indexes.sql`.
 - Consider denormalized counters if needed.
 - Reduce redundant cart/order queries in user-mixed flow (create order, cart items, inventory updates).
 - Fix review list N+1 by fetching product/user in bulk and use batch deletes for user cart cleanup.
-Status: partial (cart/order, reviews, user cleanup done; ranked lists pending).
+Status: completed (cart/order, reviews, user cleanup, ranked lists done).
 
 Checkpoint:
 - 3-5 slow queries addressed with measurable improvement.

@@ -26,6 +26,13 @@ function buildUrl(path: string) {
   return `${getApiBaseUrl()}${path.startsWith("/") ? "" : "/"}${path}`;
 }
 
+function createRequestId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `req_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
 async function performRefreshIfNeeded() {
   const tokens = getStoredTokens();
   if (!tokens?.refreshToken) {
@@ -76,6 +83,9 @@ export async function apiJson<T>(path: string, options: ApiJsonOptions = {}): Pr
     ...(options.body !== undefined ? { "Content-Type": "application/json" } : {}),
     ...(options.headers ?? {}),
   };
+  if (!(headers as Record<string, string>)["X-Request-Id"]) {
+    (headers as Record<string, string>)["X-Request-Id"] = createRequestId();
+  }
 
   const tokens = options.auth ? getStoredTokens() : null;
   if (options.auth && tokens?.accessToken) {

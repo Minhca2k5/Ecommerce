@@ -4,17 +4,46 @@ import { getEnv } from './env.js';
 
 const BASE_URL = getEnv('K6_BASE_URL', 'http://localhost:8080');
 const USER_TOKEN = getEnv('K6_USER_TOKEN', '');
+const USER_EMAIL = getEnv('K6_USER_EMAIL', '');
+const USER_PASSWORD = getEnv('K6_USER_PASSWORD', '');
 const PRODUCT_ID = getEnv('K6_PRODUCT_ID', '');
 const ADDRESS_ID = getEnv('K6_ADDRESS_ID', '');
 
-if (!USER_TOKEN) {
-  throw new Error('K6_USER_TOKEN is required for user-mixed.js');
+if (!USER_TOKEN && (!USER_EMAIL || !USER_PASSWORD)) {
+  throw new Error('K6_USER_TOKEN or K6_USER_EMAIL/K6_USER_PASSWORD is required for user-mixed.js');
 }
 
-const headers = {
-  Authorization: `Bearer ${USER_TOKEN}`,
-  'Content-Type': 'application/json',
-};
+let cachedToken = null;
+
+function resolveToken() {
+  if (cachedToken) return cachedToken;
+  if (USER_TOKEN) {
+    cachedToken = USER_TOKEN.startsWith('Bearer ') ? USER_TOKEN : `Bearer ${USER_TOKEN}`;
+    return cachedToken;
+  }
+  const loginBody = JSON.stringify({ email: USER_EMAIL, password: USER_PASSWORD });
+  const loginRes = http.post(`${BASE_URL}/api/auth/login`, loginBody, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  check(loginRes, { 'login 200': (r) => r.status === 200 });
+  if (!loginRes.body || loginRes.body.length === 0) {
+    throw new Error(`Login failed (status ${loginRes.status})`);
+  }
+  const payload = loginRes.json();
+  if (!payload || !payload.accessToken) {
+    throw new Error('Login response missing accessToken');
+  }
+  const tokenType = payload.tokenType || 'Bearer';
+  cachedToken = `${tokenType} ${payload.accessToken}`;
+  return cachedToken;
+}
+
+function buildHeaders() {
+  return {
+    Authorization: resolveToken(),
+    'Content-Type': 'application/json',
+  };
+}
 
 export const options = {
   vus: 10,
@@ -26,19 +55,26 @@ export const options = {
 };
 
 function getOrCreateCartId() {
+  const headers = buildHeaders();
   const res = http.get(`${BASE_URL}/api/users/me/carts`, { headers });
   if (res.status === 200) {
-    const body = res.json();
-    return body.id;
+    if (res.body && res.body.length > 0) {
+      const body = res.json();
+      if (body && body.id) return body.id;
+    }
   }
   const createRes = http.post(`${BASE_URL}/api/users/me/carts`, null, { headers });
-  check(createRes, { 'create cart 200': (r) => r.status === 200 });
-  const created = createRes.json();
-  return created.id;
+  check(createRes, { 'create cart 200/201': (r) => r.status === 200 || r.status === 201 });
+  if (createRes.body && createRes.body.length > 0) {
+    const created = createRes.json();
+    if (created && created.id) return created.id;
+  }
+  throw new Error(`Unable to resolve cart id (status ${createRes.status})`);
 }
 
 export default function () {
   const cartId = getOrCreateCartId();
+  const headers = buildHeaders();
 
   if (PRODUCT_ID) {
     const addBody = JSON.stringify({

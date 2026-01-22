@@ -16,12 +16,14 @@ import com.minzetsu.ecommerce.promotion.repository.VoucherRepository;
 import com.minzetsu.ecommerce.promotion.repository.VoucherSpecification;
 import com.minzetsu.ecommerce.promotion.repository.VoucherUseRepository;
 import com.minzetsu.ecommerce.promotion.service.VoucherService;
+import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +38,7 @@ public class VoucherServiceImpl implements VoucherService {
     private final VoucherMapper voucherMapper;
     private final OrderRepository orderRepository;
     private final VoucherUseRepository voucherUseRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -55,6 +58,12 @@ public class VoucherServiceImpl implements VoucherService {
     public AdminVoucherResponse createAdminVoucherResponse(VoucherCreateRequest request) {
         Voucher voucher = voucherMapper.toEntity(request);
         voucher = voucherRepository.save(voucher);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "VOUCHER_CREATED",
+                "VOUCHER",
+                voucher.getId(),
+                null
+        ));
         return toAdminResponse(voucher);
     }
 
@@ -66,6 +75,12 @@ public class VoucherServiceImpl implements VoucherService {
                 .orElseThrow(() -> new NotFoundException("Voucher not found"));
         voucherMapper.updateEntity(voucher, request);
         voucher = voucherRepository.save(voucher);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "VOUCHER_UPDATED",
+                "VOUCHER",
+                voucher.getId(),
+                null
+        ));
         return toAdminResponse(voucher);
     }
 
@@ -79,6 +94,12 @@ public class VoucherServiceImpl implements VoucherService {
             throw new DeletionException("Cannot delete voucher associated with existing orders");
         }
         voucherRepository.delete(voucher);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "VOUCHER_DELETED",
+                "VOUCHER",
+                id,
+                null
+        ));
     }
 
     @Override

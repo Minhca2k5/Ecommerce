@@ -70,7 +70,7 @@ This document outlines the roadmap for the development of the E-commerce system,
     *   [x] Responsive audit (mobile/tablet): admin tables scroll + admin mobile navigation.
 
 ## Phase 3: Performance, Scalability & Reliability
-**Status: Pending**
+**Status: Completed (M0-M7)**
 **Focus:** Measurable latency improvements and stability under load. Backend-first.
 
 Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
@@ -84,14 +84,15 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   [x] Reduce redundant queries in user-mixed flow (cart/order creation, inventory updates).
     *   [x] Review list N+1 fixes (product/user fetch) + batch cleanup on user delete.
     *   [x] Add composite indexes for cart/order/review/wishlist/recent view/search log hot paths.
-*   [ ] **Async Processing**:
+*   [x] **Async Processing**:
     *   Offload non-critical tasks (notifications, cleanup, exports) if needed.
-*   [ ] **Resilience Hardening**:
+*   [x] **Resilience Hardening**:
     *   Rate limiting middleware + timeouts/retries for external calls.
-*   [ ] **Observability Foundation**:
+*   [x] **Observability Foundation**:
     *   Request ID + structured logs + Actuator metrics.
-*   [ ] **Phase 3 Review**:
+*   [x] **Phase 3 Review**:
     *   Before/after benchmark report + cache hit rate + slow query summary.
+    *   Report template: `docs/perf/phase3_report.md`.
 
 ## Phase 4: Advanced Features & Integrations
 **Status: Pending**

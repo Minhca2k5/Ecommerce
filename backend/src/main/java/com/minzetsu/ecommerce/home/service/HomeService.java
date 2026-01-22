@@ -8,6 +8,8 @@ import com.minzetsu.ecommerce.product.service.ProductService;
 import com.minzetsu.ecommerce.promotion.dto.filter.BannerFilter;
 import com.minzetsu.ecommerce.promotion.service.BannerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -20,44 +22,54 @@ public class HomeService {
     private final BannerService bannerService;
     private final CategoryService categoryService;
     private final ProductService productService;
+    private final CacheManager cacheManager;
 
     @Cacheable(cacheNames = "home", key = "'v1'", sync = true)
     public HomeResponse getHomeData() {
-        // 1. Banners (Active, sorted by position)
-        var bannerFilter = BannerFilter.builder().isActive(true).build();
-        var bannerPage = bannerService.searchBanners(bannerFilter, PageRequest.of(0, 5, Sort.by("position").ascending()), true);
+        try {
+            var bannerFilter = BannerFilter.builder().isActive(true).build();
+            var bannerPage = bannerService.searchBanners(
+                    bannerFilter,
+                    PageRequest.of(0, 5, Sort.by("position").ascending()),
+                    true
+            );
 
-        // 2. Categories (Root categories)
-        var categoryFilter = CategoryFilter.builder().build(); // Assuming null parentId is handled or we filter by it if needed. 
-        // Actually CategoryService.searchUserCategoryResponses might not filter by parentId=null by default unless specified.
-        // Let's assume we want top level. If filter doesn't support it, we might get all. 
-        // For now, let's just get first page. Ideally we should add parentId to CategoryFilter.
-        var categoryPage = categoryService.searchCategoryResponses(categoryFilter, PageRequest.of(0, 10));
+            var categoryFilter = CategoryFilter.builder().build();
+            var categoryPage = categoryService.searchCategoryResponses(categoryFilter, PageRequest.of(0, 10));
 
-        // 3. New Arrivals (Products sorted by created_at desc)
-        var newArrivalsFilter = ProductFilter.builder()
-                .status("ACTIVE")
-                .sortBy("createdAt")
-                .sortDirection("DESC")
-                .build();
-        var newArrivalsPage = productService.searchProductResponses(newArrivalsFilter, PageRequest.of(0, 8));
+            var newArrivalsFilter = ProductFilter.builder()
+                    .status("ACTIVE")
+                    .sortBy("createdAt")
+                    .sortDirection("DESC")
+                    .build();
+            var newArrivalsPage = productService.searchProductResponses(newArrivalsFilter, PageRequest.of(0, 8));
 
-        // 4. Best Sellers
-        var bestSellers = productService.getBestSellingProductResponses(30, 8);
+            var bestSellers = productService.getBestSellingProductResponses(30, 8);
+            var topRated = productService.getTopRatingProductResponses(30, 8);
+            var mostViewed = productService.getMostViewedProductResponses(30, 8);
 
-        // 5. Top Rated
-        var topRated = productService.getTopRatingProductResponses(30, 8);
+            return HomeResponse.builder()
+                    .banners(bannerPage.getContent())
+                    .categories(categoryPage.getContent())
+                    .newArrivals(newArrivalsPage.getContent())
+                    .bestSellers(bestSellers)
+                    .topRated(topRated)
+                    .mostViewed(mostViewed)
+                    .build();
+        } catch (RuntimeException ex) {
+            HomeResponse cached = getCachedHome();
+            if (cached != null) {
+                return cached;
+            }
+            throw ex;
+        }
+    }
 
-        // 6. Most Viewed
-        var mostViewed = productService.getMostViewedProductResponses(30, 8);
-
-        return HomeResponse.builder()
-                .banners(bannerPage.getContent())
-                .categories(categoryPage.getContent())
-                .newArrivals(newArrivalsPage.getContent())
-                .bestSellers(bestSellers)
-                .topRated(topRated)
-                .mostViewed(mostViewed)
-                .build();
+    private HomeResponse getCachedHome() {
+        Cache cache = cacheManager.getCache("home");
+        if (cache == null) {
+            return null;
+        }
+        return cache.get("v1", HomeResponse.class);
     }
 }

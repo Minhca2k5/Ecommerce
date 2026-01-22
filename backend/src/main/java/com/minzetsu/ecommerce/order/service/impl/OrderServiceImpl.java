@@ -13,6 +13,8 @@ import com.minzetsu.ecommerce.order.dto.response.OrderResponse;
 import com.minzetsu.ecommerce.order.entity.Order;
 import com.minzetsu.ecommerce.order.entity.OrderItem;
 import com.minzetsu.ecommerce.order.entity.OrderStatus;
+import com.minzetsu.ecommerce.order.event.OrderCreatedEvent;
+import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import com.minzetsu.ecommerce.order.mapper.OrderItemMapper;
 import com.minzetsu.ecommerce.order.mapper.OrderMapper;
 import com.minzetsu.ecommerce.order.repository.OrderItemRepository;
@@ -28,6 +30,7 @@ import com.minzetsu.ecommerce.user.entity.User;
 import com.minzetsu.ecommerce.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +51,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemMapper orderItemMapper;
     private final OrderItemRepository orderItemRepository;
     private final CreateOrderItemsService createOrderItemsService;
+    private final ApplicationEventPublisher eventPublisher;
 
     private Order getExistingOrder(Long id) {
         return orderRepository.findById(id)
@@ -143,6 +147,12 @@ public class OrderServiceImpl implements OrderService {
             throw new NotFoundException("Order not found with id: " + id);
         }
         orderRepository.updateStatusById(id, status);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "ORDER_STATUS_UPDATED",
+                "ORDER",
+                id,
+                null
+        ));
     }
 
     @Override
@@ -202,6 +212,7 @@ public class OrderServiceImpl implements OrderService {
         order.setDiscountAmount(totals.get("discountAmount"));
         Order savedOrder = orderRepository.save(order);
         List<OrderItem> orderItems = createOrderItemsService.createOrderItems(savedOrder, request.getCartId());
+        eventPublisher.publishEvent(new OrderCreatedEvent(savedOrder.getId(), userId));
         List<OrderItemResponse> orderItemResponses = orderItemMapper.toResponseList(orderItems);
         return orderMapper.toFullResponse(savedOrder, orderItemResponses);
     }

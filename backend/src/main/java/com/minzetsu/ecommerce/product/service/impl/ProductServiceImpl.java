@@ -36,11 +36,15 @@ import com.minzetsu.ecommerce.product.service.ProductService;
 import com.minzetsu.ecommerce.review.dto.response.ReviewResponse;
 import com.minzetsu.ecommerce.review.mapper.ReviewMapper;
 import com.minzetsu.ecommerce.review.repository.ReviewRepository;
+import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,6 +74,8 @@ public class ProductServiceImpl implements ProductService {
     private final ReviewMapper reviewMapper;
     private final ProductImageMapper productImageMapper;
     private final InventoryMapper inventoryMapper;
+    private final CacheManager cacheManager;
+    private final ApplicationEventPublisher eventPublisher;
     @Value("${days}")
     private Integer days;
 
@@ -226,6 +232,12 @@ public class ProductServiceImpl implements ProductService {
         reviewRepository.deleteByProductId(id);
         productImageRepository.deleteByProductId(id);
         productRepository.delete(product);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "PRODUCT_DELETED",
+                "PRODUCT",
+                id,
+                null
+        ));
     }
 
     @Override
@@ -253,6 +265,12 @@ public class ProductServiceImpl implements ProductService {
             throw new NotFoundException("Product not found with id: " + id);
         }
         productRepository.updateByStatusAndId(status, id);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "PRODUCT_STATUS_UPDATED",
+                "PRODUCT",
+                id,
+                null
+        ));
     }
 
     @Override
@@ -268,7 +286,14 @@ public class ProductServiceImpl implements ProductService {
         Product product = productMapper.toEntity(request);
         product.setCategory(category);
 
-        return toAdminResponse(productRepository.save(product));
+        Product saved = productRepository.save(product);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "PRODUCT_CREATED",
+                "PRODUCT",
+                saved.getId(),
+                null
+        ));
+        return toAdminResponse(saved);
     }
 
     @Override
@@ -277,7 +302,14 @@ public class ProductServiceImpl implements ProductService {
     public AdminProductResponse updateAdminProductResponse(ProductUpdateRequest request, Long id) {
         Product product = getExistingProduct(id);
         productMapper.updateEntityFromRequest(request, product);
-        return toAdminResponse(productRepository.save(product));
+        Product saved = productRepository.save(product);
+        eventPublisher.publishEvent(new WebhookEvent(
+                "PRODUCT_UPDATED",
+                "PRODUCT",
+                saved.getId(),
+                null
+        ));
+        return toAdminResponse(saved);
     }
 
     @Override
@@ -313,25 +345,41 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "productDetail", key = "'v1:' + #id", sync = true)
     public ProductResponse getFullProductResponseById(Long id) {
-        Product product = getExistingProduct(id);
-        validateActiveProduct(product);
-        List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(id));
-        List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(id));
-        List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(id));
-        return toFullUserResponse(product, reviews, inventories, images);
+        try {
+            Product product = getExistingProduct(id);
+            validateActiveProduct(product);
+            List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(id));
+            List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(id));
+            List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(id));
+            return toFullUserResponse(product, reviews, inventories, images);
+        } catch (RuntimeException ex) {
+            ProductResponse cached = getCachedProductById(id);
+            if (cached != null) {
+                return cached;
+            }
+            throw ex;
+        }
     }
 
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "productDetail", key = "'v1:slug:' + #slug", sync = true)
     public ProductResponse getFullProductResponseBySlug(String slug) {
-        Product product = getExistingProductBySlug(slug);
-        validateActiveProduct(product);
-        Long productId = product.getId();
-        List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(productId));
-        List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(productId));
-        List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(productId));
-        return toFullUserResponse(product, reviews, inventories, images);
+        try {
+            Product product = getExistingProductBySlug(slug);
+            validateActiveProduct(product);
+            Long productId = product.getId();
+            List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(productId));
+            List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(productId));
+            List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(productId));
+            return toFullUserResponse(product, reviews, inventories, images);
+        } catch (RuntimeException ex) {
+            ProductResponse cached = getCachedProductBySlug(slug);
+            if (cached != null) {
+                return cached;
+            }
+            throw ex;
+        }
     }
 
     @Override
@@ -395,7 +443,7 @@ public class ProductServiceImpl implements ProductService {
                 .map(idExtractor)
                 .toList();
 
-        List<Product> productList = productRepository.findAllById(productIds);
+        List<Product> productList = productRepository.findAllByIdInWithCategory(productIds);
 
         Map<Long, Product> productMap = productList.stream()
                 .collect(Collectors.toMap(Product::getId, p -> p));
@@ -413,6 +461,22 @@ public class ProductServiceImpl implements ProductService {
                 );
 
         return responses;
+    }
+
+    private ProductResponse getCachedProductById(Long id) {
+        Cache cache = cacheManager.getCache("productDetail");
+        if (cache == null) {
+            return null;
+        }
+        return cache.get("v1:" + id, ProductResponse.class);
+    }
+
+    private ProductResponse getCachedProductBySlug(String slug) {
+        Cache cache = cacheManager.getCache("productDetail");
+        if (cache == null) {
+            return null;
+        }
+        return cache.get("v1:slug:" + slug, ProductResponse.class);
     }
 
 }

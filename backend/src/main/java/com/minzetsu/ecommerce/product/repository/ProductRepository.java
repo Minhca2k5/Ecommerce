@@ -21,6 +21,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     Optional<Product> findBySlug(String slug);
     @EntityGraph(attributePaths = {"category"})
     Page<Product> findAll(Specification<Product> spec, Pageable pageable);
+    @EntityGraph(attributePaths = {"category"})
+    @Query("SELECT p FROM Product p WHERE p.id IN :ids")
+    java.util.List<Product> findAllByIdInWithCategory(java.util.List<Long> ids);
     @Modifying
     @Query("UPDATE Product p SET p.status = :status WHERE p.id = :id")
     void updateByStatusAndId(ProductStatus status, Long id);
