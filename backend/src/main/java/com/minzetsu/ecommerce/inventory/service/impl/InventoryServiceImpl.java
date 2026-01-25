@@ -138,7 +138,6 @@ public class InventoryServiceImpl implements InventoryService {
             if (available <= 0) continue;
 
             int use = Math.min(available, remaining);
-            inventoryRepository.updateStockQuantityById(use, inventory.getId());
             inventoryRepository.updateReservedQuantityById(use, inventory.getId());
             remaining -= use;
 
@@ -155,7 +154,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional
-    public void updateQuantityByCartItemAmountReturned(Long productId, Integer amount) {
+    public void updateQuantityByCartItemAmountReturnedOrCheckouted(Long productId, Integer amount, boolean isCheckout) {
         List<Inventory> inventories = getActiveInventoriesByProductIdAndReservedStock(productId);
         int remaining = amount;
         boolean updated = false;
@@ -165,7 +164,9 @@ public class InventoryServiceImpl implements InventoryService {
             if (reserved <= 0) continue;
 
             int use = Math.min(reserved, remaining);
-            inventoryRepository.updateStockQuantityById(-use, inventory.getId());
+            if (isCheckout) {
+                inventoryRepository.updateStockQuantityById(use, inventory.getId());
+            }
             inventoryRepository.updateReservedQuantityById(-use, inventory.getId());
             remaining -= use;
 

@@ -5,7 +5,8 @@ import com.minzetsu.ecommerce.notification.service.NotificationService;
 import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import com.minzetsu.ecommerce.order.event.OrderCreatedEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +24,7 @@ public class OrderNotificationListener {
     }
 
     @Async("appTaskExecutor")
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onOrderCreated(OrderCreatedEvent event) {
         NotificationCreateRequest request = NotificationCreateRequest.builder()
                 .userId(event.getUserId())

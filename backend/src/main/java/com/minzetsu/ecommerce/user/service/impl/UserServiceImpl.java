@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
                                 item -> item.getProduct().getId(),
                                 Collectors.summingInt(CartItem::getQuantity)
                         ));
-                quantityByProduct.forEach(inventoryService::updateQuantityByCartItemAmountReturned);
+                quantityByProduct.forEach((productId, quantity) -> inventoryService.updateQuantityByCartItemAmountReturnedOrCheckouted(productId, quantity, false));
                 cartItemRepository.deleteAllInBatch(cartItems);
             }
         }

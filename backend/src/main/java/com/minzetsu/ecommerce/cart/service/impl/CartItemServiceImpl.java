@@ -112,7 +112,7 @@ public class CartItemServiceImpl implements CartItemService {
         Integer reserved = inventoryService.getTotalReservedQuantityByProductId(productId);
         int returnQty = reserved == null ? 0 : Math.min(quantity, reserved);
         if (returnQty > 0) {
-            inventoryService.updateQuantityByCartItemAmountReturned(productId, returnQty);
+            inventoryService.updateQuantityByCartItemAmountReturnedOrCheckouted(productId, returnQty, false);
         }
         cartItemRepository.delete(cartItem);
     }
@@ -133,7 +133,7 @@ public class CartItemServiceImpl implements CartItemService {
             Integer reserved = inventoryService.getTotalReservedQuantityByProductId(productId);
             int returnQty = reserved == null ? 0 : Math.min(quantity, reserved);
             if (returnQty > 0) {
-                inventoryService.updateQuantityByCartItemAmountReturned(productId, returnQty);
+                inventoryService.updateQuantityByCartItemAmountReturnedOrCheckouted(productId, returnQty, true);
             }
         });
         cartItemRepository.deleteAllInBatch(cartItems);
@@ -228,7 +228,7 @@ public class CartItemServiceImpl implements CartItemService {
     private CartItem updateExistingItem(CartItem existingItem, int quantity, boolean isReturned, Long productId) {
         if (isReturned) {
             cartItemRepository.updateQuantityById(quantity, existingItem.getId(), true);
-            inventoryService.updateQuantityByCartItemAmountReturned(productId, quantity);
+            inventoryService.updateQuantityByCartItemAmountReturnedOrCheckouted(productId, quantity, false);
         } else {
             cartItemRepository.updateQuantityById(quantity, existingItem.getId(), false);
             inventoryService.updateQuantityByCartItemAmountBorrowed(productId, quantity);

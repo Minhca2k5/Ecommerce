@@ -15,6 +15,8 @@ public class RateLimitProperties {
     private Rule userRule = new Rule(120, 120, Duration.ofMinutes(1));
     private Rule adminRule = new Rule(60, 60, Duration.ofMinutes(1));
     private boolean allowK6UserAgentBypass = false;
+    private Duration bucketTtl = Duration.ofMinutes(10);
+    private Duration cleanupInterval = Duration.ofMinutes(5);
     private List<String> bypass = List.of(
             "/actuator/**",
             "/v3/api-docs/**",
@@ -77,6 +79,22 @@ public class RateLimitProperties {
 
     public void setAllowK6UserAgentBypass(boolean allowK6UserAgentBypass) {
         this.allowK6UserAgentBypass = allowK6UserAgentBypass;
+    }
+
+    public Duration getBucketTtl() {
+        return bucketTtl;
+    }
+
+    public void setBucketTtl(Duration bucketTtl) {
+        this.bucketTtl = bucketTtl;
+    }
+
+    public Duration getCleanupInterval() {
+        return cleanupInterval;
+    }
+
+    public void setCleanupInterval(Duration cleanupInterval) {
+        this.cleanupInterval = cleanupInterval;
     }
 
     public static class Rule {

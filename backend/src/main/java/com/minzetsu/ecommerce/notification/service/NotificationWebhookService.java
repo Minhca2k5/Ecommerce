@@ -3,6 +3,8 @@ package com.minzetsu.ecommerce.notification.service;
 import com.minzetsu.ecommerce.common.config.OutboundHttpProperties;
 import com.minzetsu.ecommerce.common.utils.OutboundRetryExecutor;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,17 +20,20 @@ public class NotificationWebhookService {
     private final RestTemplate restTemplate;
     private final OutboundRetryExecutor retryExecutor;
     private final OutboundHttpProperties properties;
+    private final Counter webhookFailureCounter;
     @Value("${outbound.http.webhook-url:}")
     private String webhookUrl;
 
     public NotificationWebhookService(
             RestTemplate restTemplate,
             OutboundRetryExecutor retryExecutor,
-            OutboundHttpProperties properties
+            OutboundHttpProperties properties,
+            MeterRegistry meterRegistry
     ) {
         this.restTemplate = restTemplate;
         this.retryExecutor = retryExecutor;
         this.properties = properties;
+        this.webhookFailureCounter = meterRegistry.counter("webhook_failures_total");
     }
 
     public void notifyOrderCreated(Long orderId, Long userId) {
@@ -60,6 +65,6 @@ public class NotificationWebhookService {
             Long userId,
             Throwable throwable
     ) {
-        // Intentionally no-op; webhook failures should not block main flow.
+        webhookFailureCounter.increment();
     }
 }

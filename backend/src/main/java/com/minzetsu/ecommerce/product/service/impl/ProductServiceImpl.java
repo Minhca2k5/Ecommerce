@@ -352,6 +352,8 @@ public class ProductServiceImpl implements ProductService {
             List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(id));
             List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(id));
             return toFullUserResponse(product, reviews, inventories, images);
+        } catch (NotFoundException | UnAuthorizedException ex) {
+            throw ex;
         } catch (RuntimeException ex) {
             ProductResponse cached = getCachedProductById(id);
             if (cached != null) {
@@ -373,6 +375,8 @@ public class ProductServiceImpl implements ProductService {
             List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(productId));
             List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(productId));
             return toFullUserResponse(product, reviews, inventories, images);
+        } catch (NotFoundException | UnAuthorizedException ex) {
+            throw ex;
         } catch (RuntimeException ex) {
             ProductResponse cached = getCachedProductBySlug(slug);
             if (cached != null) {

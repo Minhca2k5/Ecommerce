@@ -2,6 +2,8 @@ package com.minzetsu.ecommerce.common.utils;
 
 import com.minzetsu.ecommerce.common.config.OutboundHttpProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.util.concurrent.Callable;
 
@@ -34,7 +36,13 @@ public class OutboundRetryExecutor {
     }
 
     private boolean isRetryable(Exception ex) {
-        return true;
+        if (ex instanceof ResourceAccessException) {
+            return true;
+        }
+        if (ex instanceof HttpStatusCodeException httpEx) {
+            return httpEx.getStatusCode().is5xxServerError();
+        }
+        return false;
     }
 
     private long nextBackoff(long current) {

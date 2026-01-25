@@ -96,49 +96,67 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 
 ## Phase 4: Advanced Features & Integrations
 **Status: Pending**
-**Focus:** Adding value-added features and external connections.
+**Focus:** Integrations + realtime + search; introduce messaging and event-driven flows.
 
 *   [ ] **Payment Gateway Integration**:
     *   Integrate VNPay / Momo / Stripe / PayPal.
     *   Handle IPN/Webhook callbacks securely (signature verification + replay protection).
     *   Idempotency for payment initiation and callbacks.
     *   Payment state machine (PENDING/PAID/FAILED/CANCELED/REFUNDED) + audit log.
+*   [ ] **Message Broker (RabbitMQ/Kafka)**:
+    *   Publish domain events (OrderCreated, PaymentSucceeded, InventoryLow).
+    *   Consumers for notifications/email/analytics.
+    *   DLQ + retry policy.
 *   [ ] **Advanced Search Engine**:
-    *   Integrate **Elasticsearch** for full-text search, fuzzy matching, and faceting.
-    *   Indexing pipeline (backfill + incremental updates) and fallback when ES is unavailable.
+    *   Integrate Elasticsearch for full-text search, fuzzy matching, faceting.
+    *   Indexing pipeline (backfill + incremental updates) + fallback when ES is unavailable.
 *   [ ] **Real-time Features**:
-    *   WebSocket for order status updates and admin notifications (chat can be deferred unless needed).
+    *   WebSocket/SSE for order status updates and admin notifications.
 *   [ ] **Phase 4 Review**:
-    *   Sandbox Testing: Verify Payment Gateway flows (Success/Failure/Cancel).
-    *   Verify Search accuracy and relevance.
+    *   Sandbox Testing: Verify payment flows (Success/Failure/Cancel).
+    *   Verify search accuracy and relevance.
+    *   Verify event delivery + retry/DLQ behavior.
 
-## Phase 5: Comprehensive QA & Pre-release Testing
+## Phase 5: Advanced Data & Quality
 **Status: Pending**
-**Focus:** Verifying system correctness and reliability.
+**Focus:** Deepen database capabilities + testing + reliability.
 
-*   [ ] **Unit Testing**: JUnit/Mockito for critical Service logic (pricing/discounts, inventory reservation, order totals, RBAC rules).
-*   [ ] **Integration Testing**: `MockMvc` + TestContainers (DB/Redis); verify auth flows and security boundaries.
-*   [ ] **E2E Testing**:
-    *   Playwright/Cypress flows: register/login, browse/search, cart, checkout, order history, admin product edit.
-*   [ ] **Load Testing**: Simulate high traffic using JMeter or k6, aligned with Phase 3 SLOs.
-*   [ ] **API Documentation**: Finalize Swagger/OpenAPI specs + examples + consistent error model.
-*   [ ] **Release Readiness**:
-    *   Migration dry-run, backup/restore drill, and rollback plan.
+*   [ ] **Advanced Database**:
+    *   Isolation levels, lock analysis, deadlock handling.
+    *   Replication (read replica) + read/write split (optional).
+    *   Backup/restore drill and data retention policy.
+*   [ ] **NoSQL Expansion**:
+    *   Redis advanced usage (streams/pubsub).
+    *   One document DB (MongoDB) for logs/analytics (optional).
+*   [ ] **Testing Suite**:
+    *   Unit tests (pricing/discounts, inventory reservation, order totals, RBAC).
+    *   Integration tests (`MockMvc` + TestContainers for DB/Redis).
+    *   E2E tests (Playwright/Cypress): register/login, browse/search, cart, checkout, admin flows.
+*   [ ] **API Documentation**:
+    *   Finalize Swagger/OpenAPI + examples + error model.
+*   [ ] **Phase 5 Review**:
+    *   Data reliability report (backup/restore, replication checks).
+    *   Test coverage summary.
 
-## Phase 6: DevOps & Deployment
+## Phase 6: DevOps, Observability & Scale
 **Status: Pending**
-**Focus:** Automating delivery and managing infrastructure.
+**Focus:** Production readiness, deployment, and scaling.
 
 *   [ ] **Containerization**:
-    *   Create `Dockerfile` for the Spring Boot application.
-    *   Create `docker-compose.yml` for the full stack (App, MySQL, Redis, etc.).
-    *   Add staging/prod compose variants or overlays as needed.
+    *   Dockerfile for Spring Boot.
+    *   docker-compose for full stack (App, MySQL, Redis, Elasticsearch, broker).
 *   [ ] **CI/CD Pipeline**:
-    *   Setup GitHub Actions or Jenkins for build/test.
+    *   GitHub Actions or Jenkins for build/test.
     *   Staging deploy + smoke tests, then promote to production.
-*   [ ] **Monitoring & Logging**:
-    *   Centralized logging (ELK Stack or Loki).
+    *   Blue-green or canary strategy.
+*   [ ] **Observability Stack**:
+    *   Centralized logging (ELK/Loki).
     *   Metrics monitoring (Prometheus + Grafana).
-    *   Alerts on SLO burn (latency/error spikes), DB pool exhaustion, cache failures.
+    *   Alerts on SLO burn, DB pool exhaustion, cache failures.
+*   [ ] **Web Server & Reverse Proxy**:
+    *   Nginx/Caddy for TLS termination + routing.
+*   [ ] **Scaling & Reliability**:
+    *   Horizontal scaling, load balancer, autoscaling (optional).
+    *   Rate limiting + backpressure validation under load.
 *   [ ] **Secrets & Environments**:
-    *   Separate dev/staging/prod configs and secrets management strategy.
+    *   Separate dev/staging/prod configs and secrets management.

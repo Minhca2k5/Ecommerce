@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -13,19 +15,24 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
     private static final String HEADER_FORWARDED_FOR = "X-Forwarded-For";
     private static final String HEADER_USER_AGENT = "User-Agent";
     private final RateLimitProperties properties;
+    private final Counter blockedCounter;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
     private final Map<String, TokenBucket> buckets = new ConcurrentHashMap<>();
+    private final AtomicLong lastCleanupNanos = new AtomicLong(System.nanoTime());
 
-    public RateLimitFilter(RateLimitProperties properties) {
+    public RateLimitFilter(RateLimitProperties properties, MeterRegistry meterRegistry) {
         this.properties = properties;
+        this.blockedCounter = meterRegistry.counter("rate_limit_blocked_total");
     }
 
     @Override
@@ -52,12 +59,14 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String ruleKey = resolveRuleKey(path);
         RateLimitProperties.Rule rule = resolveRule(ruleKey);
         String bucketKey = resolveBucketKey(ruleKey, request);
+        maybeCleanupBuckets(properties.getCleanupInterval(), properties.getBucketTtl());
         TokenBucket bucket = buckets.computeIfAbsent(
                 bucketKey,
                 key -> new TokenBucket(rule.getCapacity(), rule.getRefillTokens(), rule.getPeriod())
         );
 
         if (!bucket.tryConsume()) {
+            blockedCounter.increment();
             response.setStatus(429);
             response.setContentType("application/json");
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
@@ -121,12 +130,26 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return request.getRemoteAddr();
     }
 
+    private void maybeCleanupBuckets(Duration cleanupInterval, Duration bucketTtl) {
+        long now = System.nanoTime();
+        long last = lastCleanupNanos.get();
+        if (now - last < cleanupInterval.toNanos()) {
+            return;
+        }
+        if (!lastCleanupNanos.compareAndSet(last, now)) {
+            return;
+        }
+        long ttlNanos = bucketTtl.toNanos();
+        buckets.entrySet().removeIf(entry -> now - entry.getValue().getLastAccessNanos() > ttlNanos);
+    }
+
     private static class TokenBucket {
         private final int capacity;
         private final int refillTokens;
         private final long refillPeriodNanos;
         private long tokens;
         private long lastRefillNanos;
+        private long lastAccessNanos;
 
         private TokenBucket(int capacity, int refillTokens, Duration period) {
             this.capacity = capacity;
@@ -134,9 +157,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
             this.refillPeriodNanos = period.toNanos();
             this.tokens = capacity;
             this.lastRefillNanos = System.nanoTime();
+            this.lastAccessNanos = this.lastRefillNanos;
         }
 
         private synchronized boolean tryConsume() {
+            lastAccessNanos = System.nanoTime();
             refill();
             if (tokens <= 0) {
                 return false;
@@ -155,6 +180,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
             long refill = periods * refillTokens;
             tokens = Math.min(capacity, tokens + refill);
             lastRefillNanos = lastRefillNanos + (periods * refillPeriodNanos);
+        }
+
+        private long getLastAccessNanos() {
+            return lastAccessNanos;
         }
     }
 }

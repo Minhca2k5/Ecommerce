@@ -2,7 +2,8 @@ package com.minzetsu.ecommerce.notification.listener;
 
 import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import com.minzetsu.ecommerce.notification.service.NotificationWebhookService;
-import org.springframework.context.event.EventListener;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ public class WebhookEventListener {
     }
 
     @Async("appTaskExecutor")
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onWebhookEvent(WebhookEvent event) {
         webhookService.notifyEvent(
                 event.getEvent(),
