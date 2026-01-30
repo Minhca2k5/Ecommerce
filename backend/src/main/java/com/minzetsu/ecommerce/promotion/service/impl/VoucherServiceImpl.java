@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.promotion.service.impl;
 
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.DeletionException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
@@ -55,6 +56,7 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = "voucherPublic", allEntries = true)
+    @AuditAction(action = "VOUCHER_CREATED", entityType = "VOUCHER")
     public AdminVoucherResponse createAdminVoucherResponse(VoucherCreateRequest request) {
         Voucher voucher = voucherMapper.toEntity(request);
         voucher = voucherRepository.save(voucher);
@@ -70,6 +72,7 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = "voucherPublic", allEntries = true)
+    @AuditAction(action = "VOUCHER_UPDATED", entityType = "VOUCHER", idParamIndex = 0)
     public AdminVoucherResponse updateAdminVoucherResponse(Long id, VoucherUpdateRequest request) {
         Voucher voucher = voucherRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Voucher not found"));
@@ -87,6 +90,7 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = "voucherPublic", allEntries = true)
+    @AuditAction(action = "VOUCHER_DELETED", entityType = "VOUCHER", idParamIndex = 0)
     public void deleteVoucher(Long id) {
         Voucher voucher = voucherRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Voucher not found"));

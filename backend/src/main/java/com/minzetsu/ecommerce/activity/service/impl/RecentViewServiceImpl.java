@@ -6,6 +6,7 @@ import com.minzetsu.ecommerce.activity.entity.RecentView;
 import com.minzetsu.ecommerce.activity.mapper.RecentViewMapper;
 import com.minzetsu.ecommerce.activity.repository.RecentViewRepository;
 import com.minzetsu.ecommerce.activity.service.RecentViewService;
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.product.entity.ProductImage;
@@ -77,6 +78,7 @@ public class RecentViewServiceImpl implements RecentViewService {
 
     @Override
     @Transactional
+    @AuditAction(action = "RECENT_VIEW_DELETED", entityType = "RECENT_VIEW", idParamIndex = 0)
     public void deleteRecentView(Long id, Long userId) {
         if (id == null) {
             throw new IllegalArgumentException("Recent view ID cannot be null.");
@@ -91,6 +93,7 @@ public class RecentViewServiceImpl implements RecentViewService {
 
     @Override
     @Transactional
+    @AuditAction(action = "RECENT_VIEW_CREATED", entityType = "RECENT_VIEW")
     public RecentViewResponse addRecentView(RecentViewRequest request, Long userId) {
         Long productId = request.getProductId();
         if (!productService.existsById(productId)) {
@@ -115,6 +118,7 @@ public class RecentViewServiceImpl implements RecentViewService {
 
     @Override
     @Transactional
+    @AuditAction(action = "RECENT_VIEW_CLEARED", entityType = "RECENT_VIEW")
     public void deleteAllRecentViewsByUserId(Long userId) {
         recentViewRepository.deleteByUserId(userId);
     }

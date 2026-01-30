@@ -3,11 +3,12 @@
 > **Branch:** `phase3`  
 > **Status:** Phase 3 Completed (Performance/Scalability/Reliability)  
 > **Author:** Phan Đình Minh (Minzetsu)  
-> **Last Updated:** December 21, 2025
+> **Last Updated:** January 30, 2026
 
 ## Overview
 This repository is an end-to-end E-commerce system:
 - **Backend:** Spring Boot 3 + Spring Security 6 (JWT + Refresh Token + RBAC), Liquibase, MySQL
+- **Observability:** Request ID + structured logs + audit logs
 - **Frontend (Phase 2):** React + TypeScript (see `frontend/`), integrating with backend APIs
 
 ## API Namespace Convention

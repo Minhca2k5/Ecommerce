@@ -10,5 +10,6 @@
     <include file="db/changelog/v1__schema.xml"/>
     <include file="db/changelog/v2__seed.xml"/>
     <include file="db/changelog/v3__indexes.xml"/>
+    <include file="db/changelog/v4__audit_logs.xml"/>
 
 </databaseChangeLog>

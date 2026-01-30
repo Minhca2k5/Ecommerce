@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.user.service.impl;
 
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.user.dto.request.RoleRequest;
 import com.minzetsu.ecommerce.user.dto.response.RoleResponse;
@@ -37,6 +38,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    @AuditAction(action = "ROLE_DELETED", entityType = "ROLE", idParamIndex = 0)
     public void deleteRoleById(Long id) {
         Role role = getExistingRole(id);
         roleRepository.delete(role);
@@ -44,6 +46,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    @AuditAction(action = "ROLE_CREATED", entityType = "ROLE")
     public RoleResponse createRoleResponse(RoleRequest request) {
         Role role = roleMapper.toEntity(request);
         Role savedRole = roleRepository.save(role);

@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.notification.service.impl;
 
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
 import com.minzetsu.ecommerce.notification.dto.filter.NotificationFilter;
 import com.minzetsu.ecommerce.notification.dto.request.NotificationCreateRequest;
@@ -94,6 +95,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
+    @AuditAction(action = "NOTIFICATION_CREATED", entityType = "NOTIFICATION")
     public NotificationResponse createNotificationResponse(NotificationCreateRequest request, Long userId) {
         if (userId != null) {
             request.setUserId(userId);
@@ -105,6 +107,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
+    @AuditAction(action = "NOTIFICATION_UPDATED", entityType = "NOTIFICATION", idParamIndex = 1)
     public NotificationResponse updateNotificationResponse(NotificationUpdateRequest request, Long id) {
         Notification existingNotification = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
@@ -114,6 +117,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
+    @AuditAction(action = "NOTIFICATION_READ_UPDATED", entityType = "NOTIFICATION", idParamIndex = 0)
     public void updateNotificationReadStatus(Long id, Boolean isRead) {
         existsById(id);
         notificationRepository.updateIsReadById(id, isRead);
@@ -121,6 +125,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
+    @AuditAction(action = "NOTIFICATION_HIDDEN_UPDATED", entityType = "NOTIFICATION", idParamIndex = 0)
     public void updateNotificationHiddenStatus(Long id, Boolean isHidden) {
         existsById(id);
         notificationRepository.updateIsHiddenById(id, isHidden);
@@ -148,12 +153,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
+    @AuditAction(action = "NOTIFICATION_READ_ALL_UPDATED", entityType = "NOTIFICATION")
     public void updateAllNotificationsReadStatusByUserId(Long userId, Boolean isRead) {
         notificationRepository.updateIsReadByUserId(userId, isRead);
     }
 
     @Override
     @Transactional
+    @AuditAction(action = "NOTIFICATION_HIDDEN_ALL_UPDATED", entityType = "NOTIFICATION")
     public void updateAllNotificationsHiddenStatusByUserId(Long userId, Boolean isHidden) {
         notificationRepository.updateIsHiddenByUserId(userId, isHidden);
     }

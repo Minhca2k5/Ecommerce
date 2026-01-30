@@ -9,6 +9,7 @@ import com.minzetsu.ecommerce.cart.repository.CartItemRepository;
 import com.minzetsu.ecommerce.cart.service.CartItemService;
 import com.minzetsu.ecommerce.cart.service.CartService;
 import com.minzetsu.ecommerce.cart.service.GetUrlForCartService;
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.inventory.service.InventoryService;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.entity.ProductStatus;
@@ -91,6 +92,7 @@ public class CartItemServiceImpl implements CartItemService {
 
     @Override
     @Transactional
+    @AuditAction(action = "CART_ITEMS_CLEARED", entityType = "CART_ITEM", idParamIndex = 0)
     public void deleteByCartId(Long cartId) {
         System.out.println("Deleting CartItems for cartId: " + cartId);
         List<CartItem> cartItems = findOrThrow(() -> getCartItemsByCartId(cartId),
@@ -100,12 +102,14 @@ public class CartItemServiceImpl implements CartItemService {
 
     @Override
     @Transactional
+    @AuditAction(action = "CART_ITEM_DELETED", entityType = "CART_ITEM", idParamIndex = 0)
     public void deleteById(Long id) {
         deleteByCartItem(getCartItemById(id));
     }
 
     @Override
     @Transactional
+    @AuditAction(action = "CART_ITEM_DELETED", entityType = "CART_ITEM")
     public void deleteByCartItem(CartItem cartItem) {
         Long productId = cartItem.getProduct().getId();
         int quantity = cartItem.getQuantity();
@@ -119,6 +123,7 @@ public class CartItemServiceImpl implements CartItemService {
 
     @Override
     @Transactional
+    @AuditAction(action = "CART_ITEM_BATCH_DELETED", entityType = "CART_ITEM")
     public void deleteByCartItems(List<CartItem> cartItems) {
         if (cartItems == null || cartItems.isEmpty()) {
             return;
@@ -209,6 +214,7 @@ public class CartItemServiceImpl implements CartItemService {
 
     @Override
     @Transactional
+    @AuditAction(action = "CART_ITEM_UPSERTED", entityType = "CART_ITEM")
     public CartItemResponse addOrUpdateCartItemResponse(CartItemRequest request, boolean isReturned, Long userId) {
         Cart cart = cartService.getCartByUserId(userId);
         Long cartId = cart.getId();

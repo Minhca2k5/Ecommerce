@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.inventory.service.impl;
 
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.InsufficientNumberException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
@@ -47,6 +48,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional
+    @AuditAction(action = "INVENTORY_DELETED", entityType = "INVENTORY", idParamIndex = 0)
     public void deleteInventory(Long id) {
         Inventory inventory = inventoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Inventory not found with id: " + id));
@@ -183,6 +185,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional
+    @AuditAction(action = "INVENTORY_STOCK_UPDATED", entityType = "INVENTORY", idParamIndex = 1)
     public void updateStockQuantityById(Integer quantity, Long id) {
         if (!existsById(id)) {
             throw new NotFoundException("Inventory not found with id: " + id);
@@ -192,6 +195,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional
+    @AuditAction(action = "INVENTORY_RESERVED_UPDATED", entityType = "INVENTORY", idParamIndex = 1)
     public void updateReservedQuantityById(Integer quantity, Long id) {
         if (!existsById(id)) {
             throw new NotFoundException("Inventory not found with id: " + id);
@@ -213,6 +217,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional
+    @AuditAction(action = "INVENTORY_CREATED", entityType = "INVENTORY")
     public InventoryResponse createAdminInventoryResponse(InventoryRequest request) {
         Long productId = request.getProductId();
         Long warehouseId = request.getWarehouseId();

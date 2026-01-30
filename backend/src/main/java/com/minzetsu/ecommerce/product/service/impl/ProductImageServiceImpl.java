@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.product.service.impl;
 
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.product.dto.request.ProductImageRequest;
@@ -42,6 +43,7 @@ public class ProductImageServiceImpl implements ProductImageService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
+    @AuditAction(action = "PRODUCT_IMAGE_DELETED", entityType = "PRODUCT_IMAGE", idParamIndex = 0)
     public void deleteImageById(Long id) {
         ProductImage image = getExistingImage(id);
         productImageRepository.delete(image);
@@ -57,6 +59,7 @@ public class ProductImageServiceImpl implements ProductImageService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
+    @AuditAction(action = "PRODUCT_IMAGE_URL_UPDATED", entityType = "PRODUCT_IMAGE", idParamIndex = 1)
     public void updateImageUrlById(String url, Long id) {
         if (!existsById(id)) {
             throw new NotFoundException("Image not found with id: " + id);
@@ -67,6 +70,7 @@ public class ProductImageServiceImpl implements ProductImageService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
+    @AuditAction(action = "PRODUCT_IMAGE_PRIMARY_UPDATED", entityType = "PRODUCT_IMAGE", idParamIndex = 0)
     public void updateImageIsPrimaryById(Long id, Long productId) {
         ProductImage productImage = getExistingImage(id);
 
@@ -94,6 +98,7 @@ public class ProductImageServiceImpl implements ProductImageService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
+    @AuditAction(action = "PRODUCT_IMAGE_CREATED", entityType = "PRODUCT_IMAGE")
     public AdminProductImageResponse createAdminProductImageResponse(ProductImageRequest request) {
         Long productId = request.getProductId();
         if (!productService.existsById(productId)) {

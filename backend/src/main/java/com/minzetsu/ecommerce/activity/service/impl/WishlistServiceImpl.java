@@ -6,6 +6,7 @@ import com.minzetsu.ecommerce.activity.entity.Wishlist;
 import com.minzetsu.ecommerce.activity.mapper.WishlistMapper;
 import com.minzetsu.ecommerce.activity.repository.WishlistRepository;
 import com.minzetsu.ecommerce.activity.service.WishlistService;
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.AlreadyExistException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.product.entity.ProductImage;
@@ -77,6 +78,7 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     @Transactional
+    @AuditAction(action = "WISHLIST_ITEM_CREATED", entityType = "WISHLIST")
     public WishlistResponse addProductToWishlist(WishlistRequest request, Long userId) {
         Long productId = request.getProductId();
         if (!productService.existsById(productId)) {
@@ -97,6 +99,7 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     @Transactional
+    @AuditAction(action = "WISHLIST_ITEM_DELETED", entityType = "WISHLIST", idParamIndex = 0)
     public void removeProductFromWishlist(Long id, Long userId) {
         if (id == null) {
             throw new NotFoundException("Wishlist item ID cannot be null.");
@@ -111,6 +114,7 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     @Transactional
+    @AuditAction(action = "WISHLIST_CLEARED", entityType = "WISHLIST")
     public void clearWishlistByUserId(Long userId) {
         wishlistRepository.deleteByUserId(userId);
     }

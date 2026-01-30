@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.user.service.impl;
 
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
@@ -47,6 +48,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
+    @AuditAction(action = "ADDRESS_DELETED", entityType = "ADDRESS", idParamIndex = 0)
     public void deleteAddress(Long id, Long currentUserId) {
         Address address = getExistingAddress(id);
         validateOwnership(address, currentUserId);
@@ -71,6 +73,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
+    @AuditAction(action = "ADDRESS_DEFAULT_UPDATED", entityType = "ADDRESS", idParamIndex = 0)
     public void updateIsDefaultById(Long addressId, Long userId) {
         validateUser(userId);
         Address address = getExistingAddress(addressId);
@@ -83,6 +86,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
+    @AuditAction(action = "ADDRESS_CREATED", entityType = "ADDRESS")
     public AddressResponse createAddressResponse(AddressCreateRequest request, Long userId) {
         request.setUserId(userId);
         validateUser(userId);
@@ -97,6 +101,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
+    @AuditAction(action = "ADDRESS_UPDATED", entityType = "ADDRESS", idParamIndex = 1)
     public AddressResponse updateAddressResponse(AddressUpdateRequest request, Long addressId, Long userId) {
         Address address = getExistingAddress(addressId);
         validateOwnership(address, userId);

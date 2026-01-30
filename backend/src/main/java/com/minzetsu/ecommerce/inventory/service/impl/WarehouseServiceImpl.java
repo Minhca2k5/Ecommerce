@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.inventory.service.impl;
 
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
 import com.minzetsu.ecommerce.inventory.dto.filter.WarehouseFilter;
@@ -37,6 +38,7 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     @Transactional
+    @AuditAction(action = "WAREHOUSE_STATUS_UPDATED", entityType = "WAREHOUSE", idParamIndex = 1)
     public void updateIsActiveAndId(boolean isActive, Long id) {
         if (!existsById(id)) {
             throw new NotFoundException("Warehouse not found with id: " + id);
@@ -46,6 +48,7 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     @Transactional
+    @AuditAction(action = "WAREHOUSE_DELETED", entityType = "WAREHOUSE", idParamIndex = 0)
     public void deleteWarehouse(Long id) {
         Warehouse warehouse = getExistingWarehouse(id);
         inventoryRepository.deleteByWarehouseId(id);
@@ -93,6 +96,7 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     @Transactional
+    @AuditAction(action = "WAREHOUSE_CREATED", entityType = "WAREHOUSE")
     public WarehouseResponse createWarehouseResponse(WarehouseCreateRequest request) {
         Warehouse warehouse = warehouseMapper.toEntity(request);
         return warehouseMapper.toResponse(warehouseRepository.save(warehouse));
@@ -100,6 +104,7 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     @Transactional
+    @AuditAction(action = "WAREHOUSE_UPDATED", entityType = "WAREHOUSE", idParamIndex = 1)
     public WarehouseResponse updateWarehouseResponse(WarehouseUpdateRequest request, Long id) {
         Warehouse warehouse = getExistingWarehouse(id);
         warehouseMapper.updateEntityFromRequest(request, warehouse);

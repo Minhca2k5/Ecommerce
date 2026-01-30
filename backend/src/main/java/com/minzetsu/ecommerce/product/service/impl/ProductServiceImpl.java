@@ -3,6 +3,7 @@ package com.minzetsu.ecommerce.product.service.impl;
 import com.minzetsu.ecommerce.activity.repository.RecentViewRepository;
 import com.minzetsu.ecommerce.activity.repository.WishlistRepository;
 import com.minzetsu.ecommerce.cart.repository.CartItemRepository;
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.DeletionException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
@@ -222,6 +223,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"home", "productDetail"}, allEntries = true)
+    @AuditAction(action = "PRODUCT_DELETED", entityType = "PRODUCT", idParamIndex = 0)
     public void deleteProduct(Long id) {
         Product product = getExistingProduct(id);
         if (cartItemRepository.existsByProductId(id) || orderItemRepository.existsByProductId(id)) {
@@ -260,6 +262,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"home", "productDetail"}, allEntries = true)
+    @AuditAction(action = "PRODUCT_STATUS_UPDATED", entityType = "PRODUCT", idParamIndex = 1)
     public void updateProductStatus(ProductStatus status, Long id) {
         if (!existsById(id)) {
             throw new NotFoundException("Product not found with id: " + id);
@@ -276,6 +279,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"home", "productDetail"}, allEntries = true)
+    @AuditAction(action = "PRODUCT_CREATED", entityType = "PRODUCT")
     public AdminProductResponse createAdminProductResponse(ProductCreateRequest request) {
         Long categoryId = request.getCategoryId();
         if (!categoryService.existsById(categoryId)) {
@@ -299,6 +303,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"home", "productDetail"}, allEntries = true)
+    @AuditAction(action = "PRODUCT_UPDATED", entityType = "PRODUCT", idParamIndex = 1)
     public AdminProductResponse updateAdminProductResponse(ProductUpdateRequest request, Long id) {
         Product product = getExistingProduct(id);
         productMapper.updateEntityFromRequest(request, product);

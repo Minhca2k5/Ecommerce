@@ -8,6 +8,7 @@ import com.minzetsu.ecommerce.cart.mapper.CartMapper;
 import com.minzetsu.ecommerce.cart.repository.CartItemRepository;
 import com.minzetsu.ecommerce.cart.repository.CartRepository;
 import com.minzetsu.ecommerce.inventory.service.InventoryService;
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.DeletionException;
 import com.minzetsu.ecommerce.common.exception.InvalidCredentialException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
@@ -81,6 +82,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @AuditAction(action = "USER_DELETED", entityType = "USER", idParamIndex = 0)
     public void deleteUser(Long id) {
         User user = getUserOrThrow(id);
         if (orderRepository.existsByUserId(id)) {
@@ -139,6 +141,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @AuditAction(action = "USER_UPDATED", entityType = "USER", idParamIndex = 1)
     public UserResponse updateUserResponse(UserUpdateRequest request, Long id) {
         User user = getUserById(id);
         userMapper.updateUserFromRequest(request, user);
@@ -148,6 +151,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @AuditAction(action = "USER_PASSWORD_CHANGED", entityType = "USER", idParamIndex = 0)
     public UserResponse changeUserPassword(Long id, PasswordRequest request) {
         User user = getUserById(id);
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
@@ -163,6 +167,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @AuditAction(action = "USER_CREATED", entityType = "USER")
     public UserResponse createUserResponse(UserCreateRequest request) {
         User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));

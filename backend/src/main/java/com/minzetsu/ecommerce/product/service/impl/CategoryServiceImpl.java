@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.product.service.impl;
 
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
 import com.minzetsu.ecommerce.product.dto.filter.CategoryFilter;
@@ -68,6 +69,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"home", "categoryDetail", "categoryTree"}, allEntries = true)
+    @AuditAction(action = "CATEGORY_UPDATED", entityType = "CATEGORY", idParamIndex = 0)
     public void updateCategoryByNameOrSlug(Long id, String name, String slug) {
         if (!existsById(id)) {
             throw new NotFoundException("Category not found with id: " + id);
@@ -84,6 +86,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"home", "categoryDetail", "categoryTree"}, allEntries = true)
+    @AuditAction(action = "CATEGORY_DELETED", entityType = "CATEGORY", idParamIndex = 0)
     public void deleteCategory(Long id) {
         Category category = getExistingCategory(id);
         unlinkRelationsBeforeDelete(id);
@@ -110,6 +113,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"home", "categoryDetail", "categoryTree"}, allEntries = true)
+    @AuditAction(action = "CATEGORY_CREATED", entityType = "CATEGORY")
     public AdminCategoryResponse createAdminCategoryResponse(CategoryRequest request) {
         Long parentId = request.getParentId();
         if (parentId != null && !existsById(parentId)) {

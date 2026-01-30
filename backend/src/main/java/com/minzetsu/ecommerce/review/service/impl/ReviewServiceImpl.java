@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.review.service.impl;
 
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.common.exception.InvalidObjectException;
@@ -59,6 +60,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
+    @AuditAction(action = "REVIEW_DELETED", entityType = "REVIEW", idParamIndex = 0)
     public void deleteReview(Long id, Long currentUserId) {
         Review review = getExistingReview(id);
         validateOwnership(review, currentUserId);
@@ -74,6 +76,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
+    @AuditAction(action = "REVIEW_RATING_UPDATED", entityType = "REVIEW", idParamIndex = 1)
     public void updateReviewByRating(Integer rating, Long id, Long currentUserId) {
         Review review = getExistingReview(id);
         validateOwnership(review, currentUserId);
@@ -89,6 +92,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
+    @AuditAction(action = "REVIEW_COMMENT_UPDATED", entityType = "REVIEW", idParamIndex = 1)
     public void updateReviewByComment(String comment, Long id, Long currentUserId) {
         if (comment == null || comment.trim().isEmpty()) {
             throw new InvalidObjectException("Comment cannot be null or empty");
@@ -132,6 +136,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     @CacheEvict(cacheNames = {"productDetail", "home"}, allEntries = true)
+    @AuditAction(action = "REVIEW_CREATED", entityType = "REVIEW")
     public ReviewResponse createReviewResponse(ReviewRequest request, Long userId) {
         request.setUserId(userId);
         Long productId = request.getProductId();

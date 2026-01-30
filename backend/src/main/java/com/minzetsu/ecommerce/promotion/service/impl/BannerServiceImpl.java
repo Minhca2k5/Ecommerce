@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.promotion.service.impl;
 
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
 import com.minzetsu.ecommerce.promotion.dto.filter.BannerFilter;
@@ -50,6 +51,7 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     @CacheEvict(cacheNames = {"bannerPublic", "home"}, allEntries = true)
+    @AuditAction(action = "BANNER_CREATED", entityType = "BANNER")
     public BannerResponse createBanner(BannerCreateRequest request) {
         Banner banner = bannerMapper.toEntity(request);
         banner = bannerRepository.save(banner);
@@ -64,6 +66,7 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     @CacheEvict(cacheNames = {"bannerPublic", "home"}, allEntries = true)
+    @AuditAction(action = "BANNER_UPDATED", entityType = "BANNER", idParamIndex = 0)
     public BannerResponse updateBanner(Long id, BannerUpdateRequest request) {
         Banner banner = bannerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Banner not found"));
@@ -80,6 +83,7 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     @CacheEvict(cacheNames = {"bannerPublic", "home"}, allEntries = true)
+    @AuditAction(action = "BANNER_DELETED", entityType = "BANNER", idParamIndex = 0)
     public void deleteBanner(Long id) {
         Banner banner = bannerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Banner not found"));

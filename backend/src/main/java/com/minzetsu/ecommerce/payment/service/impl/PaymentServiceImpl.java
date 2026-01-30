@@ -1,6 +1,7 @@
 package com.minzetsu.ecommerce.payment.service.impl;
 
 import com.minzetsu.ecommerce.common.exception.AlreadyExistException;
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
@@ -43,6 +44,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
+    @AuditAction(action = "PAYMENT_STATUS_UPDATED", entityType = "PAYMENT", idParamIndex = 1)
     public void updatePaymentStatusById(PaymentStatus status, Long id) {
         if (!existsById(id)) {
             throw new NotFoundException("Payment not found with id: " + id);
@@ -110,6 +112,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
+    @AuditAction(action = "PAYMENT_CREATED", entityType = "PAYMENT")
     public PaymentResponse createPaymentResponse(PaymentRequest request, Long userId, Long orderId) {
         Order order = orderService.getOrderByIdAndUserId(orderId, userId);
         List<Payment> existingPayments = paymentRepository.findByOrderIdOrderByUpdatedAtDesc(orderId);

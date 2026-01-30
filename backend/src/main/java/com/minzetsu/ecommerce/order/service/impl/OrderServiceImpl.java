@@ -3,6 +3,7 @@ package com.minzetsu.ecommerce.order.service.impl;
 import com.minzetsu.ecommerce.cart.entity.CartItem;
 import com.minzetsu.ecommerce.cart.service.CartItemService;
 import com.minzetsu.ecommerce.cart.service.CartService;
+import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
@@ -142,6 +143,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @AuditAction(action = "ORDER_STATUS_UPDATED", entityType = "ORDER", idParamIndex = 0)
     public void updateOrderStatus(Long id, OrderStatus status) {
         if (!existsById(id)) {
             throw new NotFoundException("Order not found with id: " + id);
@@ -157,6 +159,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @AuditAction(action = "ORDER_CURRENCY_UPDATED", entityType = "ORDER", idParamIndex = 0)
     public void updateOrderCurrency(Long id, String currency) {
         if (!existsById(id)) {
             throw new NotFoundException("Order not found with id: " + id);
@@ -198,6 +201,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @AuditAction(action = "ORDER_CREATED", entityType = "ORDER")
     public OrderResponse createOrderResponse(OrderRequest request, Long userId) {
         Map<String, BigDecimal> totals = handleVoucherDiscount(request, userId);
         User user = userService.getUserById(userId);
