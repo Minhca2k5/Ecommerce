@@ -7,14 +7,21 @@ import SafeImage from "@/components/SafeImage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/app/AuthProvider";
 import { useToast } from "@/app/ToastProvider";
 import { getErrorMessage } from "@/lib/errors";
 import { formatCurrency } from "@/lib/format";
 import {
   addOrUpdateCartItem,
+  addOrUpdateGuestCartItem,
   clearCart,
+  clearGuestCart,
   deleteCartItem,
+  deleteGuestCartItem,
   getOrCreateCart,
+  getOrCreateGuestCart,
+  getStoredGuestId,
+  listGuestCartItems,
   listMyCartItems,
   returnUpdateCartItem,
   type CartItemResponse,
@@ -27,6 +34,7 @@ function money(value: number | undefined, currency: string | undefined) {
 }
 
 export default function CartPage() {
+  const auth = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -43,6 +51,7 @@ export default function CartPage() {
 
   const cartId = cart?.id ? Number(cart.id) : null;
   const currency = cart?.currency || items[0]?.productCurrency || "VND";
+  const isGuest = !auth.isAuthenticated;
 
   const summary = useMemo(() => {
     const subtotal = Number(cart?.itemsSubtotal ?? 0);
@@ -56,14 +65,26 @@ export default function CartPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const c = await getOrCreateCart();
-      setCart(c);
-      const id = Number(c.id ?? 0);
-      if (id) {
-        const page = await listMyCartItems(id, { page: 0, size: 50, productName: search.trim() || undefined });
-        setItems(page.content ?? []);
+      if (isGuest) {
+        const c = await getOrCreateGuestCart();
+        setCart(c);
+        const guestId = c.guestId ?? getStoredGuestId();
+        if (guestId) {
+          const list = await listGuestCartItems(guestId);
+          setItems(list ?? []);
+        } else {
+          setItems([]);
+        }
       } else {
-        setItems([]);
+        const c = await getOrCreateCart();
+        setCart(c);
+        const id = Number(c.id ?? 0);
+        if (id) {
+          const page = await listMyCartItems(id, { page: 0, size: 50, productName: search.trim() || undefined });
+          setItems(page.content ?? []);
+        } else {
+          setItems([]);
+        }
       }
     } catch (e) {
       setError(getErrorMessage(e, "Failed to load cart."));
@@ -89,9 +110,21 @@ export default function CartPage() {
     if (!delta) return;
     try {
       const productId = Number(item.productId);
-      if (delta > 0) await addOrUpdateCartItem({ cartId, productId, quantity: delta });
-      else await returnUpdateCartItem({ cartId, productId, quantity: Math.abs(delta) });
+      if (isGuest) {
+        const guestId = cart?.guestId ?? getStoredGuestId();
+        if (!guestId) throw new Error("Missing guestId");
+        if (desiredQty <= 0) {
+          if (item.id) await deleteGuestCartItem(guestId, Number(item.id));
+        } else {
+          if (item.id) await deleteGuestCartItem(guestId, Number(item.id));
+          await addOrUpdateGuestCartItem(guestId, productId, desiredQty);
+        }
+      } else {
+        if (delta > 0) await addOrUpdateCartItem({ cartId, productId, quantity: delta });
+        else await returnUpdateCartItem({ cartId, productId, quantity: Math.abs(delta) });
+      }
       await refresh();
+      window.dispatchEvent(new CustomEvent("cart:changed"));
     } catch (e) {
       toast.push({ variant: "error", title: "Update failed", message: getErrorMessage(e, "Failed to update quantity.") });
     }
@@ -105,9 +138,21 @@ export default function CartPage() {
     if (!appliedDelta) return;
     try {
       const productId = Number(item.productId);
-      if (appliedDelta > 0) await addOrUpdateCartItem({ cartId, productId, quantity: appliedDelta });
-      else await returnUpdateCartItem({ cartId, productId, quantity: Math.abs(appliedDelta) });
+      if (isGuest) {
+        const guestId = cart?.guestId ?? getStoredGuestId();
+        if (!guestId) throw new Error("Missing guestId");
+        if (desiredQty <= 0) {
+          if (item.id) await deleteGuestCartItem(guestId, Number(item.id));
+        } else {
+          if (item.id) await deleteGuestCartItem(guestId, Number(item.id));
+          await addOrUpdateGuestCartItem(guestId, productId, desiredQty);
+        }
+      } else {
+        if (appliedDelta > 0) await addOrUpdateCartItem({ cartId, productId, quantity: appliedDelta });
+        else await returnUpdateCartItem({ cartId, productId, quantity: Math.abs(appliedDelta) });
+      }
       await refresh();
+      window.dispatchEvent(new CustomEvent("cart:changed"));
     } catch (e) {
       toast.push({ variant: "error", title: "Update failed", message: getErrorMessage(e, "Failed to update quantity.") });
     }
@@ -117,10 +162,17 @@ export default function CartPage() {
     if (!cartId || !deleteTarget?.id) return;
     setIsDeleting(true);
     try {
-      await deleteCartItem(cartId, Number(deleteTarget.id));
+      if (isGuest) {
+        const guestId = cart?.guestId ?? getStoredGuestId();
+        if (!guestId) throw new Error("Missing guestId");
+        await deleteGuestCartItem(guestId, Number(deleteTarget.id));
+      } else {
+        await deleteCartItem(cartId, Number(deleteTarget.id));
+      }
       toast.push({ variant: "success", title: "Removed", message: "Item removed from cart." });
       setDeleteTarget(null);
       await refresh();
+      window.dispatchEvent(new CustomEvent("cart:changed"));
     } catch (e) {
       toast.push({ variant: "error", title: "Remove failed", message: getErrorMessage(e, "Failed to remove item.") });
     } finally {
@@ -132,10 +184,17 @@ export default function CartPage() {
     if (!cartId) return;
     setIsClearing(true);
     try {
-      await clearCart(cartId);
+      if (isGuest) {
+        const guestId = cart?.guestId ?? getStoredGuestId();
+        if (!guestId) throw new Error("Missing guestId");
+        await clearGuestCart(guestId);
+      } else {
+        await clearCart(cartId);
+      }
       toast.push({ variant: "success", title: "Cleared", message: "Cart cleared." });
       setIsClearOpen(false);
       await refresh();
+      window.dispatchEvent(new CustomEvent("cart:changed"));
     } catch (e) {
       toast.push({ variant: "error", title: "Clear failed", message: getErrorMessage(e, "Failed to clear cart.") });
     } finally {
@@ -194,8 +253,11 @@ export default function CartPage() {
             <Button variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur" onClick={() => setIsClearOpen(true)}>
               Clear cart
             </Button>
-            <Button className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={() => navigate("/checkout")}>
-              Checkout
+            <Button
+              className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+              onClick={() => navigate(isGuest ? "/login" : "/checkout")}
+            >
+              {isGuest ? "Login to checkout" : "Checkout"}
             </Button>
           </div>
         </div>
@@ -288,8 +350,11 @@ export default function CartPage() {
               <span>Total</span>
               <span>{money(summary.total, currency)}</span>
             </div>
-            <Button className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={() => navigate("/checkout")}>
-              Proceed to checkout
+            <Button
+              className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+              onClick={() => navigate(isGuest ? "/login" : "/checkout")}
+            >
+              {isGuest ? "Login to checkout" : "Proceed to checkout"}
             </Button>
           </CardContent>
         </Card>

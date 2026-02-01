@@ -125,6 +125,12 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   LLM provider integration + cost/latency monitoring.
     *   RAG over product catalog, policy docs, and order data (scoped by auth).
     *   Admin tools: prompt templates, knowledge base sync, and audit logs.
+*   [x] **Anonymous Cart + Merge on Login**:
+    *   Guest cart persisted by device/session.
+    *   Merge guest cart into user cart on login (conflict resolution rules).
+*   [x] **Inventory Reservation TTL + Release**:
+    *   Reserve stock during checkout with expiration.
+    *   Release inventory on timeout/cancel/fail.
 *   [x] **Phase 4 Review**:
     *   Sandbox Testing: Verify payment flows (Success/Failure/Cancel).
     *   Verify search accuracy and relevance.
@@ -145,6 +151,10 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [ ] **NoSQL Expansion**:
     *   Redis advanced usage (streams/pubsub).
     *   One document DB (MongoDB) for logs/analytics (optional).
+*   [ ] **Checkout Enhancements**:
+    *   Guest checkout (no account required).
+    *   Fraud/abuse detection (basic rules).
+    *   Multi-currency + tax/shipping rules.
 *   [ ] **Testing Suite**:
     *   Unit tests (pricing/discounts, inventory reservation, order totals, RBAC).
     *   Integration tests (`MockMvc` + TestContainers for DB/Redis).
@@ -175,5 +185,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [ ] **Scaling & Reliability**:
     *   Horizontal scaling, load balancer, autoscaling (optional).
     *   Rate limiting + backpressure validation under load.
+*   [ ] **Experimentation**:
+    *   Feature flags + A/B testing rollout support.
 *   [ ] **Secrets & Environments**:
     *   Separate dev/staging/prod configs and secrets management.

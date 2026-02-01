@@ -24,6 +24,14 @@ export default function ChatbotWidget() {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
   const sendingRef = useRef(false);
+  const [stickerPos, setStickerPos] = useState({ x: 0, y: 0 });
+  const dragRef = useRef({
+    dragging: false,
+    startX: 0,
+    startY: 0,
+    originX: 0,
+    originY: 0,
+  });
 
   async function onSend() {
     if (sendingRef.current) return;
@@ -105,36 +113,104 @@ export default function ChatbotWidget() {
     void loadHistory(activeConversationId);
   }, [open, activeConversationId]);
 
-  if (!auth.isAuthenticated) {
-    return (
-      <button
-        type="button"
-        onClick={() => toast.push({ variant: "default", title: "Login required", message: "Please login to use the chatbot." })}
-        className="fixed bottom-6 right-6 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full border bg-background/80 text-base font-semibold shadow-lg backdrop-blur transition hover:-translate-y-1 hover:shadow-xl"
-        aria-label="Open chatbot"
-        title="Chatbot"
-      >
-        AI
-      </button>
-    );
+  useEffect(() => {
+    const margin = 20;
+    const width = 76;
+    const height = 76;
+    setStickerPos({
+      x: Math.max(margin, window.innerWidth - width - margin),
+      y: Math.max(margin, window.innerHeight - height - margin),
+    });
+  }, []);
+
+  function clampSticker(x: number, y: number) {
+    const margin = 12;
+    const width = 76;
+    const height = 76;
+    const maxX = Math.max(margin, window.innerWidth - width - margin);
+    const maxY = Math.max(margin, window.innerHeight - height - margin);
+    return {
+      x: Math.min(Math.max(margin, x), maxX),
+      y: Math.min(Math.max(margin, y), maxY),
+    };
   }
+
+  function onDragStart(clientX: number, clientY: number) {
+    dragRef.current.dragging = true;
+    dragRef.current.startX = clientX;
+    dragRef.current.startY = clientY;
+    dragRef.current.originX = stickerPos.x;
+    dragRef.current.originY = stickerPos.y;
+  }
+
+  function onDragMove(clientX: number, clientY: number) {
+    if (!dragRef.current.dragging) return;
+    const dx = clientX - dragRef.current.startX;
+    const dy = clientY - dragRef.current.startY;
+    const next = clampSticker(dragRef.current.originX + dx, dragRef.current.originY + dy);
+    setStickerPos(next);
+  }
+
+  function onDragEnd() {
+    dragRef.current.dragging = false;
+  }
+
+  const stickerButton = (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label="Open chatbot"
+      title="Chatbot"
+      onClick={() => {
+        if (!auth.isAuthenticated) {
+          toast.push({ variant: "default", title: "Login required", message: "Please login to use the chatbot." });
+          return;
+        }
+        setOpen((v) => !v);
+      }}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        onDragStart(e.clientX, e.clientY);
+      }}
+      onMouseMove={(e) => onDragMove(e.clientX, e.clientY)}
+      onMouseUp={onDragEnd}
+      onMouseLeave={onDragEnd}
+      onTouchStart={(e) => {
+        const touch = e.touches[0];
+        if (!touch) return;
+        onDragStart(touch.clientX, touch.clientY);
+      }}
+      onTouchMove={(e) => {
+        const touch = e.touches[0];
+        if (!touch) return;
+        onDragMove(touch.clientX, touch.clientY);
+      }}
+      onTouchEnd={onDragEnd}
+      className="fixed z-40 flex h-[72px] w-[72px] select-none items-center justify-center transition hover:-translate-y-1"
+      style={{
+        left: stickerPos.x,
+        top: stickerPos.y,
+        touchAction: "none",
+      }}
+    >
+      <div className="relative">
+        <svg viewBox="0 0 64 64" className="h-14 w-14 drop-shadow-[0_10px_16px_rgba(0,0,0,0.35)]" aria-hidden="true">
+          <path d="M10 22l10-8 8 10" fill="#F6A85F" />
+          <path d="M54 22l-10-8-8 10" fill="#F6A85F" />
+          <circle cx="32" cy="34" r="18" fill="#F8C27B" />
+          <circle cx="24" cy="32" r="3" fill="#2B2B2B" />
+          <circle cx="40" cy="32" r="3" fill="#2B2B2B" />
+          <circle cx="32" cy="38" r="2.6" fill="#D16E6E" />
+          <path d="M26 41c2 3 5 4 6 4s4-1 6-4" stroke="#2B2B2B" strokeWidth="2" fill="none" strokeLinecap="round" />
+          <path d="M18 38h8M38 38h8" stroke="#2B2B2B" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </div>
+    </div>
+  );
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => {
-          setOpen((v) => {
-            const next = !v;
-            return next;
-          });
-        }}
-        className="fixed bottom-6 right-6 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full border bg-background/80 text-base font-semibold shadow-lg backdrop-blur transition hover:-translate-y-1 hover:shadow-xl"
-        aria-label="Open chatbot"
-        title="Chatbot"
-      >
-        AI
-      </button>
+      {stickerButton}
       {open
           ? createPortal(
             <div className="fixed bottom-24 right-6 z-50 w-[320px] sm:w-[520px]">

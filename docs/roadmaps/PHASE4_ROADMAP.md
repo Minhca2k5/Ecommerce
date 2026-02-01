@@ -1,6 +1,6 @@
 # Phase 4 Roadmap: Advanced Features and Integrations
 
-Status: In progress
+Status: Completed
 
 Goal: add production-grade integrations (payments, broker, search, realtime, chatbot) and
 event-driven data propagation for "new arrivals", with clear DoD and test evidence.
@@ -20,6 +20,8 @@ Guiding principles:
 - Realtime channels (WS/SSE) for order status + admin notifications.
 - New product propagation works end-to-end (event -> index/cache -> UI).
 - Chatbot is LLM-backed with RAG (project + DB context) and guardrails + logs.
+- Anonymous cart works for guests and merges safely on login.
+- Inventory reservations expire and release stock automatically.
 
 ---
 
@@ -120,3 +122,31 @@ Checkpoint:
 - Search: precision/recall + fallback test.
 - Realtime: WS/SSE verified.
 - Chatbot: RAG demo + logs.
+
+---
+
+## 8) Anonymous Cart + Merge on Login (P4-M8)
+### 8.1 Guest cart
+- Persist guest cart by device/session (cookie or local storage with server sync).
+- Support add/remove/update for guest users.
+
+### 8.2 Merge rules
+- On login, merge guest cart into user cart.
+- Resolve conflicts (same SKU -> sum quantity, cap by inventory).
+
+Checkpoint:
+- Guest cart survives reload and merges correctly on login.
+
+---
+
+## 9) Inventory Reservation TTL + Release (P4-M9)
+### 9.1 Reservation
+- Reserve stock at checkout with TTL.
+- Record reservation metadata (orderId, sku, qty, expiresAt).
+
+### 9.2 Release flow
+- Auto-release on TTL expiry or payment failure.
+- Release on manual cancel.
+
+Checkpoint:
+- Stock is restored after TTL or failed payment.

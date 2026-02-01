@@ -6,6 +6,7 @@ import { useNotifications } from "@/app/NotificationProvider";
 import { useTheme } from "@/app/ThemeProvider";
 import { getNotificationRoute } from "@/lib/notificationRoute";
 import { getAvailableRoles, getSelectedRole, setSelectedRole } from "@/lib/roleSelection";
+import { getMyCart, getGuestCart, getStoredGuestId } from "@/lib/cartApi";
 import ChatbotWidget from "@/app/ChatbotWidget";
 
 const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
@@ -22,6 +23,7 @@ export default function AppLayout() {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const notifRef = useRef<HTMLDivElement | null>(null);
   const isAdminRoute = location.pathname === "/admin" || location.pathname.startsWith("/admin/");
@@ -56,6 +58,40 @@ export default function AppLayout() {
     window.addEventListener("pointerdown", onPointerDown);
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, [isMenuOpen, isNotifOpen]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadCartCount() {
+      try {
+        if (isAdminRoute) return;
+        if (auth.isAuthenticated) {
+          const cart = await getMyCart();
+          const count = Number(cart.totalQuantity ?? cart.itemCount ?? 0);
+          if (!cancelled) setCartCount(count);
+          return;
+        }
+        const guestId = getStoredGuestId();
+        if (!guestId) {
+          if (!cancelled) setCartCount(0);
+          return;
+        }
+        const cart = await getGuestCart(guestId);
+        const count = Number(cart.totalQuantity ?? cart.itemCount ?? 0);
+        if (!cancelled) setCartCount(count);
+      } catch {
+        if (!cancelled) setCartCount(0);
+      }
+    }
+    void loadCartCount();
+    function onCartChanged() {
+      void loadCartCount();
+    }
+    window.addEventListener("cart:changed", onCartChanged);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("cart:changed", onCartChanged);
+    };
+  }, [auth.isAuthenticated, isAdminRoute, location.pathname]);
 
   return (
     <div className="relative min-h-dvh flex flex-col overflow-hidden bg-background">
@@ -104,20 +140,25 @@ export default function AppLayout() {
                 </NavLink>
               </>
             ) : null}
+            {!isAdminRoute ? (
+              <NavLink to="/cart" className={navLinkClassName}>
+                <span className="relative inline-flex items-center gap-2 transition hover:-translate-y-0.5">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M6 7h12l-1 13H7L6 7z" />
+                    <path d="M9 7a3 3 0 0 1 6 0" />
+                  </svg>
+                  Cart
+                  {cartCount > 0 ? (
+                    <span className="absolute -right-3 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-emerald-500 px-1 text-[10px] font-semibold text-white">
+                      {cartCount > 99 ? "99+" : String(cartCount)}
+                    </span>
+                  ) : null}
+                </span>
+              </NavLink>
+            ) : null}
+
             {auth.isAuthenticated ? (
               <>
-                {!isAdminRoute ? (
-                  <NavLink to="/cart" className={navLinkClassName}>
-                    <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
-                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M6 7h12l-1 13H7L6 7z" />
-                        <path d="M9 7a3 3 0 0 1 6 0" />
-                      </svg>
-                      Cart
-                    </span>
-                  </NavLink>
-                ) : null}
-
                 <div ref={notifRef} className="relative">
                   <button
                     type="button"

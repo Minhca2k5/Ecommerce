@@ -18,6 +18,7 @@ public class CartResponse extends BaseDTO {
     private Long userId;
     private String username;
     private String fullName;
+    private String guestId;
 
     private List<CartItemResponse> items;
 

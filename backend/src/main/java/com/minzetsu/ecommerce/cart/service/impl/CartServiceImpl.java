@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +62,11 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    public boolean existsByGuestId(String guestId) {
+        return cartRepository.existsByGuestId(guestId);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Cart getCartByUserId(Long userId) {
         return findCart(cartRepository.findByUserId(userId),
@@ -76,8 +82,21 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional(readOnly = true)
+    public Cart getCartByGuestId(String guestId) {
+        return findCart(cartRepository.findByGuestId(guestId),
+                "Guest cart not found for guestId: " + guestId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public CartResponse getFullCartResponseByUserId(Long userId) {
         return buildFullCartResponse(getCartByUserId(userId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CartResponse getFullCartResponseByGuestId(String guestId) {
+        return buildFullCartResponse(getCartByGuestId(guestId));
     }
 
     @Override
@@ -92,5 +111,62 @@ public class CartServiceImpl implements CartService {
         Cart cart = new Cart();
         cart.setUser(user);
         return cartMapper.toResponse(cartRepository.save(cart));
+    }
+
+    @Override
+    @Transactional
+    @AuditAction(action = "GUEST_CART_CREATED", entityType = "CART")
+    public CartResponse createGuestCartResponse(String guestId) {
+        String resolvedGuestId = (guestId == null || guestId.isBlank())
+                ? UUID.randomUUID().toString()
+                : guestId;
+        if (existsByGuestId(resolvedGuestId)) {
+            return cartMapper.toResponse(getCartByGuestId(resolvedGuestId));
+        }
+        Cart cart = new Cart();
+        cart.setGuestId(resolvedGuestId);
+        return cartMapper.toResponse(cartRepository.save(cart));
+    }
+
+    @Override
+    @Transactional
+    @AuditAction(action = "GUEST_CART_MERGED", entityType = "CART")
+    public CartResponse mergeGuestCartToUser(String guestId, Long userId) {
+        validateUser(userId);
+        if (guestId == null || guestId.isBlank() || !existsByGuestId(guestId)) {
+            return getFullCartResponseByUserId(userId);
+        }
+
+        Cart guestCart = getCartByGuestId(guestId);
+        Cart userCart = cartRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    User user = userService.getUserById(userId);
+                    Cart cart = new Cart();
+                    cart.setUser(user);
+                    return cartRepository.save(cart);
+                });
+
+        List<com.minzetsu.ecommerce.cart.entity.CartItem> guestItems =
+                cartItemRepository.findByCartIdOrderByUpdatedAtDesc(guestCart.getId());
+
+        for (com.minzetsu.ecommerce.cart.entity.CartItem guestItem : guestItems) {
+            Long productId = guestItem.getProduct().getId();
+            Optional<com.minzetsu.ecommerce.cart.entity.CartItem> existing =
+                    cartItemRepository.findByCartIdAndProductId(userCart.getId(), productId);
+
+            if (existing.isPresent()) {
+                com.minzetsu.ecommerce.cart.entity.CartItem userItem = existing.get();
+                int mergedQty = userItem.getQuantity() + guestItem.getQuantity();
+                userItem.setQuantity(mergedQty);
+                cartItemRepository.save(userItem);
+                cartItemRepository.delete(guestItem);
+            } else {
+                guestItem.setCart(userCart);
+                cartItemRepository.save(guestItem);
+            }
+        }
+
+        cartRepository.delete(guestCart);
+        return buildFullCartResponse(userCart);
     }
 }

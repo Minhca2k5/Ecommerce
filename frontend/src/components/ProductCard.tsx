@@ -6,7 +6,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency, formatCompactNumber } from "@/lib/format";
 import { getBoolean, getNumber, getString, isRecord } from "@/lib/safe";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/app/AuthProvider";
 import { useCartActions } from "@/lib/useCartActions";
 
 export default function ProductCard({
@@ -16,7 +15,6 @@ export default function ProductCard({
   product: unknown;
   href: string;
 }) {
-  const auth = useAuth();
   const { addToCart, isWorking } = useCartActions();
   const id = getNumber(product, "id") ?? 0;
   const name = getString(product, "name", "title") ?? "Product";
@@ -76,19 +74,13 @@ export default function ProductCard({
           <Button asChild variant="outline" className="w-full rounded-xl">
             <Link to={href}>View</Link>
           </Button>
-          {auth.isAuthenticated ? (
-            <Button
-              className="w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
-              onClick={() => addToCart(id, 1)}
-              disabled={!id || isWorking}
-            >
-              Add
-            </Button>
-          ) : (
-            <Button asChild className="w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
-              <Link to="/login">Add</Link>
-            </Button>
-          )}
+          <Button
+            className="w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+            onClick={() => addToCart(id, 1)}
+            disabled={!id || isWorking}
+          >
+            Add
+          </Button>
         </div>
       </CardContent>
     </Card>

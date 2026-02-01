@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { ApiError } from "@/lib/apiError";
 import { getMe, login as loginApi, register as registerApi } from "@/lib/authApi";
 import { clearStoredTokens, getStoredTokens, setStoredTokens, type StoredTokens } from "@/lib/authStorage";
+import { clearStoredGuestId, getStoredGuestId, mergeGuestCart } from "@/lib/cartApi";
 import { clearSelectedRole } from "@/lib/roleSelection";
 
 export type AuthUser = {
@@ -47,6 +48,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const mergeGuestCartIfNeeded = useCallback(async () => {
+    const guestId = getStoredGuestId();
+    if (!guestId) return;
+    try {
+      await mergeGuestCart(guestId);
+      clearStoredGuestId();
+      window.dispatchEvent(new Event("cart:changed"));
+    } catch {
+      // Keep guest cart id so we can retry later without blocking login.
+    }
+  }, []);
+
   useEffect(() => {
     const tokens = getStoredTokens();
     if (!tokens) {
@@ -54,12 +67,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     refreshMe()
+      .then(() => mergeGuestCartIfNeeded())
       .catch(() => {
         clearStoredTokens();
         setUser(null);
       })
       .finally(() => setIsReady(true));
-  }, [refreshMe]);
+  }, [mergeGuestCartIfNeeded, refreshMe]);
 
   const login = useCallback(async (username: string, password: string) => {
     const response = await loginApi({ username, password });
@@ -67,7 +81,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!tokens) throw new Error(response.message || "Login failed");
     setStoredTokens(tokens);
     await refreshMe();
-  }, [refreshMe]);
+    await mergeGuestCartIfNeeded();
+  }, [mergeGuestCartIfNeeded, refreshMe]);
 
   const register = useCallback(
     async (payload: { username: string; email: string; password: string; fullName?: string; phone?: string }) => {
@@ -77,6 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (directTokens) {
         setStoredTokens(directTokens);
         await refreshMe();
+        await mergeGuestCartIfNeeded();
         return;
       }
 
@@ -86,8 +102,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setStoredTokens(loginTokens);
       await refreshMe();
+      await mergeGuestCartIfNeeded();
     },
-    [refreshMe],
+    [mergeGuestCartIfNeeded, refreshMe],
   );
 
   const logout = useCallback(() => {

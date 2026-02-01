@@ -1,6 +1,9 @@
 package com.minzetsu.ecommerce.common.config;
 
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.Cache;
+import org.springframework.cache.interceptor.CacheErrorHandler;
+import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -33,10 +36,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 @EnableCaching
-public class CacheConfig {
+public class CacheConfig extends CachingConfigurerSupport {
+    private static final Logger logger = LoggerFactory.getLogger(CacheConfig.class);
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
@@ -69,12 +75,37 @@ public class CacheConfig {
         cacheConfigs.put("categoryDetail", defaultConfig.entryTtl(Duration.ofMinutes(10)));
         cacheConfigs.put("categoryTree", defaultConfig.entryTtl(Duration.ofMinutes(10)));
         cacheConfigs.put("bannerPublic", defaultConfig.entryTtl(Duration.ofMinutes(2)));
-        cacheConfigs.put("voucherPublic", defaultConfig.entryTtl(Duration.ofMinutes(2)));
+        cacheConfigs.put("voucherPublicV2", defaultConfig.entryTtl(Duration.ofMinutes(2)));
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(cacheConfigs)
                 .build();
+    }
+
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return new CacheErrorHandler() {
+            @Override
+            public void handleCacheGetError(RuntimeException exception, Cache cache, Object key) {
+                logger.warn("Cache GET error on cache={} key={}: {}", cache != null ? cache.getName() : "unknown", key, exception.getMessage());
+            }
+
+            @Override
+            public void handleCachePutError(RuntimeException exception, Cache cache, Object key, Object value) {
+                logger.warn("Cache PUT error on cache={} key={}: {}", cache != null ? cache.getName() : "unknown", key, exception.getMessage());
+            }
+
+            @Override
+            public void handleCacheEvictError(RuntimeException exception, Cache cache, Object key) {
+                logger.warn("Cache EVICT error on cache={} key={}: {}", cache != null ? cache.getName() : "unknown", key, exception.getMessage());
+            }
+
+            @Override
+            public void handleCacheClearError(RuntimeException exception, Cache cache) {
+                logger.warn("Cache CLEAR error on cache={}: {}", cache != null ? cache.getName() : "unknown", exception.getMessage());
+            }
+        };
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

@@ -15,5 +15,6 @@
     <include file="db/changelog/v6__chat_messages.xml"/>
     <include file="db/changelog/v7__chat_conversations.xml"/>
     <include file="db/changelog/v8__payments_multi.xml"/>
+    <include file="db/changelog/v9__guest_cart_and_reservation.xml"/>
 
 </databaseChangeLog>

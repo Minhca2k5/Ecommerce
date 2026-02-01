@@ -217,12 +217,24 @@ public class CartItemServiceImpl implements CartItemService {
     @AuditAction(action = "CART_ITEM_UPSERTED", entityType = "CART_ITEM")
     public CartItemResponse addOrUpdateCartItemResponse(CartItemRequest request, boolean isReturned, Long userId) {
         Cart cart = cartService.getCartByUserId(userId);
-        Long cartId = cart.getId();
+        return upsertCartItem(request, isReturned, cart.getId());
+    }
+
+    @Override
+    @Transactional
+    @AuditAction(action = "CART_ITEM_UPSERTED", entityType = "CART_ITEM")
+    public CartItemResponse addOrUpdateCartItemResponseByCartId(CartItemRequest request, boolean isReturned, Long cartId) {
+        return upsertCartItem(request, isReturned, cartId);
+    }
+
+    private CartItemResponse upsertCartItem(CartItemRequest request, boolean isReturned, Long cartId) {
         Long productId = request.getProductId();
         Integer quantity = request.getQuantity();
 
         validateCartAndProduct(cartId, productId);
-        if (!isReturned) validateStock(productId, quantity);
+        if (!isReturned) {
+            validateStock(productId, quantity);
+        }
 
         CartItem cartItem = cartItemRepository.findByCartIdAndProductId(cartId, productId)
                 .map(existingItem -> updateExistingItem(existingItem, quantity, isReturned, productId))

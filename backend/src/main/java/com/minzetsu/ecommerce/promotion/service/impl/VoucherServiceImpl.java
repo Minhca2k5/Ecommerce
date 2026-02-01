@@ -17,6 +17,8 @@ import com.minzetsu.ecommerce.promotion.repository.VoucherRepository;
 import com.minzetsu.ecommerce.promotion.repository.VoucherSpecification;
 import com.minzetsu.ecommerce.promotion.repository.VoucherUseRepository;
 import com.minzetsu.ecommerce.promotion.service.VoucherService;
+import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
+import com.minzetsu.ecommerce.messaging.DomainEventType;
 import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -30,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +43,7 @@ public class VoucherServiceImpl implements VoucherService {
     private final OrderRepository orderRepository;
     private final VoucherUseRepository voucherUseRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final DomainEventPublisher domainEventPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -55,7 +59,7 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = "voucherPublic", allEntries = true)
+    @CacheEvict(cacheNames = "voucherPublicV2", allEntries = true)
     @AuditAction(action = "VOUCHER_CREATED", entityType = "VOUCHER")
     public AdminVoucherResponse createAdminVoucherResponse(VoucherCreateRequest request) {
         Voucher voucher = voucherMapper.toEntity(request);
@@ -66,12 +70,13 @@ public class VoucherServiceImpl implements VoucherService {
                 voucher.getId(),
                 null
         ));
+        domainEventPublisher.publish(DomainEventType.VOUCHER_CREATED, voucher.getId(), null, Map.of("type", "VOUCHER"));
         return toAdminResponse(voucher);
     }
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = "voucherPublic", allEntries = true)
+    @CacheEvict(cacheNames = "voucherPublicV2", allEntries = true)
     @AuditAction(action = "VOUCHER_UPDATED", entityType = "VOUCHER", idParamIndex = 0)
     public AdminVoucherResponse updateAdminVoucherResponse(Long id, VoucherUpdateRequest request) {
         Voucher voucher = voucherRepository.findById(id)
@@ -84,12 +89,13 @@ public class VoucherServiceImpl implements VoucherService {
                 voucher.getId(),
                 null
         ));
+        domainEventPublisher.publish(DomainEventType.VOUCHER_UPDATED, voucher.getId(), null, Map.of("type", "VOUCHER"));
         return toAdminResponse(voucher);
     }
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = "voucherPublic", allEntries = true)
+    @CacheEvict(cacheNames = "voucherPublicV2", allEntries = true)
     @AuditAction(action = "VOUCHER_DELETED", entityType = "VOUCHER", idParamIndex = 0)
     public void deleteVoucher(Long id) {
         Voucher voucher = voucherRepository.findById(id)
@@ -104,6 +110,7 @@ public class VoucherServiceImpl implements VoucherService {
                 id,
                 null
         ));
+        domainEventPublisher.publish(DomainEventType.VOUCHER_DELETED, id, null, Map.of("type", "VOUCHER"));
     }
 
     @Override
@@ -116,8 +123,8 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(
-            cacheNames = "voucherPublic",
-            key = "'v1:code:' + #code + ':user:' + #userId",
+            cacheNames = "voucherPublicV2",
+            key = "'v2:code:' + #code + ':user:' + #userId",
             sync = true
     )
     public List<UserVoucherResponse> getVoucherResponsesByCode(String code, Long userId) {
@@ -129,8 +136,8 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(
-            cacheNames = "voucherPublic",
-            key = "'v1:minTotal:' + #minOrderTotal + ':page:' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort + ':user:' + #userId",
+            cacheNames = "voucherPublicV2",
+            key = "'v2:minTotal:' + #minOrderTotal + ':page:' + #pageable.pageNumber + ':' + #pageable.pageSize + ':' + #pageable.sort + ':user:' + #userId",
             sync = true
     )
     public Page<UserVoucherResponse> searchVoucherResponsesByMinOrderTotal(BigDecimal minOrderTotal, Long userId, Pageable pageable) {
@@ -145,8 +152,8 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(
-            cacheNames = "voucherPublic",
-            key = "'v1:id:' + #id + ':user:' + #userId",
+            cacheNames = "voucherPublicV2",
+            key = "'v2:id:' + #id + ':user:' + #userId",
             sync = true
     )
     public UserVoucherResponse getVoucherResponseById(Long id, Long userId) {

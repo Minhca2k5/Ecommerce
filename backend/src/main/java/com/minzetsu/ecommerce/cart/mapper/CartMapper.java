@@ -17,6 +17,7 @@ public interface CartMapper {
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "username", source = "user.username")
     @Mapping(target = "fullName", source = "user.fullName")
+    @Mapping(target = "guestId", source = "guestId")
     @Mapping(target = "items", ignore = true)
     @Mapping(target = "itemCount", ignore = true)
     @Mapping(target = "totalQuantity", ignore = true)

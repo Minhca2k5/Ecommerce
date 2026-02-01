@@ -33,7 +33,7 @@ public class VoucherUserServiceImpl implements VoucherUseService {
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = "voucherPublic", allEntries = true)
+    @CacheEvict(cacheNames = "voucherPublicV2", allEntries = true)
     @AuditAction(action = "VOUCHER_USE_CREATED", entityType = "VOUCHER_USE")
     public void createVoucherUse(Long voucherId, Long userId, Long orderId, BigDecimal discountAmount) {
         VoucherUse voucherUse = VoucherUse.builder()

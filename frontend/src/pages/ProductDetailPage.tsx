@@ -321,19 +321,13 @@ export default function ProductDetailPage() {
               </span>
             </Link>
           </Button>
-          {auth.isAuthenticated ? (
-            <Button
-              className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
-              onClick={() => addToCart(resolvedId, 1)}
-              disabled={!resolvedId || isWorking || Boolean(error) || isLoading}
-            >
-              Add to cart
-            </Button>
-          ) : (
-            <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
-              <Link to="/login">Add to cart</Link>
-            </Button>
-          )}
+          <Button
+            className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+            onClick={() => addToCart(resolvedId, 1)}
+            disabled={!resolvedId || isWorking || Boolean(error) || isLoading}
+          >
+            Add to cart
+          </Button>
           {auth.isAuthenticated ? (
             <Button
               variant="outline"

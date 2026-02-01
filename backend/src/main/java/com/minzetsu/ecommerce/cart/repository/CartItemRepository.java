@@ -25,7 +25,8 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
         CASE WHEN :isReturned = true 
              THEN c.quantity - :quantity
              ELSE c.quantity + :quantity 
-        END
+        END,
+        c.updatedAt = CURRENT_TIMESTAMP
     WHERE c.id = :id
 """)
     void updateQuantityById(
@@ -37,6 +38,9 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     @EntityGraph(attributePaths = {"product"})
     List<CartItem> findByCartIdOrderByUpdatedAtDesc(Long cartId);
     Optional<CartItem> findByCartIdAndProductId(Long cartId, Long productId);
+    Optional<CartItem> findByIdAndCartId(Long id, Long cartId);
+    @EntityGraph(attributePaths = {"product"})
+    List<CartItem> findByUpdatedAtBefore(java.time.LocalDateTime cutoff);
     @EntityGraph(attributePaths = {"product"})
     Page<CartItem> findByCartId(Long cartId, Pageable pageable);
     @Query("SELECT c FROM CartItem c JOIN FETCH c.product p WHERE p.name LIKE %:productName% and c.cart.user.id = :userId")

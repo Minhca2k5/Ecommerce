@@ -18,6 +18,8 @@ import com.minzetsu.ecommerce.product.repository.CategorySpecification;
 import com.minzetsu.ecommerce.product.repository.ProductRepository;
 import com.minzetsu.ecommerce.product.repository.ProductSpecification;
 import com.minzetsu.ecommerce.product.service.CategoryService;
+import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
+import com.minzetsu.ecommerce.messaging.DomainEventType;
 import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +41,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final DomainEventPublisher domainEventPublisher;
 
     private Category getExistingCategory(Long id) {
         return categoryRepository.findById(id)
@@ -81,6 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
                 id,
                 null
         ));
+        domainEventPublisher.publish(DomainEventType.CATEGORY_UPDATED, id, null, Map.of("type", "CATEGORY"));
     }
 
     @Override
@@ -97,6 +102,7 @@ public class CategoryServiceImpl implements CategoryService {
                 id,
                 null
         ));
+        domainEventPublisher.publish(DomainEventType.CATEGORY_DELETED, id, null, Map.of("type", "CATEGORY"));
     }
 
     @Override
@@ -131,6 +137,7 @@ public class CategoryServiceImpl implements CategoryService {
                 saved.getId(),
                 null
         ));
+        domainEventPublisher.publish(DomainEventType.CATEGORY_CREATED, saved.getId(), null, Map.of("type", "CATEGORY"));
         return categoryMapper.toAdminResponse(saved);
     }
 

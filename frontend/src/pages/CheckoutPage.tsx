@@ -5,6 +5,7 @@ import LoadingCard from "@/components/LoadingCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/app/AuthProvider";
 import { useToast } from "@/app/ToastProvider";
 import { useNotifications } from "@/app/NotificationProvider";
 import { getErrorMessage } from "@/lib/errors";
@@ -37,6 +38,7 @@ function voucherDiscountLabel(v: VoucherResponse) {
 }
 
 export default function CheckoutPage() {
+  const auth = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const notifications = useNotifications();
@@ -88,6 +90,13 @@ export default function CheckoutPage() {
     setIsLoading(true);
     setError(null);
 
+    if (!auth.isAuthenticated) {
+      setIsLoading(false);
+      return () => {
+        alive = false;
+      };
+    }
+
     Promise.all([getOrCreateCart(), listAddresses().catch(() => [] as AddressResponse[]), getDefaultAddress().catch(() => null as AddressResponse | null)])
       .then(([c, list, def]) => {
         if (!alive) return;
@@ -105,7 +114,21 @@ export default function CheckoutPage() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [auth.isAuthenticated]);
+
+  if (!auth.isAuthenticated) {
+    return (
+      <EmptyState
+        title="Login required"
+        description="Please sign in to proceed with checkout."
+        action={
+          <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+            <Link to="/login">Go to login</Link>
+          </Button>
+        }
+      />
+    );
+  }
 
   async function loadEligibleVouchers(nextPage: number) {
     setEligibleLoading(true);

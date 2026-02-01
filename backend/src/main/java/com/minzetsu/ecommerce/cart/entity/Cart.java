@@ -14,6 +14,9 @@ import lombok.*;
 @Builder
 public class Cart extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JoinColumn(name = "user_id", unique = true)
     private User user;
+
+    @Column(name = "guest_id", unique = true)
+    private String guestId;
 }

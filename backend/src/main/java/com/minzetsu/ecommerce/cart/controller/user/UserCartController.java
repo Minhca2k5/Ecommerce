@@ -41,6 +41,16 @@ public class UserCartController {
         return ResponseEntity.ok(cartService.createCartResponse(userId));
     }
 
+    @Operation(
+            summary = "Merge guest cart into current user cart",
+            description = "Merge guest cart items into the logged-in user's cart by guestId."
+    )
+    @PostMapping("/merge")
+    public ResponseEntity<CartResponse> mergeGuestCart(@RequestParam String guestId) {
+        Long userId = getCurrentUserId();
+        return ResponseEntity.ok(cartService.mergeGuestCartToUser(guestId, userId));
+    }
+
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {

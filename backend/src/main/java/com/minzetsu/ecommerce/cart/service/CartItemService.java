@@ -26,5 +26,6 @@ public interface CartItemService {
     List<CartItemResponse> getCartItemResponsesByCartId(Long cartId, Long userId);
     CartItemResponse getCartItemResponseByIdAndUserId(Long id, Long userId);
     CartItemResponse addOrUpdateCartItemResponse(CartItemRequest request, boolean isReturned, Long userId);
+    CartItemResponse addOrUpdateCartItemResponseByCartId(CartItemRequest request, boolean isReturned, Long cartId);
     List<CartItemResponse> getCarItemResponsesByProductName(String productName, Long userId);
 }

@@ -3,14 +3,16 @@
 > **Branch:** `phase4`  
 > **Status:** Phase 4 Completed (Advanced Integrations)  
 > **Author:** Phan Dinh Minh (Minzetsu)  
-> **Last Updated:** January 31, 2026
+> **Last Updated:** February 2, 2026
 
 ## Overview
 This repository is an end-to-end E-commerce system:
 - **Backend:** Spring Boot 3 + Spring Security 6 (JWT + Refresh Token + RBAC), Liquibase, MySQL
 - **Integrations (Phase 4):** RabbitMQ events, Elasticsearch product search, MoMo payment (sandbox), SSE realtime
-- **Reliability:** Idempotency keys for order/payment
+- **Reliability:** Idempotency keys for order/payment, inventory reservation TTL + release
 - **Observability:** Request ID + structured logs + audit logs
+- **Customer Experience:** Anonymous cart + merge on login
+- **Chatbot:** LLM-backed assistant with project/DB context + conversation history
 - **Frontend (Phase 2+4):** React + TypeScript (see `frontend/`), integrating with backend APIs, SSE, MoMo
 
 ## API Namespace Convention
@@ -47,7 +49,7 @@ This repository is an end-to-end E-commerce system:
 3. Open: `http://localhost:5173`
 
 ## Roadmap
-- Phase 3 roadmap (performance/caching/reliability): `PHASE3_ROADMAP.md`
-- Phase 4 roadmap (integrations/realtime/search/chatbot): `PHASE4_ROADMAP.md`
+- Phase 3 roadmap (performance/caching/reliability): `docs/roadmaps/PHASE3_ROADMAP.md`
+- Phase 4 roadmap (integrations/realtime/search/chatbot): `docs/roadmaps/PHASE4_ROADMAP.md`
 - Phase 3 report: `docs/perf/phase3_report.md`
-- High-level project plan: `PROJECT_PLAN.md`
+- High-level project plan: `docs/roadmaps/PROJECT_PLAN.md`

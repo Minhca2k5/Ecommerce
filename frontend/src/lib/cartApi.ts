@@ -22,6 +22,7 @@ export type CartResponse = {
   userId?: number;
   username?: string;
   fullName?: string;
+  guestId?: string;
   items?: CartItemResponse[];
   itemCount?: number;
   totalQuantity?: number;
@@ -93,3 +94,76 @@ export async function clearCart(cartId: number) {
   return apiJson<void>(`/api/users/me/carts/${cartId}/items`, { method: "DELETE", auth: true });
 }
 
+export async function mergeGuestCart(guestId: string): Promise<CartResponse> {
+  return apiJson<CartResponse>(`/api/users/me/carts/merge?guestId=${encodeURIComponent(guestId)}`, {
+    method: "POST",
+    auth: true,
+  });
+}
+
+export const GUEST_CART_KEY = "guestCartId";
+
+export function getStoredGuestId() {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(GUEST_CART_KEY);
+}
+
+export function setStoredGuestId(guestId: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(GUEST_CART_KEY, guestId);
+}
+
+export function clearStoredGuestId() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(GUEST_CART_KEY);
+}
+
+export async function createGuestCart(guestId?: string | null): Promise<CartResponse> {
+  return apiJson<CartResponse>("/api/public/carts/guest", {
+    method: "POST",
+    auth: false,
+    body: guestId ? { guestId } : undefined,
+  });
+}
+
+export async function getGuestCart(guestId: string): Promise<CartResponse> {
+  return apiJson<CartResponse>(`/api/public/carts/guest/${guestId}`, { method: "GET", auth: false });
+}
+
+export async function getOrCreateGuestCart(): Promise<CartResponse> {
+  const stored = getStoredGuestId();
+  if (stored) {
+    try {
+      return await getGuestCart(stored);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) {
+        clearStoredGuestId();
+      } else {
+        throw e;
+      }
+    }
+  }
+  const created = await createGuestCart(null);
+  if (created.guestId) setStoredGuestId(created.guestId);
+  return created;
+}
+
+export async function listGuestCartItems(guestId: string): Promise<CartItemResponse[]> {
+  return apiJson<CartItemResponse[]>(`/api/public/carts/guest/${guestId}/items`, { method: "GET", auth: false });
+}
+
+export async function addOrUpdateGuestCartItem(guestId: string, productId: number, quantity: number) {
+  return apiJson<CartItemResponse>(`/api/public/carts/guest/${guestId}/items`, {
+    method: "POST",
+    auth: false,
+    body: { productId, quantity },
+  });
+}
+
+export async function deleteGuestCartItem(guestId: string, cartItemId: number) {
+  return apiJson<void>(`/api/public/carts/guest/${guestId}/items/${cartItemId}`, { method: "DELETE", auth: false });
+}
+
+export async function clearGuestCart(guestId: string) {
+  return apiJson<void>(`/api/public/carts/guest/${guestId}/items`, { method: "DELETE", auth: false });
+}

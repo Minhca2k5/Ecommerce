@@ -10,11 +10,16 @@ public class ChatbotProperties {
     private String baseUrl;
     private String apiKey;
     private String model;
+    private double temperature = 0.1;
+    private int maxTokens = 80;
+    private int numPredict = 80;
+    private long cacheTtlMs = 60000;
     private boolean projectSearchEnabled = true;
     private String projectRoot;
     private int projectMaxFiles = 600;
     private int projectMaxFileBytes = 200_000;
     private int projectMaxSnippets = 6;
+    private boolean queryPlannerEnabled = false;
 
     public boolean isEnabled() {
         return enabled;
@@ -46,6 +51,38 @@ public class ChatbotProperties {
 
     public void setModel(String model) {
         this.model = model;
+    }
+
+    public double getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
+    }
+
+    public int getMaxTokens() {
+        return maxTokens;
+    }
+
+    public void setMaxTokens(int maxTokens) {
+        this.maxTokens = maxTokens;
+    }
+
+    public int getNumPredict() {
+        return numPredict;
+    }
+
+    public void setNumPredict(int numPredict) {
+        this.numPredict = numPredict;
+    }
+
+    public long getCacheTtlMs() {
+        return cacheTtlMs;
+    }
+
+    public void setCacheTtlMs(long cacheTtlMs) {
+        this.cacheTtlMs = cacheTtlMs;
     }
 
     public boolean isProjectSearchEnabled() {
@@ -86,5 +123,13 @@ public class ChatbotProperties {
 
     public void setProjectMaxSnippets(int projectMaxSnippets) {
         this.projectMaxSnippets = projectMaxSnippets;
+    }
+
+    public boolean isQueryPlannerEnabled() {
+        return queryPlannerEnabled;
+    }
+
+    public void setQueryPlannerEnabled(boolean queryPlannerEnabled) {
+        this.queryPlannerEnabled = queryPlannerEnabled;
     }
 }
