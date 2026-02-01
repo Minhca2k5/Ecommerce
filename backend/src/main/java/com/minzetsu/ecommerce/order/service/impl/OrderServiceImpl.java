@@ -4,9 +4,12 @@ import com.minzetsu.ecommerce.cart.entity.CartItem;
 import com.minzetsu.ecommerce.cart.service.CartItemService;
 import com.minzetsu.ecommerce.cart.service.CartService;
 import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
+import com.minzetsu.ecommerce.messaging.DomainEventType;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
+import com.minzetsu.ecommerce.common.idempotency.IdempotencyService;
 import com.minzetsu.ecommerce.order.dto.filter.OrderFilter;
 import com.minzetsu.ecommerce.order.dto.request.OrderRequest;
 import com.minzetsu.ecommerce.order.dto.response.OrderItemResponse;
@@ -27,6 +30,7 @@ import com.minzetsu.ecommerce.product.entity.ProductStatus;
 import com.minzetsu.ecommerce.promotion.entity.Voucher;
 import com.minzetsu.ecommerce.promotion.entity.VoucherDiscountType;
 import com.minzetsu.ecommerce.promotion.service.VoucherService;
+import com.minzetsu.ecommerce.realtime.SseEmitterService;
 import com.minzetsu.ecommerce.user.entity.User;
 import com.minzetsu.ecommerce.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +57,9 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemRepository orderItemRepository;
     private final CreateOrderItemsService createOrderItemsService;
     private final ApplicationEventPublisher eventPublisher;
+    private final DomainEventPublisher domainEventPublisher;
+    private final IdempotencyService idempotencyService;
+    private final SseEmitterService sseEmitterService;
 
     private Order getExistingOrder(Long id) {
         return orderRepository.findById(id)
@@ -155,6 +162,13 @@ public class OrderServiceImpl implements OrderService {
                 id,
                 null
         ));
+        domainEventPublisher.publish(DomainEventType.ORDER_STATUS_UPDATED, id, null, Map.of("status", status.name()));
+        orderRepository.findById(id).ifPresent(order ->
+                sseEmitterService.sendToUser(order.getUser().getId(), "order-status", Map.of(
+                        "orderId", id,
+                        "status", status.name()
+                ))
+        );
     }
 
     @Override
@@ -202,7 +216,19 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     @AuditAction(action = "ORDER_CREATED", entityType = "ORDER")
-    public OrderResponse createOrderResponse(OrderRequest request, Long userId) {
+    public OrderResponse createOrderResponse(OrderRequest request, Long userId, String idempotencyKey) {
+        return idempotencyService.execute(
+                idempotencyKey,
+                "ORDER_CREATE",
+                userId,
+                "ORDER",
+                id -> getFullOrderResponseByIdAndUserId(id, userId),
+                () -> createOrderInternal(request, userId),
+                OrderResponse::getId
+        );
+    }
+
+    private OrderResponse createOrderInternal(OrderRequest request, Long userId) {
         Map<String, BigDecimal> totals = handleVoucherDiscount(request, userId);
         User user = userService.getUserById(userId);
         Order order = orderMapper.toEntity(request);
@@ -217,6 +243,9 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
         List<OrderItem> orderItems = createOrderItemsService.createOrderItems(savedOrder, request.getCartId());
         eventPublisher.publishEvent(new OrderCreatedEvent(savedOrder.getId(), userId));
+        domainEventPublisher.publish(DomainEventType.ORDER_CREATED, savedOrder.getId(), userId, Map.of());
+        sseEmitterService.sendToUser(userId, "order-created", Map.of("orderId", savedOrder.getId()));
+        sseEmitterService.sendToAdmins("order-created", Map.of("orderId", savedOrder.getId(), "userId", userId));
         List<OrderItemResponse> orderItemResponses = orderItemMapper.toResponseList(orderItems);
         return orderMapper.toFullResponse(savedOrder, orderItemResponses);
     }

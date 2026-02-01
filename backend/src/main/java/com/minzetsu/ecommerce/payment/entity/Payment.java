@@ -29,7 +29,7 @@ public class Payment extends BaseEntity {
     @Column(name = "provider_txn_id", length = 128)
     private String providerTxnId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 }

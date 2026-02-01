@@ -8,6 +8,7 @@ import { useToast } from "@/app/ToastProvider";
 import { getErrorMessage } from "@/lib/errors";
 import { formatCurrency } from "@/lib/format";
 import { listMyOrders, type OrderResponse } from "@/lib/orderApi";
+import { createAuthedEventSource } from "@/lib/sse";
 
 function statusBadge(status?: string) {
   const normalized = (status || "PENDING").toUpperCase();
@@ -36,7 +37,7 @@ export default function OrdersPage() {
     let alive = true;
     setIsLoading(true);
     setError(null);
-    listMyOrders()
+    const load = () => listMyOrders()
       .then((data) => {
         if (!alive) return;
         setOrders(data);
@@ -46,9 +47,27 @@ export default function OrdersPage() {
         setError(getErrorMessage(e, "Failed to load orders."));
       })
       .finally(() => alive && setIsLoading(false));
+    load();
     return () => {
       alive = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const es = createAuthedEventSource("/api/users/me/realtime/orders");
+    const refresh = () => {
+      listMyOrders()
+        .then((data) => setOrders(data))
+        .catch(() => {
+          // ignore
+        });
+    };
+    es.addEventListener("order-status", refresh);
+    es.addEventListener("payment-status", refresh);
+    es.onerror = () => {
+      // ignore
+    };
+    return () => es.close();
   }, []);
 
   if (isLoading) {

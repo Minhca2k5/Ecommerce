@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v7-1-chat-conversations" author="codex">
+        <createTable tableName="chat_conversations">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(160)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="DATETIME"/>
+        </createTable>
+
+        <createIndex tableName="chat_conversations" indexName="idx_chat_conversations_user">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v7-2-chat-messages-conversation" author="codex">
+        <addColumn tableName="chat_messages">
+            <column name="conversation_id" type="BIGINT"/>
+        </addColumn>
+
+        <sql>
+            INSERT INTO chat_conversations (user_id, title, created_at, updated_at)
+            SELECT DISTINCT user_id, 'General', NOW(), NOW()
+            FROM chat_messages
+            WHERE user_id IS NOT NULL;
+        </sql>
+
+        <sql>
+            UPDATE chat_messages cm
+            JOIN chat_conversations cc ON cc.user_id = cm.user_id AND cc.title = 'General'
+            SET cm.conversation_id = cc.id
+            WHERE cm.conversation_id IS NULL;
+        </sql>
+
+        <addNotNullConstraint tableName="chat_messages" columnName="conversation_id" columnDataType="BIGINT"/>
+
+        <createIndex tableName="chat_messages" indexName="idx_chat_messages_conversation">
+            <column name="conversation_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

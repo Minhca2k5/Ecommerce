@@ -12,6 +12,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
 
     List<Payment> findByOrderIdOrderByUpdatedAtDesc(Long orderId);
 
+    Payment findByProviderTxnId(String providerTxnId);
+
     @Modifying
     @Query("UPDATE Payment p SET p.status = :status WHERE p.id = :id")
     void updateByStatusAndId(PaymentStatus status, Long id);

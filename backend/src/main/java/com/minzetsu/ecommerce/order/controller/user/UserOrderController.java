@@ -68,11 +68,12 @@ public class UserOrderController {
     )
     @PostMapping
     public ResponseEntity<OrderResponse> createCurrentUserOrder(
-            @Valid @RequestBody OrderRequest request
+            @Valid @RequestBody OrderRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey
     ) {
         Long userId = getCurrentUserId();
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(orderService.createOrderResponse(request, userId));
+                .body(orderService.createOrderResponse(request, userId, idempotencyKey));
     }
 
     private Long getCurrentUserId() {

@@ -15,8 +15,9 @@ public interface PaymentService {
     boolean existsById(Long id);
     Payment getPaymentById(Long id);
     Payment getPaymentByIdAndUserId(Long id, Long userId);
+    Payment getPaymentByProviderTxnId(String providerTxnId);
     Page<PaymentResponse> searchPaymentResponses(PaymentFilter filter, Pageable pageable);
     List<PaymentResponse> getPaymentResponsesByOrderId(Long orderId, Long userId);
     PaymentResponse getPaymentResponseById(Long id, Long userId);
-    PaymentResponse createPaymentResponse(PaymentRequest request, Long userId, Long orderId);
+    PaymentResponse createPaymentResponse(PaymentRequest request, Long userId, Long orderId, String idempotencyKey);
 }

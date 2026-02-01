@@ -5,6 +5,11 @@ import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
+import com.minzetsu.ecommerce.common.idempotency.IdempotencyService;
+import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
+import com.minzetsu.ecommerce.messaging.DomainEventType;
+import com.minzetsu.ecommerce.notification.dto.request.NotificationCreateRequest;
+import com.minzetsu.ecommerce.notification.service.NotificationService;
 import com.minzetsu.ecommerce.order.entity.Order;
 import com.minzetsu.ecommerce.order.service.OrderService;
 import com.minzetsu.ecommerce.payment.dto.filter.PaymentFilter;
@@ -18,6 +23,7 @@ import com.minzetsu.ecommerce.payment.repository.PaymentSpecification;
 import com.minzetsu.ecommerce.payment.service.PaymentService;
 import com.minzetsu.ecommerce.promotion.service.VoucherUseService;
 import com.minzetsu.ecommerce.notification.event.WebhookEvent;
+import com.minzetsu.ecommerce.realtime.SseEmitterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.context.ApplicationEventPublisher;
@@ -25,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.List;
 
 @Service
@@ -36,6 +43,10 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderService orderService;
     private final VoucherUseService voucherUseService;
     private final ApplicationEventPublisher eventPublisher;
+    private final DomainEventPublisher domainEventPublisher;
+    private final IdempotencyService idempotencyService;
+    private final NotificationService notificationService;
+    private final SseEmitterService sseEmitterService;
 
     private Payment getExistingPayment(Long id) {
         return paymentRepository.findById(id)
@@ -46,9 +57,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     @AuditAction(action = "PAYMENT_STATUS_UPDATED", entityType = "PAYMENT", idParamIndex = 1)
     public void updatePaymentStatusById(PaymentStatus status, Long id) {
-        if (!existsById(id)) {
-            throw new NotFoundException("Payment not found with id: " + id);
-        }
+        Payment payment = getExistingPayment(id);
         paymentRepository.updateByStatusAndId(status, id);
         eventPublisher.publishEvent(new WebhookEvent(
                 "PAYMENT_STATUS_UPDATED",
@@ -56,6 +65,10 @@ public class PaymentServiceImpl implements PaymentService {
                 id,
                 null
         ));
+        if (status == PaymentStatus.SUCCEEDED) {
+            domainEventPublisher.publish(DomainEventType.PAYMENT_SUCCEEDED, id, null, Map.of("status", status.name()));
+        }
+        notifyPaymentStatus(payment, status);
     }
 
     @Override
@@ -75,6 +88,19 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = getExistingPayment(id);
         if (!payment.getOrder().getUser().getId().equals(userId)) {
             throw new UnAuthorizedException("User not authorized to access this payment");
+        }
+        return payment;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Payment getPaymentByProviderTxnId(String providerTxnId) {
+        if (providerTxnId == null || providerTxnId.isBlank()) {
+            throw new NotFoundException("Payment provider transaction id is missing");
+        }
+        Payment payment = paymentRepository.findByProviderTxnId(providerTxnId);
+        if (payment == null) {
+            throw new NotFoundException("Payment not found for provider transaction id: " + providerTxnId);
         }
         return payment;
     }
@@ -113,7 +139,19 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     @AuditAction(action = "PAYMENT_CREATED", entityType = "PAYMENT")
-    public PaymentResponse createPaymentResponse(PaymentRequest request, Long userId, Long orderId) {
+    public PaymentResponse createPaymentResponse(PaymentRequest request, Long userId, Long orderId, String idempotencyKey) {
+        return idempotencyService.execute(
+                idempotencyKey,
+                "PAYMENT_CREATE",
+                userId,
+                "PAYMENT",
+                id -> getPaymentResponseById(id, userId),
+                () -> createPaymentInternal(request, userId, orderId),
+                PaymentResponse::getId
+        );
+    }
+
+    private PaymentResponse createPaymentInternal(PaymentRequest request, Long userId, Long orderId) {
         Order order = orderService.getOrderByIdAndUserId(orderId, userId);
         List<Payment> existingPayments = paymentRepository.findByOrderIdOrderByUpdatedAtDesc(orderId);
         if (!existingPayments.isEmpty() && existingPayments.stream().anyMatch(p -> (p.getStatus() == PaymentStatus.INITIATED || p.getStatus() == PaymentStatus.SUCCEEDED))) {
@@ -131,11 +169,62 @@ public class PaymentServiceImpl implements PaymentService {
                 savedPayment.getId(),
                 userId
         ));
+        domainEventPublisher.publish(DomainEventType.PAYMENT_CREATED, savedPayment.getId(), userId, Map.of());
+        notifyPaymentCreated(savedPayment, userId);
         Long voucherId = request.getVoucherId();
         BigDecimal discountAmount = request.getDiscountAmount();
         if (voucherId != null && discountAmount != null) {
             voucherUseService.createVoucherUse(voucherId, userId, orderId, discountAmount);
         }
         return paymentMapper.toResponse(savedPayment);
+    }
+
+    private void notifyPaymentCreated(Payment payment, Long userId) {
+        NotificationCreateRequest request = NotificationCreateRequest.builder()
+                .userId(userId)
+                .title("Payment created")
+                .message("Your payment has been created.")
+                .type("PAYMENT")
+                .referenceId(payment.getOrder().getId().intValue())
+                .referenceType("ORDER")
+                .build();
+        notificationService.createNotificationResponse(request, userId);
+        sseEmitterService.sendToUser(userId, "payment-created", Map.of(
+                "paymentId", payment.getId(),
+                "orderId", payment.getOrder().getId()
+        ));
+        sseEmitterService.sendToAdmins("payment-created", Map.of(
+                "paymentId", payment.getId(),
+                "orderId", payment.getOrder().getId(),
+                "userId", userId
+        ));
+    }
+
+    private void notifyPaymentStatus(Payment payment, PaymentStatus status) {
+        Long userId = payment.getOrder().getUser().getId();
+        String title = status == PaymentStatus.SUCCEEDED ? "Payment succeeded" : "Payment failed";
+        String message = status == PaymentStatus.SUCCEEDED
+                ? "Your payment was successful."
+                : "Your payment failed. Please try again.";
+        NotificationCreateRequest request = NotificationCreateRequest.builder()
+                .userId(userId)
+                .title(title)
+                .message(message)
+                .type("PAYMENT")
+                .referenceId(payment.getOrder().getId().intValue())
+                .referenceType("ORDER")
+                .build();
+        notificationService.createNotificationResponse(request, userId);
+        sseEmitterService.sendToUser(userId, "payment-status", Map.of(
+                "paymentId", payment.getId(),
+                "orderId", payment.getOrder().getId(),
+                "status", status.name()
+        ));
+        sseEmitterService.sendToAdmins("payment-status", Map.of(
+                "paymentId", payment.getId(),
+                "orderId", payment.getOrder().getId(),
+                "userId", userId,
+                "status", status.name()
+        ));
     }
 }

@@ -1,15 +1,17 @@
-# E-commerce System (Phase 3)
+# E-commerce System (Phase 4)
 
-> **Branch:** `phase3`  
-> **Status:** Phase 3 Completed (Performance/Scalability/Reliability)  
-> **Author:** Phan Đình Minh (Minzetsu)  
-> **Last Updated:** January 30, 2026
+> **Branch:** `phase4`  
+> **Status:** Phase 4 Completed (Advanced Integrations)  
+> **Author:** Phan Dinh Minh (Minzetsu)  
+> **Last Updated:** January 31, 2026
 
 ## Overview
 This repository is an end-to-end E-commerce system:
 - **Backend:** Spring Boot 3 + Spring Security 6 (JWT + Refresh Token + RBAC), Liquibase, MySQL
+- **Integrations (Phase 4):** RabbitMQ events, Elasticsearch product search, MoMo payment (sandbox), SSE realtime
+- **Reliability:** Idempotency keys for order/payment
 - **Observability:** Request ID + structured logs + audit logs
-- **Frontend (Phase 2):** React + TypeScript (see `frontend/`), integrating with backend APIs
+- **Frontend (Phase 2+4):** React + TypeScript (see `frontend/`), integrating with backend APIs, SSE, MoMo
 
 ## API Namespace Convention
 - Public storefront: `/api/public/**`
@@ -22,9 +24,12 @@ This repository is an end-to-end E-commerce system:
 - JDK 17+
 - Node.js 18+ (recommended)
 - MySQL 8.0
+- RabbitMQ (Phase 4)
+- Elasticsearch (Phase 4)
+- Redis (cache)
 
 ### Backend
-1. Configure DB in `backend/src/main/resources/application.properties`
+1. Configure services in `backend/src/main/resources/application.properties`
 2. Run:
    - `cd backend`
    - `./mvnw spring-boot:run`
@@ -34,7 +39,7 @@ This repository is an end-to-end E-commerce system:
 
 ### Frontend
 1. Configure API base URL:
-   - `frontend/.env` → `VITE_API_BASE_URL=http://localhost:8080`
+   - `frontend/.env` -> `VITE_API_BASE_URL=http://localhost:8080`
 2. Run:
    - `cd frontend`
    - `npm install`
@@ -43,5 +48,6 @@ This repository is an end-to-end E-commerce system:
 
 ## Roadmap
 - Phase 3 roadmap (performance/caching/reliability): `PHASE3_ROADMAP.md`
+- Phase 4 roadmap (integrations/realtime/search/chatbot): `PHASE4_ROADMAP.md`
 - Phase 3 report: `docs/perf/phase3_report.md`
 - High-level project plan: `PROJECT_PLAN.md`

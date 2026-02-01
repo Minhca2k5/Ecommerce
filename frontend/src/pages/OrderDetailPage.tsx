@@ -12,9 +12,11 @@ import { formatCurrency } from "@/lib/format";
 import { getNumber } from "@/lib/safe";
 import { getMyOrder, type OrderResponse } from "@/lib/orderApi";
 import { createPayment, getPayment, listPayments, type PaymentResponse } from "@/lib/paymentApi";
+import { createMomoPayment } from "@/lib/momoApi";
 import { useNotifications } from "@/app/NotificationProvider";
 import Modal from "@/components/Modal";
 import { apiJson } from "@/lib/http";
+import { createAuthedEventSource } from "@/lib/sse";
 
 function statusBadge(status?: string) {
   const normalized = (status || "PENDING").toUpperCase();
@@ -46,6 +48,7 @@ export default function OrderDetailPage() {
   const [paymentDetail, setPaymentDetail] = useState<PaymentResponse | null>(null);
   const [paymentDetailError, setPaymentDetailError] = useState<string | null>(null);
   const [isPaymentDetailLoading, setIsPaymentDetailLoading] = useState(false);
+  const [isMomoLoading, setIsMomoLoading] = useState(false);
 
   const [itemsMode, setItemsMode] = useState<"embedded" | "endpoint">("embedded");
   const [endpointItems, setEndpointItems] = useState<any[] | null>(null);
@@ -71,6 +74,26 @@ export default function OrderDetailPage() {
       .finally(() => alive && setIsLoading(false));
     return () => {
       alive = false;
+    };
+  }, [orderId]);
+
+  useEffect(() => {
+    if (!orderId) return;
+    const es = createAuthedEventSource("/api/users/me/realtime/orders");
+    const reload = async () => {
+      const [o, p] = await Promise.all([getMyOrder(orderId), listPayments(orderId).catch(() => [])]);
+      setOrder(o);
+      setPayments(p);
+    };
+    const onPaymentStatus = () => void reload();
+    es.addEventListener("order-status", onPaymentStatus);
+    es.addEventListener("payment-status", onPaymentStatus);
+    es.addEventListener("payment-created", onPaymentStatus);
+    es.onerror = () => {
+      // ignore
+    };
+    return () => {
+      es.close();
     };
   }, [orderId]);
 
@@ -123,6 +146,36 @@ export default function OrderDetailPage() {
       setIsPaying(false);
     }
   }
+
+  async function onCreateMomoPayment() {
+    if (!orderId) return;
+    setIsMomoLoading(true);
+    try {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `momo_${Date.now()}`;
+      const res = await createMomoPayment(orderId, idempotencyKey);
+      const payUrl = res.payUrl || res.deeplink || res.qrCodeUrl;
+      if (payUrl) {
+        window.open(payUrl, "_blank");
+        toast.push({ variant: "success", title: "MoMo created", message: "Complete payment in the new tab." });
+      } else {
+        toast.push({ variant: "error", title: "MoMo failed", message: res.message || "No payment URL returned." });
+      }
+    } catch (e) {
+      toast.push({ variant: "error", title: "MoMo failed", message: getErrorMessage(e, "Couldn't create MoMo payment.") });
+    } finally {
+      setIsMomoLoading(false);
+    }
+  }
+
+  async function onSubmitPayment() {
+    if (method === "EWALLET") {
+      await onCreateMomoPayment();
+      return;
+    }
+    await onCreatePayment();
+  }
+
 
   async function openPayment(paymentId?: number) {
     const id = Number(paymentId ?? 0);
@@ -294,11 +347,23 @@ export default function OrderDetailPage() {
                 <div className="text-xs font-medium text-muted-foreground">Provider txn id (optional)</div>
                 <Input className="rounded-xl bg-background/70 backdrop-blur" value={providerTxnId} onChange={(e) => setProviderTxnId(e.target.value)} placeholder="e.g. VNPAY-..." />
               </div>
-              <Button disabled={isPaying} onClick={onCreatePayment} className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
-                {isPaying ? "Creating..." : "Create payment"}
+              <Button
+                disabled={isPaying || isMomoLoading}
+                onClick={onSubmitPayment}
+                className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+              >
+                {method === "EWALLET"
+                  ? isMomoLoading
+                    ? "Opening MoMo..."
+                    : "Pay with MoMo"
+                  : isPaying
+                    ? "Creating..."
+                    : "Create payment"}
               </Button>
               <div className="text-xs text-muted-foreground">
-                This creates a payment record via backend; gateway integration can be added later.
+                {method === "EWALLET"
+                  ? "Redirects to MoMo for payment."
+                  : "Creates a payment record via backend; gateway integration can be added later."}
               </div>
             </CardContent>
           </Card>

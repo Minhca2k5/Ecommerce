@@ -11,7 +11,13 @@
 /backend/.idea/
 /backend/target/
 /backend/.vscode/
+/backend/.classpath
+/backend/.project
+/backend/.settings/
 
 # frontend
 /frontend/node_modules/
 /frontend/.env
+/frontend/dist/
+/frontend/.vite/
+/frontend/.cache/

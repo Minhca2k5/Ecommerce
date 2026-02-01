@@ -57,11 +57,12 @@ public class UserPaymentController {
     @PostMapping
     public ResponseEntity<PaymentResponse> createCurrentUserPayment(
             @PathVariable("orderId") Long orderId,
-            @Valid @RequestBody PaymentRequest request
+            @Valid @RequestBody PaymentRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey
     ) {
         Long userId = getCurrentUserId();
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(paymentService.createPaymentResponse(request, userId, orderId));
+                .body(paymentService.createPaymentResponse(request, userId, orderId, idempotencyKey));
     }
 
     private Long getCurrentUserId() {

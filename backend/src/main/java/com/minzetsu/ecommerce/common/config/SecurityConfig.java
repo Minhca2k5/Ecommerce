@@ -58,7 +58,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:4200", "http://localhost:5173", "http://localhost:8080")); // React, Angular, Vue/Vite, Localhost
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "x-auth-token", "X-Request-Id"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "x-auth-token", "X-Request-Id", "Idempotency-Key"));
         configuration.setExposedHeaders(List.of("x-auth-token", "X-Request-Id"));
         configuration.setAllowCredentials(true);
 

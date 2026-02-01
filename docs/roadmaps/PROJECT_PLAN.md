@@ -96,36 +96,36 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Report template: `docs/perf/phase3_report.md`.
 
 ## Phase 4: Advanced Features & Integrations
-**Status: Pending**
+**Status: Completed**
 **Focus:** Integrations + realtime + search; introduce messaging and event-driven flows.
 
-*   [ ] **Payment Gateway Integration**:
+*   [x] **Payment Gateway Integration**:
     *   Integrate VNPay / Momo / Stripe / PayPal.
     *   Handle IPN/Webhook callbacks securely (signature verification + replay protection).
     *   Idempotency for payment initiation and callbacks.
     *   Idempotency keys for order/payment creation (prevent duplicate submits).
     *   Payment state machine (PENDING/PAID/FAILED/CANCELED/REFUNDED) + audit log.
-*   [ ] **Message Broker (RabbitMQ/Kafka)**:
+*   [x] **Message Broker (RabbitMQ/Kafka)**:
     *   Publish domain events (OrderCreated, PaymentSucceeded, InventoryLow).
     *   Consumers for notifications/email/analytics.
     *   DLQ + retry policy.
-*   [ ] **Advanced Search Engine**:
+*   [x] **Advanced Search Engine**:
     *   Integrate Elasticsearch for full-text search, fuzzy matching, faceting.
     *   Indexing pipeline (backfill + incremental updates) + fallback when ES is unavailable.
-*   [ ] **Real-time Features**:
+*   [x] **Real-time Features**:
     *   WebSocket/SSE for order status updates and admin notifications.
-*   [ ] **New Product Propagation (Realtime + Cache + Search)**:
+*   [x] **New Product Propagation (Realtime + Cache + Search)**:
     *   Publish PRODUCT_CREATED/UPDATED events to broker.
     *   Consumers update search index and invalidate product/home caches.
     *   Optional WS/SSE push for "new arrivals" on storefront.
-*   [ ] **Chatbot Integration**:
+*   [x] **Chatbot Integration**:
     *   Customer support assistant (FAQ, order status lookup, refund policy).
     *   Escalation flow to human support + conversation logging.
     *   Safety guardrails (rate limit, input validation, prompt injection defense).
     *   LLM provider integration + cost/latency monitoring.
     *   RAG over product catalog, policy docs, and order data (scoped by auth).
     *   Admin tools: prompt templates, knowledge base sync, and audit logs.
-*   [ ] **Phase 4 Review**:
+*   [x] **Phase 4 Review**:
     *   Sandbox Testing: Verify payment flows (Success/Failure/Cancel).
     *   Verify search accuracy and relevance.
     *   Verify event delivery + retry/DLQ behavior.

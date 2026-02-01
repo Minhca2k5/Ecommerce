@@ -6,6 +6,7 @@ import { useNotifications } from "@/app/NotificationProvider";
 import { useTheme } from "@/app/ThemeProvider";
 import { getNotificationRoute } from "@/lib/notificationRoute";
 import { getAvailableRoles, getSelectedRole, setSelectedRole } from "@/lib/roleSelection";
+import ChatbotWidget from "@/app/ChatbotWidget";
 
 const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   isActive
@@ -407,9 +408,11 @@ export default function AppLayout() {
         </div>
       </main>
 
+      {!isAdminRoute ? <ChatbotWidget /> : null}
       <footer className="border-t">
         <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-muted-foreground">© {new Date().getFullYear()} Ecommerce</div>
       </footer>
     </div>
   );
 }
+

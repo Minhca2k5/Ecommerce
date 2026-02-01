@@ -10,14 +10,17 @@ import { getNumber, getString } from "@/lib/safe";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/app/AuthProvider";
+import { useToast } from "@/app/ToastProvider";
 import { addSearchLog } from "@/lib/searchLogApi";
 import { getErrorMessage } from "@/lib/errors";
+import { createAuthedEventSource } from "@/lib/sse";
 
 type ProductSummary = unknown;
 type CategorySummary = unknown;
 
 export default function ProductsPage() {
   const auth = useAuth();
+  const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const page = Number(searchParams.get("page") ?? "0");
@@ -29,6 +32,8 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<CategorySummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasNewProducts, setHasNewProducts] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const queryString = useMemo(
     () =>
@@ -70,7 +75,28 @@ export default function ProductsPage() {
     return () => {
       isMounted = false;
     };
-  }, [queryString]);
+  }, [queryString, refreshKey]);
+
+  useEffect(() => {
+    const es = createAuthedEventSource("/api/public/realtime/new-products");
+    const announce = () => {
+      setHasNewProducts((prev) => {
+        if (!prev) {
+          toast.push({ variant: "default", title: "New products", message: "Fresh items are available." });
+        }
+        return true;
+      });
+    };
+    es.addEventListener("product-created", announce);
+    es.addEventListener("new-arrival", announce);
+    es.addEventListener("product-updated", announce);
+    es.onerror = () => {
+      // ignore; browser auto-reconnects
+    };
+    return () => {
+      es.close();
+    };
+  }, [toast]);
 
   useEffect(() => {
     if (!auth.isAuthenticated) return;
@@ -143,6 +169,27 @@ export default function ProductsPage() {
         </div>
       </section>
 
+      {hasNewProducts ? (
+        <div className="rounded-2xl border bg-background/70 p-4 text-sm shadow-sm backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium">New products are available.</div>
+              <div className="text-xs text-muted-foreground">Refresh to load the latest catalog updates.</div>
+            </div>
+            <Button
+              type="button"
+              className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white"
+              onClick={() => {
+                setHasNewProducts(false);
+                setRefreshKey((prev) => prev + 1);
+              }}
+            >
+              Refresh products
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         <Card className="h-fit shine bg-background/70 backdrop-blur lg:sticky lg:top-24">
           <CardHeader>
@@ -161,6 +208,7 @@ export default function ProductsPage() {
                   setSearchParams(next, { replace: true });
                 }}
               />
+              <div className="text-[11px] text-muted-foreground">Powered by Elasticsearch when available.</div>
             </div>
 
             <div className="space-y-2">

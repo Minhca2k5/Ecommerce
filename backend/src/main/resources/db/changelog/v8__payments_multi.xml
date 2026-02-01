@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="v8-001-payments-multi" author="minh">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="1">
+                SELECT COUNT(*) FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                  AND table_name = 'payments'
+                  AND non_unique = 0
+                  AND index_name = 'order_id'
+            </sqlCheck>
+        </preConditions>
+        <dropForeignKeyConstraint
+                baseTableName="payments"
+                constraintName="fk_pay_order"/>
+        <dropUniqueConstraint
+                tableName="payments"
+                constraintName="order_id"/>
+        <addForeignKeyConstraint
+                baseTableName="payments"
+                baseColumnNames="order_id"
+                referencedTableName="orders"
+                referencedColumnNames="id"
+                onDelete="CASCADE"
+                constraintName="fk_pay_order"/>
+        <createIndex
+                tableName="payments"
+                indexName="idx_payments_order_id">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

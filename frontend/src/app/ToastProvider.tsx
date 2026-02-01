@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 export type ToastVariant = "default" | "success" | "error";
 
@@ -32,6 +32,16 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => [next, ...prev].slice(0, 4));
     window.setTimeout(() => remove(id), 3500);
   }, [remove]);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { title?: string; message?: string; variant?: ToastVariant };
+      if (!detail?.message) return;
+      push({ title: detail.title, message: detail.message, variant: detail.variant ?? "default" });
+    };
+    window.addEventListener("app:toast", handler);
+    return () => window.removeEventListener("app:toast", handler);
+  }, [push]);
 
   const value = useMemo(() => ({ push }), [push]);
 

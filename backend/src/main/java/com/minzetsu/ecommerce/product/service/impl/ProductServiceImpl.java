@@ -38,6 +38,10 @@ import com.minzetsu.ecommerce.review.dto.response.ReviewResponse;
 import com.minzetsu.ecommerce.review.mapper.ReviewMapper;
 import com.minzetsu.ecommerce.review.repository.ReviewRepository;
 import com.minzetsu.ecommerce.notification.event.WebhookEvent;
+import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
+import com.minzetsu.ecommerce.messaging.DomainEventType;
+import com.minzetsu.ecommerce.search.service.ProductSearchService;
+import com.minzetsu.ecommerce.realtime.SseEmitterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -77,6 +81,9 @@ public class ProductServiceImpl implements ProductService {
     private final InventoryMapper inventoryMapper;
     private final CacheManager cacheManager;
     private final ApplicationEventPublisher eventPublisher;
+    private final DomainEventPublisher domainEventPublisher;
+    private final ProductSearchService productSearchService;
+    private final SseEmitterService sseEmitterService;
     @Value("${days}")
     private Integer days;
 
@@ -240,6 +247,7 @@ public class ProductServiceImpl implements ProductService {
                 id,
                 null
         ));
+        domainEventPublisher.publish(DomainEventType.PRODUCT_DELETED, id, null, Map.of());
     }
 
     @Override
@@ -274,6 +282,7 @@ public class ProductServiceImpl implements ProductService {
                 id,
                 null
         ));
+        domainEventPublisher.publish(DomainEventType.PRODUCT_UPDATED, id, null, Map.of("status", status.name()));
     }
 
     @Override
@@ -297,6 +306,9 @@ public class ProductServiceImpl implements ProductService {
                 saved.getId(),
                 null
         ));
+        domainEventPublisher.publish(DomainEventType.PRODUCT_CREATED, saved.getId(), null, Map.of());
+        sseEmitterService.sendToAdmins("product-created", Map.of("productId", saved.getId()));
+        sseEmitterService.sendToAdmins("new-arrival", Map.of("productId", saved.getId()));
         return toAdminResponse(saved);
     }
 
@@ -314,6 +326,8 @@ public class ProductServiceImpl implements ProductService {
                 saved.getId(),
                 null
         ));
+        domainEventPublisher.publish(DomainEventType.PRODUCT_UPDATED, saved.getId(), null, Map.of());
+        sseEmitterService.sendToAdmins("product-updated", Map.of("productId", saved.getId()));
         return toAdminResponse(saved);
     }
 
@@ -341,6 +355,15 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductResponse> searchProductResponses(ProductFilter filter, Pageable pageable) {
         filter.setStatus("ACTIVE");
         Pageable sortedPageable = PageableUtils.applySorting(pageable, filter);
+        if (filter.getName() != null && !filter.getName().isBlank()) {
+            try {
+                Page<Product> page = productSearchService.searchByName(filter.getName(), sortedPageable);
+                List<ProductResponse> responses = toUserResponseListWithUrls(page.getContent());
+                return new PageImpl<>(responses, sortedPageable, page.getTotalElements());
+            } catch (Exception ex) {
+                // fallback to DB search
+            }
+        }
         Page<Product> page = productRepository.findAll(ProductSpecification.filter(filter), sortedPageable);
         List<ProductResponse> responses = toUserResponseListWithUrls(page.getContent());
         return new PageImpl<>(responses, sortedPageable, page.getTotalElements());

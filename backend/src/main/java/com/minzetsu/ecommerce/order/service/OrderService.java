@@ -21,6 +21,6 @@ public interface OrderService {
     Page<OrderResponse> searchOrderResponses(OrderFilter filter, Pageable pageable);
     List<OrderResponse> getOrderResponsesByUserId(Long userId);
     OrderResponse getFullOrderResponseByIdAndUserId(Long id, Long userId);
-    OrderResponse createOrderResponse(OrderRequest request, Long userId);
+    OrderResponse createOrderResponse(OrderRequest request, Long userId, String idempotencyKey);
     BigDecimal getDisCountAmount(OrderRequest request, Long userId);
 }

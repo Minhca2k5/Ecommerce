@@ -11,5 +11,9 @@
     <include file="db/changelog/v2__seed.xml"/>
     <include file="db/changelog/v3__indexes.xml"/>
     <include file="db/changelog/v4__audit_logs.xml"/>
+    <include file="db/changelog/v5__idempotency_keys.xml"/>
+    <include file="db/changelog/v6__chat_messages.xml"/>
+    <include file="db/changelog/v7__chat_conversations.xml"/>
+    <include file="db/changelog/v8__payments_multi.xml"/>
 
 </databaseChangeLog>
