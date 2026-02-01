@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import com.minzetsu.ecommerce.common.config.OutboundHttpProperties;
 import com.minzetsu.ecommerce.common.utils.OutboundRetryExecutor;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -22,7 +21,7 @@ public class NotificationWebhookService {
     private final RestTemplate restTemplate;
     private final OutboundRetryExecutor retryExecutor;
     private final OutboundHttpProperties properties;
-    private final Counter webhookFailureCounter;
+    private final MeterRegistry meterRegistry;
     @Value("${outbound.http.webhook-url:}")
     private String webhookUrl;
 
@@ -57,6 +56,6 @@ public class NotificationWebhookService {
             Long userId,
             Throwable throwable
     ) {
-        webhookFailureCounter.increment();
+        meterRegistry.counter("webhook.failures").increment();
     }
 }

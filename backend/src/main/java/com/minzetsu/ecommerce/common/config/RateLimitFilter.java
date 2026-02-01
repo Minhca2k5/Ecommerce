@@ -5,7 +5,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,7 +14,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +25,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private static final String HEADER_FORWARDED_FOR = "X-Forwarded-For";
     private static final String HEADER_USER_AGENT = "User-Agent";
     private final RateLimitProperties properties;
-    private final Counter blockedCounter;
+    private final MeterRegistry meterRegistry;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
     private final Map<String, TokenBucket> buckets = new ConcurrentHashMap<>();
     private final AtomicLong lastCleanupNanos = new AtomicLong(System.nanoTime());
@@ -65,7 +63,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         );
 
         if (!bucket.tryConsume()) {
-            blockedCounter.increment();
+            meterRegistry.counter("rate_limit.blocked").increment();
             response.setStatus(429);
             response.setContentType("application/json");
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
