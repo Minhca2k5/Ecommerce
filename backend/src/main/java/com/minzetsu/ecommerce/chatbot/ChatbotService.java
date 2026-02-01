@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.chatbot;
 
+import lombok.RequiredArgsConstructor;
 import com.minzetsu.ecommerce.chatbot.dto.ChatRequest;
 import com.minzetsu.ecommerce.chatbot.dto.ChatResponse;
 import com.minzetsu.ecommerce.chatbot.dto.ChatMessageResponse;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 import java.util.function.Supplier;
 
 @Service
+@RequiredArgsConstructor
 public class ChatbotService {
     private static final int MAX_MESSAGE_LENGTH = 2000;
     private static final Logger log = LoggerFactory.getLogger(ChatbotService.class);
@@ -59,33 +61,7 @@ public class ChatbotService {
     private final Map<Long, CachedContext> contextByConversation = new ConcurrentHashMap<>();
     private final Map<String, CacheEntry> sharedCache = new ConcurrentHashMap<>();
 
-    public ChatbotService(
-            ChatbotProperties properties,
-            ChatMessageRepository chatMessageRepository,
-            ChatConversationRepository chatConversationRepository,
-            ProductRepository productRepository,
-            CategoryRepository categoryRepository,
-            ProductService productService,
-            OrderRepository orderRepository,
-            PaymentRepository paymentRepository,
-            ReviewRepository reviewRepository,
-            ProjectKnowledgeService projectKnowledgeService,
-            RestTemplate restTemplate,
-            ChatbotQueryService chatbotQueryService
-    ) {
-        this.properties = properties;
-        this.chatMessageRepository = chatMessageRepository;
-        this.chatConversationRepository = chatConversationRepository;
-        this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
-        this.productService = productService;
-        this.orderRepository = orderRepository;
-        this.paymentRepository = paymentRepository;
-        this.reviewRepository = reviewRepository;
-        this.projectKnowledgeService = projectKnowledgeService;
-        this.restTemplate = restTemplate;
-        this.chatbotQueryService = chatbotQueryService;
-    }
+    
 
     public ChatResponse chat(Long userId, ChatRequest request) {
         String message = sanitize(request.getMessage());

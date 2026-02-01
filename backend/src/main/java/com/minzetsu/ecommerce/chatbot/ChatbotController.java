@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.chatbot;
 
+import lombok.RequiredArgsConstructor;
 import com.minzetsu.ecommerce.chatbot.dto.ChatRequest;
 import com.minzetsu.ecommerce.chatbot.dto.ChatResponse;
 import com.minzetsu.ecommerce.chatbot.dto.ChatMessageResponse;
@@ -21,12 +22,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RestController
 @RequestMapping("/api/users/me/chatbot")
 @PreAuthorize("hasRole('USER')")
+@RequiredArgsConstructor
 public class ChatbotController {
     private final ChatbotService chatbotService;
 
-    public ChatbotController(ChatbotService chatbotService) {
-        this.chatbotService = chatbotService;
-    }
+    
 
     @PostMapping
     public ChatResponse chat(@Valid @RequestBody ChatRequest request) {

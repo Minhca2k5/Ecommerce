@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.realtime;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,12 +12,11 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequestMapping("/api/admin/realtime")
 @PreAuthorize("hasRole('ADMIN')")
+@RequiredArgsConstructor
 public class AdminRealtimeController {
     private final SseEmitterService emitterService;
 
-    public AdminRealtimeController(SseEmitterService emitterService) {
-        this.emitterService = emitterService;
-    }
+    
 
     @GetMapping("/notifications")
     public SseEmitter subscribeNotifications() {

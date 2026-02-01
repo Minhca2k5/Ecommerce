@@ -1,16 +1,16 @@
 package com.minzetsu.ecommerce.messaging;
 
+import lombok.RequiredArgsConstructor;
 import com.minzetsu.ecommerce.notification.service.NotificationWebhookService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class NotificationConsumer {
     private final NotificationWebhookService notificationWebhookService;
 
-    public NotificationConsumer(NotificationWebhookService notificationWebhookService) {
-        this.notificationWebhookService = notificationWebhookService;
-    }
+    
 
     @RabbitListener(queues = RabbitConfig.QUEUE_NOTIFICATION, containerFactory = "rabbitListenerContainerFactory")
     public void handle(DomainEvent event) {

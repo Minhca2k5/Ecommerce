@@ -1,6 +1,7 @@
 
 package com.minzetsu.ecommerce.chatbot;
 
+import lombok.RequiredArgsConstructor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ChatbotQueryService {
     private static final Logger log = LoggerFactory.getLogger(ChatbotQueryService.class);
     private static final Set<String> AGG_FUNCS = Set.of("count", "avg", "sum", "min", "max");
@@ -55,17 +57,7 @@ public class ChatbotQueryService {
             new JoinRule("notifications", "users", "user_id", "id")
     );
 
-    public ChatbotQueryService(
-            ChatbotProperties properties,
-            ChatbotSchemaProvider schemaProvider,
-            RestTemplate restTemplate,
-            JdbcTemplate jdbcTemplate
-    ) {
-        this.properties = properties;
-        this.schemaProvider = schemaProvider;
-        this.restTemplate = restTemplate;
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    
 
     public String answerWithDb(String question) {
         QueryPlan plan = planQuery(question);

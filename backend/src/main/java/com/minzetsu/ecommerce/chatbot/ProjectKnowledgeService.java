@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.chatbot;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -16,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectKnowledgeService {
     private static final Set<String> ALLOWED_EXT = Set.of(
             ".java", ".kt", ".md", ".txt", ".yml", ".yaml", ".json", ".properties",
@@ -29,9 +31,7 @@ public class ProjectKnowledgeService {
 
     private final ChatbotProperties properties;
 
-    public ProjectKnowledgeService(ChatbotProperties properties) {
-        this.properties = properties;
-    }
+    
 
     public String buildContext(String query) {
         if (!properties.isProjectSearchEnabled()) {

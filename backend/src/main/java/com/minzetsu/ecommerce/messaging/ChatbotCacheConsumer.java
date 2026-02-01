@@ -1,16 +1,16 @@
 package com.minzetsu.ecommerce.messaging;
 
+import lombok.RequiredArgsConstructor;
 import com.minzetsu.ecommerce.chatbot.ChatbotService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ChatbotCacheConsumer {
     private final ChatbotService chatbotService;
 
-    public ChatbotCacheConsumer(ChatbotService chatbotService) {
-        this.chatbotService = chatbotService;
-    }
+    
 
     @RabbitListener(queues = RabbitConfig.QUEUE_CHATBOT_CACHE)
     public void handle(DomainEvent event) {

@@ -11,8 +11,7 @@ public class DomainEvent {
     private Instant createdAt;
     private Map<String, Object> payload;
 
-    public DomainEvent() {
-    }
+    
 
     public DomainEvent(
             String eventId,

@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.realtime;
 
+import lombok.RequiredArgsConstructor;
 import com.minzetsu.ecommerce.common.config.CustomUserDetails;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -12,12 +13,11 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequestMapping("/api/users/me/realtime")
 @PreAuthorize("hasRole('USER')")
+@RequiredArgsConstructor
 public class UserRealtimeController {
     private final SseEmitterService emitterService;
 
-    public UserRealtimeController(SseEmitterService emitterService) {
-        this.emitterService = emitterService;
-    }
+    
 
     @GetMapping("/orders")
     public SseEmitter subscribeOrders() {

@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.messaging;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
@@ -8,12 +9,11 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class DomainEventPublisher {
     private final RabbitTemplate rabbitTemplate;
 
-    public DomainEventPublisher(RabbitTemplate rabbitTemplate) {
-        this.rabbitTemplate = rabbitTemplate;
-    }
+    
 
     public void publish(DomainEventType type, Long referenceId, Long userId, Map<String, Object> payload) {
         DomainEvent event = new DomainEvent(

@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.notification.listener;
 
+import lombok.RequiredArgsConstructor;
 import com.minzetsu.ecommerce.notification.dto.request.NotificationCreateRequest;
 import com.minzetsu.ecommerce.notification.service.NotificationService;
 import com.minzetsu.ecommerce.notification.event.WebhookEvent;
@@ -11,17 +12,12 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class OrderNotificationListener {
     private final NotificationService notificationService;
     private final ApplicationEventPublisher eventPublisher;
 
-    public OrderNotificationListener(
-            NotificationService notificationService,
-            ApplicationEventPublisher eventPublisher
-    ) {
-        this.notificationService = notificationService;
-        this.eventPublisher = eventPublisher;
-    }
+    
 
     @Async("appTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

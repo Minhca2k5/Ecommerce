@@ -1,16 +1,16 @@
 package com.minzetsu.ecommerce.messaging;
 
+import lombok.RequiredArgsConstructor;
 import com.minzetsu.ecommerce.search.service.ProductIndexService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class SearchIndexConsumer {
     private final ProductIndexService productIndexService;
 
-    public SearchIndexConsumer(ProductIndexService productIndexService) {
-        this.productIndexService = productIndexService;
-    }
+    
 
     @RabbitListener(queues = RabbitConfig.QUEUE_SEARCH, containerFactory = "rabbitListenerContainerFactory")
     public void handle(DomainEvent event) {

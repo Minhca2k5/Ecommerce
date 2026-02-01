@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.common.utils;
 
+import lombok.RequiredArgsConstructor;
 import com.minzetsu.ecommerce.common.config.OutboundHttpProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -8,12 +9,11 @@ import org.springframework.web.client.ResourceAccessException;
 import java.util.concurrent.Callable;
 
 @Component
+@RequiredArgsConstructor
 public class OutboundRetryExecutor {
     private final OutboundHttpProperties properties;
 
-    public OutboundRetryExecutor(OutboundHttpProperties properties) {
-        this.properties = properties;
-    }
+    
 
     public <T> T execute(Callable<T> call) {
         int attempts = 0;

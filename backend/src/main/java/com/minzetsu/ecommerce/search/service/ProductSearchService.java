@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.search.service;
 
+import lombok.RequiredArgsConstructor;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.repository.ProductRepository;
 import com.minzetsu.ecommerce.search.document.ProductDocument;
@@ -16,17 +17,12 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class ProductSearchService {
     private final ElasticsearchOperations elasticsearchOperations;
     private final ProductRepository productRepository;
 
-    public ProductSearchService(
-            ElasticsearchOperations elasticsearchOperations,
-            ProductRepository productRepository
-    ) {
-        this.elasticsearchOperations = elasticsearchOperations;
-        this.productRepository = productRepository;
-    }
+    
 
     public Page<Product> searchByName(String keyword, Pageable pageable) {
         NativeQuery query = NativeQuery.builder()

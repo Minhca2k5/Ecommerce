@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.common.idempotency;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,12 +9,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Service
+@RequiredArgsConstructor
 public class IdempotencyService {
     private final IdempotencyKeyRepository repository;
 
-    public IdempotencyService(IdempotencyKeyRepository repository) {
-        this.repository = repository;
-    }
+    
 
     @Transactional
     public <T> T execute(

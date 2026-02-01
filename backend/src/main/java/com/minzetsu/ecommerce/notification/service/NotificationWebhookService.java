@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.notification.service;
 
+import lombok.RequiredArgsConstructor;
 import com.minzetsu.ecommerce.common.config.OutboundHttpProperties;
 import com.minzetsu.ecommerce.common.utils.OutboundRetryExecutor;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class NotificationWebhookService {
     private final RestTemplate restTemplate;
     private final OutboundRetryExecutor retryExecutor;
@@ -24,17 +26,7 @@ public class NotificationWebhookService {
     @Value("${outbound.http.webhook-url:}")
     private String webhookUrl;
 
-    public NotificationWebhookService(
-            RestTemplate restTemplate,
-            OutboundRetryExecutor retryExecutor,
-            OutboundHttpProperties properties,
-            MeterRegistry meterRegistry
-    ) {
-        this.restTemplate = restTemplate;
-        this.retryExecutor = retryExecutor;
-        this.properties = properties;
-        this.webhookFailureCounter = meterRegistry.counter("webhook_failures_total");
-    }
+    
 
     public void notifyOrderCreated(Long orderId, Long userId) {
         notifyEvent("ORDER_CREATED", "ORDER", orderId, userId);

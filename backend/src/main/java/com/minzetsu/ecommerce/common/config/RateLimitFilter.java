@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.common.config;
 
+import lombok.RequiredArgsConstructor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Component
+@RequiredArgsConstructor
 public class RateLimitFilter extends OncePerRequestFilter {
     private static final String HEADER_FORWARDED_FOR = "X-Forwarded-For";
     private static final String HEADER_USER_AGENT = "User-Agent";
@@ -30,10 +32,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final Map<String, TokenBucket> buckets = new ConcurrentHashMap<>();
     private final AtomicLong lastCleanupNanos = new AtomicLong(System.nanoTime());
 
-    public RateLimitFilter(RateLimitProperties properties, MeterRegistry meterRegistry) {
-        this.properties = properties;
-        this.blockedCounter = meterRegistry.counter("rate_limit_blocked_total");
-    }
+    
 
     @Override
     protected void doFilterInternal(

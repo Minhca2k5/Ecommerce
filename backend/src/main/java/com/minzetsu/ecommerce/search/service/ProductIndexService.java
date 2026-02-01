@@ -1,5 +1,6 @@
 package com.minzetsu.ecommerce.search.service;
 
+import lombok.RequiredArgsConstructor;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.repository.ProductRepository;
 import com.minzetsu.ecommerce.search.document.ProductDocument;
@@ -9,17 +10,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProductIndexService {
     private final ProductRepository productRepository;
     private final ProductSearchRepository productSearchRepository;
 
-    public ProductIndexService(
-            ProductRepository productRepository,
-            ProductSearchRepository productSearchRepository
-    ) {
-        this.productRepository = productRepository;
-        this.productSearchRepository = productSearchRepository;
-    }
+    
 
     public void indexProduct(Long productId) {
         productRepository.findById(productId)
