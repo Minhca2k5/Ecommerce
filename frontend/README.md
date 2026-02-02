@@ -10,7 +10,7 @@ React + TypeScript + Vite + TailwindCSS (shadcn-style primitives) UI để “vi
 - Backend running at `http://localhost:8080`
 
 ## Environment
-Create `frontend/.env`:
+Create `frontend/.env` (or copy from `frontend/.env.example`):
 ```bash
 VITE_API_BASE_URL=http://localhost:8080
 ```

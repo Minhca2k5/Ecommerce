@@ -168,6 +168,15 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Unit tests (pricing/discounts, inventory reservation, order totals, RBAC).
     *   Integration tests (`MockMvc` + TestContainers for DB/Redis).
     *   E2E tests (Playwright/Cypress): register/login, browse/search, cart, checkout, admin flows.
+    *   API contract tests (consumer/provider) to keep frontend-backend schema aligned.
+    *   Security tests: auth bypass, rate-limit abuse, OTP brute-force, token misuse scenarios.
+*   [ ] **Security & Supply Chain Quality**:
+    *   SAST + dependency vulnerability scanning (OWASP/dependency-check style).
+    *   Secret scanning in CI and commit hooks.
+    *   DAST smoke checks for public endpoints.
+*   [ ] **Migration Safety**:
+    *   Liquibase rollback strategy per release.
+    *   Migration rehearsal on production-like data volume.
 *   [ ] **API Documentation**:
     *   Finalize Swagger/OpenAPI + examples + error model.
 *   [ ] **Phase 5 Review**:
@@ -185,6 +194,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   GitHub Actions or Jenkins for build/test.
     *   Staging deploy + smoke tests, then promote to production.
     *   Blue-green or canary strategy.
+    *   Release gates: migration check, API contract check, security scan check.
 *   [ ] **Observability Stack**:
     *   Centralized logging (ELK/Loki).
     *   Metrics monitoring (Prometheus + Grafana).
@@ -194,7 +204,11 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [ ] **Scaling & Reliability**:
     *   Horizontal scaling, load balancer, autoscaling (optional).
     *   Rate limiting + backpressure validation under load.
+    *   Disaster recovery drill (RTO/RPO targets), backup verification, rollback playbook.
 *   [ ] **Experimentation**:
     *   Feature flags + A/B testing rollout support.
 *   [ ] **Secrets & Environments**:
     *   Separate dev/staging/prod configs and secrets management.
+*   [ ] **Cost & Capacity Observability**:
+    *   Cost dashboards/alerts for Redis, Elasticsearch, broker, and outbound integrations.
+    *   Capacity thresholds + autoscaling trigger runbooks.

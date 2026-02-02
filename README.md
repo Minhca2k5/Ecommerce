@@ -13,6 +13,8 @@ This repository is an end-to-end E-commerce system:
 - **Observability:** Request ID + structured logs + audit logs
 - **Customer Experience:** Anonymous cart + merge on login
 - **Chatbot:** LLM-backed assistant with project/DB context + conversation history
+- **Chatbot Collaboration (Phase 4):** personal/project/group scopes, group invites (accept/refuse), member list + sender display names in group chat
+- **Auth Hardening (Phase 4):** email OTP verification for registration
 - **Frontend (Phase 2+4):** React + TypeScript (see `frontend/`), integrating with backend APIs, SSE, MoMo
 
 ## API Namespace Convention
@@ -31,13 +33,28 @@ This repository is an end-to-end E-commerce system:
 - Redis (cache)
 
 ### Backend
-1. Configure services in `backend/src/main/resources/application.properties`
+1. Configure services in `backend/src/main/resources/application.properties` (or environment variables).
 2. Run:
    - `cd backend`
    - `./mvnw spring-boot:run`
 3. Swagger:
    - `http://localhost:8080/docs` (or `http://localhost:8080/swagger-ui/index.html`)
    - OpenAPI: `http://localhost:8080/v3/api-docs`
+
+### Deployment-Ready Config (Recommended)
+- Use environment variables instead of hardcoded secrets:
+  - `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`
+  - `JWT_SECRET_KEY`
+  - `REDIS_HOST`, `REDIS_PORT`
+  - `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USERNAME`, `RABBITMQ_PASSWORD`
+  - `ELASTICSEARCH_URIS`
+  - `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, `MOMO_IPN_URL`, `MOMO_REDIRECT_URL`
+  - `MAIL_USERNAME`, `MAIL_PASSWORD`
+  - `CHATBOT_BASE_URL`, `CHATBOT_API_KEY`, `CHATBOT_MODEL`
+- Use production profile on cloud:
+  - `SPRING_PROFILES_ACTIVE=prod`
+- If cloud runtime has no local Ollama service, set:
+  - `CHATBOT_ENABLED=false` (or point `CHATBOT_BASE_URL` to your AI provider gateway).
 
 ### Frontend
 1. Configure API base URL:
@@ -53,3 +70,7 @@ This repository is an end-to-end E-commerce system:
 - Phase 4 roadmap (integrations/realtime/search/chatbot): `docs/roadmaps/PHASE4_ROADMAP.md`
 - Phase 3 report: `docs/perf/phase3_report.md`
 - High-level project plan: `docs/roadmaps/PROJECT_PLAN.md`
+
+## Notes (Current Scope)
+- Local mode currently prioritizes chatbot stability: file + voice workflows are enabled; image analysis path is disabled by default in this phase.
+- Group invites are designed as in-app first, email as best-effort notification channel.
