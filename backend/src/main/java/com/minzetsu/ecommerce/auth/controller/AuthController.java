@@ -2,6 +2,7 @@ package com.minzetsu.ecommerce.auth.controller;
 
 import com.minzetsu.ecommerce.auth.dto.request.LoginRequest;
 import com.minzetsu.ecommerce.auth.dto.request.RegisterRequest;
+import com.minzetsu.ecommerce.auth.dto.request.RegisterOtpVerifyRequest;
 import com.minzetsu.ecommerce.auth.dto.response.AuthResponse;
 import com.minzetsu.ecommerce.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +32,17 @@ public class AuthController {
             @Valid @RequestBody RegisterRequest request
     ) {
         AuthResponse response = authService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    @PostMapping("/register/request")
+    public ResponseEntity<AuthResponse> requestRegisterOtp(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(authService.requestRegisterOtp(request));
+    }
+
+    @PostMapping("/register/verify")
+    public ResponseEntity<AuthResponse> verifyRegisterOtp(@Valid @RequestBody RegisterOtpVerifyRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.verifyRegisterOtp(request));
     }
 
     @Operation(

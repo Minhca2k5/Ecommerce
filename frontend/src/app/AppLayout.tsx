@@ -5,6 +5,8 @@ import { useToast } from "@/app/ToastProvider";
 import { useNotifications } from "@/app/NotificationProvider";
 import { useTheme } from "@/app/ThemeProvider";
 import { getNotificationRoute } from "@/lib/notificationRoute";
+import { acceptGroupInvite, declineGroupInvite } from "@/lib/chatbotApi";
+import { getErrorMessage } from "@/lib/errors";
 import { getAvailableRoles, getSelectedRole, setSelectedRole } from "@/lib/roleSelection";
 import { getMyCart, getGuestCart, getStoredGuestId } from "@/lib/cartApi";
 import ChatbotWidget from "@/app/ChatbotWidget";
@@ -36,6 +38,11 @@ export default function AppLayout() {
   const availableRoles = useMemo(() => getAvailableRoles(), [auth.isAuthenticated]);
   const selectedRole = useMemo(() => getSelectedRole(), [auth.isAuthenticated]);
   const [roleDraft, setRoleDraft] = useState(() => selectedRole ?? availableRoles[0] ?? "USER");
+
+  function isInviteNotification(n: { referenceType?: unknown; title?: unknown }) {
+    return String(n.referenceType ?? "").toLowerCase() === "chat_group_invite"
+      && String(n.title ?? "").toLowerCase() === "group invitation";
+  }
 
   useEffect(() => {
     setRoleDraft(selectedRole ?? availableRoles[0] ?? "USER");
@@ -197,9 +204,8 @@ export default function AppLayout() {
                       </div>
                       <div className="max-h-80 overflow-auto border-t">
                         {(notifications.items ?? []).filter((n) => !n.isHidden).slice(0, 6).map((n) => (
-                          <button
+                          <div
                             key={String(n.id)}
-                            type="button"
                             className={[
                               "w-full px-3 py-3 text-left transition hover:bg-muted",
                               n.isRead ? "bg-rose-500/10" : "bg-emerald-500/10",
@@ -223,8 +229,50 @@ export default function AppLayout() {
                                 {n.isRead ? "Read" : "Unread"}
                               </span>
                             </div>
-                            <div className="mt-1 text-xs text-muted-foreground line-clamp-2">{n.message}</div>
-                          </button>
+                            <div className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                              {isInviteNotification(n) && n.isRead
+                                ? "Lời mời này đã được xử lý."
+                                : n.message}
+                            </div>
+                            {isInviteNotification(n) && !n.isRead ? (
+                              <div className="mt-2 flex gap-1">
+                                <button
+                                  type="button"
+                                  className="rounded border px-2 py-1 text-[11px]"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                      await acceptGroupInvite(Number(n.referenceId));
+                                      toast.push({ variant: "success", title: "Invite accepted", message: "Bạn đã chấp nhận lời mời." });
+                                      const id = Number(n.id ?? 0);
+                                      if (id) notifications.markRead(id);
+                                    } catch (err) {
+                                      toast.push({ variant: "error", title: "Accept failed", message: getErrorMessage(err, "Please try again.") });
+                                    }
+                                  }}
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  type="button"
+                                  className="rounded border px-2 py-1 text-[11px] text-red-500"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                      await declineGroupInvite(Number(n.referenceId));
+                                      toast.push({ variant: "success", title: "Invite refused", message: "Bạn đã từ chối lời mời." });
+                                      const id = Number(n.id ?? 0);
+                                      if (id) notifications.markRead(id);
+                                    } catch (err) {
+                                      toast.push({ variant: "error", title: "Refuse failed", message: getErrorMessage(err, "Please try again.") });
+                                    }
+                                  }}
+                                >
+                                  Refuse
+                                </button>
+                              </div>
+                            ) : null}
+                          </div>
                         ))}
                         {(notifications.items ?? []).filter((n) => !n.isHidden).length === 0 ? (
                           <div className="p-3 text-sm text-muted-foreground">No notifications yet.</div>

@@ -1,6 +1,6 @@
 # Phase 4 Roadmap: Advanced Features and Integrations
 
-Status: Completed
+Status: Completed (updated)
 
 Goal: add production-grade integrations (payments, broker, search, realtime, chatbot) and
 event-driven data propagation for "new arrivals", with clear DoD and test evidence.
@@ -19,7 +19,7 @@ Guiding principles:
 - Search index pipeline (backfill + incremental) with fallback.
 - Realtime channels (WS/SSE) for order status + admin notifications.
 - New product propagation works end-to-end (event -> index/cache -> UI).
-- Chatbot is LLM-backed with RAG (project + DB context) and guardrails + logs.
+- Chatbot is LLM-backed with RAG (project + DB context), conversation/workspace management, practical multimodal I/O, and guardrails + logs.
 - Anonymous cart works for guests and merges safely on login.
 - Inventory reservations expire and release stock automatically.
 
@@ -106,13 +106,44 @@ Checkpoint:
 - LLM-backed answers for general questions.
 - RAG context from project files + DB (products/orders/payments).
 - Auth-scoped data access for user.
+- Auto-title conversation from first user question (avoid generic names like "General Chat 1").
+- Conversation CRUD: rename conversation, delete history, copy message content.
 
-### 6.2 Safety and logging
+### 6.2 Workspace model (groups + projects)
+- Add chat groups and project workspaces.
+- Project CRUD (create/update/delete) with isolated conversation lists per project.
+- Manage project history (delete/edit names and chat metadata).
+- Group collaboration UX:
+  - Invite by email to existing accounts.
+  - Member actions: Accept/Refuse invite.
+  - Owner actions: remove members, delete group.
+  - Member list visible in group UI (includes owner) + live member count.
+  - Group message history shows sender display name (not only role bubble).
+  - Invite badge count stays in sync (pending received + pending sent).
+  - Notifications use display names (not raw user IDs).
+
+### 6.3 Multimodal capabilities
+- Read uploaded files (txt/pdf/docx baseline) and answer with grounded context.
+- Image understanding removed in current local mode (latency/quality tradeoff); keep as optional future extension.
+- Voice pipeline: record/upload audio, speech-to-text, text-to-speech playback.
+- Voice translation flow VN <-> EN (STT -> translate -> TTS).
+
+### 6.6 Auth hardening related to chatbot collaboration
+- Registration flow protected by email OTP verification before account creation.
+- OTP expiry window set to 1 minute with countdown in frontend.
+- User-facing API errors normalized (avoid generic internal error messages for expected OTP/invite failures).
+
+### 6.4 Safety and logging
 - Rate limit + input validation + prompt-injection defenses.
 - Conversation logs + escalation to human support.
 
+### 6.5 Placement in current codebase
+- Backend chatbot module: `backend/src/main/java/com/minzetsu/ecommerce/chatbot/`.
+- Frontend chatbot UI: `frontend/src/app/ChatbotWidget.tsx`.
+- Frontend chatbot API client: `frontend/src/lib/chatbotApi.ts`.
+
 Checkpoint:
-- Chatbot works in sandbox with safe fallbacks.
+- Chatbot works in sandbox with safe fallbacks and supports workspace/conversation management.
 
 ---
 
@@ -121,7 +152,7 @@ Checkpoint:
 - Broker: events + retry/DLQ evidence.
 - Search: precision/recall + fallback test.
 - Realtime: WS/SSE verified.
-- Chatbot: RAG demo + logs.
+- Chatbot: RAG demo + logs + workspace/conversation CRUD + multimodal demo.
 
 ---
 

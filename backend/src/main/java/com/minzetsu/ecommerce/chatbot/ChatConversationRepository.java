@@ -9,4 +9,7 @@ public interface ChatConversationRepository extends JpaRepository<ChatConversati
     List<ChatConversation> findByUserIdOrderByUpdatedAtDesc(Long userId);
     Optional<ChatConversation> findByUserIdAndId(Long userId, Long id);
     Optional<ChatConversation> findByUserIdAndTitle(Long userId, String title);
+    List<ChatConversation> findByUserIdAndProjectIdOrderByUpdatedAtDesc(Long userId, Long projectId);
+    List<ChatConversation> findByGroupIdOrderByUpdatedAtDesc(Long groupId);
+    List<ChatConversation> findByUserIdAndProjectIdIsNullAndGroupIdIsNullOrderByUpdatedAtDesc(Long userId);
 }

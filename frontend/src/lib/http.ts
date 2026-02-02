@@ -128,3 +128,30 @@ export async function apiJson<T>(path: string, options: ApiJsonOptions = {}): Pr
   if (!text.trim()) return undefined as T;
   return JSON.parse(text) as T;
 }
+
+
+export async function apiMultipart<T>(path: string, form: FormData, options: { auth?: boolean; method?: "POST" | "PUT" | "PATCH" } = {}): Promise<T> {
+  const url = buildUrl(path);
+  const method = options.method ?? "POST";
+  const headers: Record<string, string> = { "X-Request-Id": createRequestId() };
+  const tokens = options.auth ? getStoredTokens() : null;
+  if (options.auth && tokens?.accessToken) {
+    headers.Authorization = `${tokens.tokenType || "Bearer"} ${tokens.accessToken}`;
+  }
+
+  let response = await fetch(url, { method, headers, body: form });
+  if (options.auth && (response.status === 401 || response.status === 403)) {
+    await ensureFreshTokensOnce();
+    const refreshed = getStoredTokens();
+    if (refreshed?.accessToken) {
+      headers.Authorization = `${refreshed.tokenType || "Bearer"} ${refreshed.accessToken}`;
+      response = await fetch(url, { method, headers, body: form });
+    }
+  }
+  if (!response.ok) {
+    const payload = await parseJsonSafe(response);
+    throw new ApiError(`Request failed: ${response.status} ${response.statusText}`, response.status, payload);
+  }
+  if (response.status === 204) return undefined as T;
+  return (await response.json()) as T;
+}

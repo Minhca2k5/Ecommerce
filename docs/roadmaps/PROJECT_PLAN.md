@@ -120,11 +120,20 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Optional WS/SSE push for "new arrivals" on storefront.
 *   [x] **Chatbot Integration**:
     *   Customer support assistant (FAQ, order status lookup, refund policy).
+    *   Conversation history with auto-title from first user message (replace generic "General Chat N").
+    *   Conversation management: rename, delete history, copy message content.
+    *   Workspace model: chat groups + projects (create/update/delete) with isolated chat threads by project.
+    *   Email notifications for group invites and invite-accepted events (in addition to in-app notifications).
+    *   Multimodal I/O (current): read file content + voice input + VN<->EN translation (image analysis removed in local mode for performance/stability).
     *   Escalation flow to human support + conversation logging.
     *   Safety guardrails (rate limit, input validation, prompt injection defense).
+    *   Email verification (OTP) for registration before account activation.
     *   LLM provider integration + cost/latency monitoring.
     *   RAG over product catalog, policy docs, and order data (scoped by auth).
     *   Admin tools: prompt templates, knowledge base sync, and audit logs.
+    *   Current code location: backend `backend/src/main/java/com/minzetsu/ecommerce/chatbot/*`, frontend widget `frontend/src/app/ChatbotWidget.tsx` + API client `frontend/src/lib/chatbotApi.ts`.
+    *   Group collaboration UX completed: owner/member roles, invite by email, accept/refuse flow, owner invite result notifications, invite badge count sync, member list (including owner), and sender name shown in group messages.
+    *   Registration security completed: email OTP verification before account creation (1-minute OTP expiry) with user-friendly error responses.
 *   [x] **Anonymous Cart + Merge on Login**:
     *   Guest cart persisted by device/session.
     *   Merge guest cart into user cart on login (conflict resolution rules).

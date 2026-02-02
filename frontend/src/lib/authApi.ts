@@ -24,6 +24,11 @@ export type RefreshTokenRequest = {
   refreshToken: string;
 };
 
+export type RegisterOtpVerifyRequest = {
+  email: string;
+  code: string;
+};
+
 export type UserMeResponse = {
   id?: number;
   username?: string;
@@ -48,4 +53,12 @@ export async function refreshToken(request: RefreshTokenRequest) {
 
 export async function getMe() {
   return apiJson<UserMeResponse>("/api/users/me", { method: "GET", auth: true });
+}
+
+export async function requestRegisterOtp(request: RegisterRequest) {
+  return apiJson<AuthResponse>("/api/auth/register/request", { method: "POST", body: request, auth: false });
+}
+
+export async function verifyRegisterOtp(request: RegisterOtpVerifyRequest) {
+  return apiJson<AuthResponse>("/api/auth/register/verify", { method: "POST", body: request, auth: false });
 }

@@ -17,4 +17,10 @@ public class ChatConversation extends BaseEntity {
 
     @Column(nullable = false, length = 160)
     private String title;
+
+    @Column(name = "project_id")
+    private Long projectId;
+
+    @Column(name = "group_id")
+    private Long groupId;
 }

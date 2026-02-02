@@ -20,6 +20,8 @@ public class ChatbotProperties {
     private int projectMaxFileBytes = 200_000;
     private int projectMaxSnippets = 6;
     private boolean queryPlannerEnabled = false;
+    private String visionModel = "llava";
+    private String defaultVoiceLang = "en";
 
     public boolean isEnabled() {
         return enabled;
@@ -123,6 +125,22 @@ public class ChatbotProperties {
 
     public void setProjectMaxSnippets(int projectMaxSnippets) {
         this.projectMaxSnippets = projectMaxSnippets;
+    }
+
+    public String getVisionModel() {
+        return visionModel;
+    }
+
+    public void setVisionModel(String visionModel) {
+        this.visionModel = visionModel;
+    }
+
+    public String getDefaultVoiceLang() {
+        return defaultVoiceLang;
+    }
+
+    public void setDefaultVoiceLang(String defaultVoiceLang) {
+        this.defaultVoiceLang = defaultVoiceLang;
     }
 
     public boolean isQueryPlannerEnabled() {

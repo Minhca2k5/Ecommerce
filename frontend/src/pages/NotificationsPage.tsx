@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNotifications } from "@/app/NotificationProvider";
 import { getNotificationRoute } from "@/lib/notificationRoute";
+import { acceptGroupInvite, declineGroupInvite } from "@/lib/chatbotApi";
 
 function formatTime(iso: string) {
   try {
@@ -40,6 +41,11 @@ export default function NotificationsPage() {
     next.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
     return next;
   }, [notifications.items]);
+
+  function isInviteNotification(n: { referenceType?: unknown; title?: unknown }) {
+    return String(n.referenceType ?? "").toLowerCase() === "chat_group_invite"
+      && String(n.title ?? "").toLowerCase() === "group invitation";
+  }
 
   if (!sorted.length) {
     return (
@@ -118,7 +124,11 @@ export default function NotificationsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="relative">
-              <div className={["text-sm", n.isRead ? "text-muted-foreground" : "text-foreground/90"].join(" ")}>{n.message}</div>
+              <div className={["text-sm", n.isRead ? "text-muted-foreground" : "text-foreground/90"].join(" ")}>
+                {isInviteNotification(n) && n.isRead
+                  ? "Lời mời này đã được xử lý."
+                  : n.message}
+              </div>
               <div className="mt-3 flex justify-between">
                 <Button
                   type="button"
@@ -132,19 +142,51 @@ export default function NotificationsPage() {
                 >
                   Remove
                 </Button>
-                <Button
-                  type="button"
-                  className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const id = Number(n.id ?? 0);
-                    if (id) notifications.markRead(id);
-                    const route = getNotificationRoute(n);
-                    if (route) navigate(route);
-                  }}
-                >
-                  Open
-                </Button>
+                <div className="flex gap-2">
+                  {isInviteNotification(n) && !n.isRead ? (
+                    <>
+                      <Button
+                        type="button"
+                        className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const id = Number(n.id ?? 0);
+                          if (id) notifications.markRead(id);
+                          try { await acceptGroupInvite(Number(n.referenceId)); } catch {}
+                        }}
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-10 rounded-xl border-rose-500/20 text-rose-700"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const id = Number(n.id ?? 0);
+                          if (id) notifications.markRead(id);
+                          try { await declineGroupInvite(Number(n.referenceId)); } catch {}
+                        }}
+                      >
+                        Refuse
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      type="button"
+                      className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const id = Number(n.id ?? 0);
+                        if (id) notifications.markRead(id);
+                        const route = getNotificationRoute(n);
+                        if (route) navigate(route);
+                      }}
+                    >
+                      Open
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

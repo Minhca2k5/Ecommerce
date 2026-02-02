@@ -5,13 +5,17 @@ import java.time.LocalDateTime;
 public class ChatMessageResponse {
     private String role;
     private String content;
+    private Long userId;
+    private String senderName;
     private LocalDateTime createdAt;
 
     public ChatMessageResponse() {}
 
-    public ChatMessageResponse(String role, String content, LocalDateTime createdAt) {
+    public ChatMessageResponse(String role, String content, Long userId, String senderName, LocalDateTime createdAt) {
         this.role = role;
         this.content = content;
+        this.userId = userId;
+        this.senderName = senderName;
         this.createdAt = createdAt;
     }
 
@@ -37,5 +41,21 @@ public class ChatMessageResponse {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
     }
 }

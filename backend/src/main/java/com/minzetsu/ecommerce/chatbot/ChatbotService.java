@@ -5,6 +5,10 @@ import com.minzetsu.ecommerce.chatbot.dto.ChatRequest;
 import com.minzetsu.ecommerce.chatbot.dto.ChatResponse;
 import com.minzetsu.ecommerce.chatbot.dto.ChatMessageResponse;
 import com.minzetsu.ecommerce.chatbot.dto.ChatConversationResponse;
+import com.minzetsu.ecommerce.chatbot.dto.ChatGroupResponse;
+import com.minzetsu.ecommerce.chatbot.dto.ChatGroupInviteResponse;
+import com.minzetsu.ecommerce.notification.dto.request.NotificationCreateRequest;
+import com.minzetsu.ecommerce.notification.service.NotificationService;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.entity.ProductStatus;
 import com.minzetsu.ecommerce.product.entity.Category;
@@ -20,6 +24,9 @@ import com.minzetsu.ecommerce.payment.entity.Payment;
 import com.minzetsu.ecommerce.payment.repository.PaymentRepository;
 import com.minzetsu.ecommerce.review.repository.ReviewRepository;
 import com.minzetsu.ecommerce.product.repository.projection.ProductRatingView;
+import com.minzetsu.ecommerce.user.repository.UserRepository;
+import com.minzetsu.ecommerce.user.entity.User;
+import com.minzetsu.ecommerce.auth.service.EmailService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.slf4j.Logger;
@@ -28,7 +35,16 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.ByteArrayInputStream;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.Loader;
 
 import java.util.List;
 import java.util.Map;
@@ -37,6 +53,8 @@ import java.text.Normalizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.function.Supplier;
+import java.nio.charset.StandardCharsets;
+import com.minzetsu.ecommerce.common.exception.AppException;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +64,13 @@ public class ChatbotService {
     private final ChatbotProperties properties;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatConversationRepository chatConversationRepository;
+    private final ChatProjectRepository chatProjectRepository;
+    private final ChatGroupRepository chatGroupRepository;
+    private final ChatGroupMemberRepository chatGroupMemberRepository;
+    private final ChatGroupInviteRepository chatGroupInviteRepository;
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
+    private final EmailService emailService;
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductService productService;
@@ -65,7 +90,7 @@ public class ChatbotService {
 
     public ChatResponse chat(Long userId, ChatRequest request) {
         String message = sanitize(request.getMessage());
-        Long conversationId = resolveConversationId(userId, request.getConversationId());
+        Long conversationId = resolveConversationId(userId, request.getConversationId(), request.getProjectId(), request.getGroupId());
         saveMessage(userId, conversationId, "user", message);
 
         String reply = null;
@@ -104,9 +129,9 @@ public class ChatbotService {
     }
 
     public List<ChatMessageResponse> listHistory(Long userId, Long conversationId, int limit) {
+        requireConversationAccess(userId, conversationId);
         int size = Math.max(1, Math.min(50, limit));
-        var page = chatMessageRepository.findByUserIdAndConversationIdOrderByCreatedAtDesc(
-                userId,
+        var page = chatMessageRepository.findByConversationIdOrderByCreatedAtDesc(
                 conversationId,
                 org.springframework.data.domain.PageRequest.of(0, size)
         );
@@ -115,7 +140,15 @@ public class ChatbotService {
         }
         return page.getContent().stream()
                 .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()))
-                .map(m -> new ChatMessageResponse(m.getRole(), m.getContent(), m.getCreatedAt()))
+                .map(m -> new ChatMessageResponse(
+                        m.getRole(),
+                        m.getContent(),
+                        m.getUserId(),
+                        userRepository.findById(m.getUserId())
+                                .map(u -> (u.getFullName() != null && !u.getFullName().isBlank()) ? u.getFullName() : u.getUsername())
+                                .orElse("Unknown"),
+                        m.getCreatedAt()
+                ))
                 .collect(Collectors.toList());
     }
 
@@ -123,36 +156,134 @@ public class ChatbotService {
         chatMessageRepository.deleteByUserIdAndConversationId(userId, conversationId);
     }
 
-    public List<ChatConversationResponse> listConversations(Long userId) {
-        return chatConversationRepository.findByUserIdOrderByUpdatedAtDesc(userId).stream()
-                .map(c -> new ChatConversationResponse(c.getId(), c.getTitle(), c.getUpdatedAt()))
-                .collect(Collectors.toList());
+    public void deleteConversation(Long userId, Long conversationId) {
+        chatConversationRepository.findByUserIdAndId(userId, conversationId).ifPresent(c -> {
+            chatMessageRepository.deleteByConversationId(conversationId);
+            chatConversationRepository.delete(c);
+        });
     }
 
-    public ChatConversationResponse createConversation(Long userId, String title) {
-        String safeTitle = (title == null || title.isBlank()) ? "New chat" : title.trim();
-        ChatConversation conversation = new ChatConversation();
-        conversation.setUserId(userId);
-        conversation.setTitle(safeTitle);
+    public ChatConversationResponse renameConversation(Long userId, Long conversationId, String title) {
+        ChatConversation conversation = chatConversationRepository.findByUserIdAndId(userId, conversationId)
+                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+        conversation.setTitle(sanitizeTitle(title));
         ChatConversation saved = chatConversationRepository.save(conversation);
         return new ChatConversationResponse(saved.getId(), saved.getTitle(), saved.getUpdatedAt());
     }
 
-    public Long resolveConversationId(Long userId, Long conversationId) {
-        if (conversationId != null) {
-            return chatConversationRepository.findByUserIdAndId(userId, conversationId)
-                    .map(ChatConversation::getId)
-                    .orElseGet(() -> getOrCreateDefaultConversation(userId).getId());
-        }
-        return getOrCreateDefaultConversation(userId).getId();
+
+    public List<ChatConversationResponse> listPersonalConversations(Long userId) {
+        return chatConversationRepository.findByUserIdAndProjectIdIsNullAndGroupIdIsNullOrderByUpdatedAtDesc(userId).stream()
+                .map(c -> new ChatConversationResponse(c.getId(), c.getTitle(), c.getUpdatedAt()))
+                .collect(Collectors.toList());
     }
 
-    private ChatConversation getOrCreateDefaultConversation(Long userId) {
+    public List<ChatConversationResponse> listConversations(Long userId) {
+        java.util.Set<Long> groupIds = chatGroupMemberRepository.findByUserIdOrderByUpdatedAtDesc(userId).stream().map(ChatGroupMember::getGroupId).collect(java.util.stream.Collectors.toSet());
+        java.util.List<ChatConversation> all = new java.util.ArrayList<>(chatConversationRepository.findByUserIdOrderByUpdatedAtDesc(userId));
+        for (Long gid : groupIds) { all.addAll(chatConversationRepository.findByGroupIdOrderByUpdatedAtDesc(gid)); }
+        return all.stream()
+                .collect(java.util.stream.Collectors.toMap(ChatConversation::getId, c -> c, (a,b) -> a))
+                .values().stream()
+                .sorted((a,b) -> java.util.Comparator.nullsLast(java.time.LocalDateTime::compareTo).reversed().compare(a.getUpdatedAt(), b.getUpdatedAt()))
+                .map(c -> new ChatConversationResponse(c.getId(), c.getTitle(), c.getUpdatedAt()))
+                .collect(Collectors.toList());
+    }
+
+    public List<com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse> listProjects(Long userId) {
+        return chatProjectRepository.findByUserIdOrderByUpdatedAtDesc(userId).stream()
+                .map(p -> new com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse(p.getId(), p.getName(), p.getUpdatedAt()))
+                .collect(Collectors.toList());
+    }
+
+    public com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse createProject(Long userId, String name) {
+        ChatProject p = new ChatProject();
+        p.setUserId(userId);
+        p.setName(sanitizeProjectName(name));
+        ChatProject saved = chatProjectRepository.save(p);
+        return new com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse(saved.getId(), saved.getName(), saved.getUpdatedAt());
+    }
+
+    public com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse renameProject(Long userId, Long projectId, String name) {
+        ChatProject p = chatProjectRepository.findByUserIdAndId(userId, projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        p.setName(sanitizeProjectName(name));
+        ChatProject saved = chatProjectRepository.save(p);
+        return new com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse(saved.getId(), saved.getName(), saved.getUpdatedAt());
+    }
+
+    public void deleteProject(Long userId, Long projectId) {
+        chatProjectRepository.findByUserIdAndId(userId, projectId).ifPresent(p -> {
+            chatConversationRepository.findByUserIdAndProjectIdOrderByUpdatedAtDesc(userId, projectId).forEach(c -> {
+                chatMessageRepository.deleteByUserIdAndConversationId(userId, c.getId());
+                chatConversationRepository.delete(c);
+            });
+            chatProjectRepository.delete(p);
+        });
+    }
+
+    public List<ChatConversationResponse> listConversationsByProject(Long userId, Long projectId) {
+        return chatConversationRepository.findByUserIdAndProjectIdOrderByUpdatedAtDesc(userId, projectId).stream()
+                .map(c -> new ChatConversationResponse(c.getId(), c.getTitle(), c.getUpdatedAt()))
+                .collect(Collectors.toList());
+    }
+
+    public ChatConversationResponse createConversation(Long userId, String title, Long projectId, Long groupId) {
+        String safeTitle = (title == null || title.isBlank()) ? "New chat" : title.trim();
+        if (projectId != null) {
+            chatProjectRepository.findByUserIdAndId(userId, projectId)
+                    .orElseThrow(() -> new RuntimeException("Project not found"));
+        }
+        if (groupId != null) {
+            requireGroupMember(userId, groupId);
+        }
+        ChatConversation conversation = new ChatConversation();
+        conversation.setUserId(userId);
+        conversation.setTitle(safeTitle);
+        conversation.setProjectId(projectId);
+        conversation.setGroupId(groupId);
+        ChatConversation saved = chatConversationRepository.save(conversation);
+        return new ChatConversationResponse(saved.getId(), saved.getTitle(), saved.getUpdatedAt());
+    }
+
+    public Long resolveConversationId(Long userId, Long conversationId, Long projectId, Long groupId) {
+        if (conversationId != null) {
+            ChatConversation c = chatConversationRepository.findById(conversationId).orElse(null);
+            if (c != null) {
+                assertCanAccessConversation(userId, c);
+                return c.getId();
+            }
+            return getOrCreateDefaultConversation(userId, projectId, groupId).getId();
+        }
+        return getOrCreateDefaultConversation(userId, projectId, groupId).getId();
+    }
+
+    private ChatConversation getOrCreateDefaultConversation(Long userId, Long projectId, Long groupId) {
+        if (groupId != null) {
+            requireGroupMember(userId, groupId);
+            java.util.List<ChatConversation> groupConversations = chatConversationRepository.findByGroupIdOrderByUpdatedAtDesc(groupId);
+            for (ChatConversation c : groupConversations) {
+                if ("General".equals(c.getTitle())) return c;
+            }
+        }
+        if (projectId == null && groupId == null) {
+            return chatConversationRepository.findByUserIdAndProjectIdIsNullAndGroupIdIsNullOrderByUpdatedAtDesc(userId).stream()
+                    .filter(c -> "General".equals(c.getTitle()))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        ChatConversation conversation = new ChatConversation();
+                        conversation.setUserId(userId);
+                        conversation.setTitle("General");
+                        return chatConversationRepository.save(conversation);
+                    });
+        }
         return chatConversationRepository.findByUserIdAndTitle(userId, "General")
                 .orElseGet(() -> {
                     ChatConversation conversation = new ChatConversation();
                     conversation.setUserId(userId);
                     conversation.setTitle("General");
+                    conversation.setProjectId(projectId);
+        conversation.setGroupId(groupId);
                     return chatConversationRepository.save(conversation);
                 });
     }
@@ -166,6 +297,212 @@ public class ChatbotService {
             trimmed = trimmed.substring(0, MAX_MESSAGE_LENGTH);
         }
         return trimmed;
+    }
+
+
+
+    public List<ChatGroupResponse> listGroups(Long userId) {
+        return chatGroupMemberRepository.findByUserIdOrderByUpdatedAtDesc(userId).stream()
+                .map(m -> chatGroupRepository.findById(m.getGroupId()).orElse(null))
+                .filter(java.util.Objects::nonNull)
+                .map(g -> new ChatGroupResponse(g.getId(), g.getName(), g.getOwnerUserId(), roleOf(userId, g.getId()), g.getUpdatedAt()))
+                .collect(Collectors.toList());
+    }
+
+    public ChatGroupResponse createGroup(Long userId, String name) {
+        ChatGroup g = new ChatGroup();
+        g.setOwnerUserId(userId);
+        g.setName(sanitizeProjectName(name));
+        ChatGroup saved = chatGroupRepository.save(g);
+
+        ChatGroupMember owner = new ChatGroupMember();
+        owner.setGroupId(saved.getId());
+        owner.setUserId(userId);
+        owner.setRole("OWNER");
+        chatGroupMemberRepository.save(owner);
+        return new ChatGroupResponse(saved.getId(), saved.getName(), saved.getOwnerUserId(), "OWNER", saved.getUpdatedAt());
+    }
+
+    public void addMember(Long ownerUserId, Long groupId, Long userId) {
+        requireGroupOwner(ownerUserId, groupId);
+        if (chatGroupMemberRepository.findByGroupIdAndUserId(groupId, userId).isPresent()) return;
+        if (chatGroupInviteRepository.findByGroupIdAndInviteeUserIdAndStatus(groupId, userId, "PENDING").isPresent()) return;
+        ChatGroupInvite invite = new ChatGroupInvite();
+        invite.setGroupId(groupId);
+        invite.setInviterUserId(ownerUserId);
+        invite.setInviteeUserId(userId);
+        invite.setStatus("PENDING");
+        ChatGroupInvite saved = chatGroupInviteRepository.save(invite);
+
+        ChatGroup g = chatGroupRepository.findById(groupId).orElseThrow(() -> new RuntimeException("Group not found"));
+        String inviterDisplay = userRepository.findById(ownerUserId)
+                .map(u -> (u.getFullName() != null && !u.getFullName().isBlank()) ? u.getFullName() : u.getUsername())
+                .orElse("Group owner");
+        NotificationCreateRequest req = NotificationCreateRequest.builder()
+                .userId(userId)
+                .title("Group Invitation")
+                .message(inviterDisplay + " invited you to join group: " + g.getName())
+                .type("SYSTEM")
+                .referenceId(saved.getId().intValue())
+                .referenceType("chat_group_invite")
+                .build();
+        notificationService.createNotificationResponse(req, userId);
+        userRepository.findById(userId).map(User::getEmail).ifPresent(email -> sendGroupInviteEmailSafely(email, g.getName(), groupId, userId));
+    }
+
+
+    public java.util.List<ChatGroupInviteResponse> listPendingInvites(Long userId) {
+        return chatGroupInviteRepository.findByInviteeUserIdAndStatusOrderByUpdatedAtDesc(userId, "PENDING").stream()
+                .map(i -> new ChatGroupInviteResponse(i.getId(), i.getGroupId(), i.getInviterUserId(), i.getInviteeUserId(), i.getStatus(), i.getUpdatedAt()))
+                .collect(Collectors.toList());
+    }
+
+    public long pendingInviteBadgeCount(Long userId) {
+        long received = chatGroupInviteRepository.countByInviteeUserIdAndStatus(userId, "PENDING");
+        long sent = chatGroupInviteRepository.countByInviterUserIdAndStatus(userId, "PENDING");
+        return received + sent;
+    }
+
+    public void acceptInvite(Long userId, Long inviteId) {
+        ChatGroupInvite invite = chatGroupInviteRepository.findByIdAndInviteeUserId(inviteId, userId)
+                .orElseThrow(() -> new RuntimeException("Invite not found"));
+        if (!"PENDING".equalsIgnoreCase(invite.getStatus())) {
+            throw new RuntimeException("Invite already processed");
+        }
+        if (chatGroupMemberRepository.findByGroupIdAndUserId(invite.getGroupId(), userId).isEmpty()) {
+            ChatGroupMember m = new ChatGroupMember();
+            m.setGroupId(invite.getGroupId());
+            m.setUserId(userId);
+            m.setRole("MEMBER");
+            chatGroupMemberRepository.save(m);
+        }
+        invite.setStatus("ACCEPTED");
+        chatGroupInviteRepository.save(invite);
+
+        ChatGroup g = chatGroupRepository.findById(invite.getGroupId()).orElseThrow(() -> new RuntimeException("Group not found"));
+        String memberName = userRepository.findById(userId)
+                .map(u -> (u.getFullName() != null && !u.getFullName().isBlank()) ? u.getFullName() : u.getUsername())
+                .orElse("A member");
+        NotificationCreateRequest req = NotificationCreateRequest.builder()
+                .userId(g.getOwnerUserId())
+                .title("Invitation Accepted")
+                .message(memberName + " accepted invitation to group: " + g.getName())
+                .type("SYSTEM")
+                .referenceId(invite.getId().intValue())
+                .referenceType("chat_group_invite")
+                .build();
+        notificationService.createNotificationResponse(req, g.getOwnerUserId());
+        String memberEmail = userRepository.findById(userId).map(User::getEmail).orElse("member");
+        userRepository.findById(g.getOwnerUserId()).map(User::getEmail).ifPresent(email -> sendInviteAcceptedEmailSafely(email, g.getName(), memberEmail, invite.getId()));
+    }
+
+
+    public void addMemberByEmail(Long ownerUserId, Long groupId, String email) {
+        if (email == null || email.isBlank()) throw new AppException("Email is required", HttpStatus.BAD_REQUEST);
+        Long userId = userRepository.findByEmail(email.trim().toLowerCase())
+                .map(u -> u.getId())
+                .orElseThrow(() -> new AppException("No account found with this email", HttpStatus.NOT_FOUND));
+        addMember(ownerUserId, groupId, userId);
+    }
+
+    @Transactional
+    public void removeMember(Long ownerUserId, Long groupId, Long userId) {
+        requireGroupOwner(ownerUserId, groupId);
+        ChatGroup g = chatGroupRepository.findById(groupId).orElseThrow(() -> new RuntimeException("Group not found"));
+        if (g.getOwnerUserId().equals(userId)) throw new RuntimeException("Cannot remove owner");
+        chatGroupMemberRepository.deleteByGroupIdAndUserId(groupId, userId);
+    }
+
+    @Transactional
+    public void deleteGroup(Long ownerUserId, Long groupId) {
+        requireGroupOwner(ownerUserId, groupId);
+        chatConversationRepository.findByGroupIdOrderByUpdatedAtDesc(groupId).forEach(c -> chatMessageRepository.deleteByConversationId(c.getId()));
+        chatConversationRepository.findByGroupIdOrderByUpdatedAtDesc(groupId).forEach(chatConversationRepository::delete);
+        chatGroupMemberRepository.deleteByGroupId(groupId);
+        chatGroupRepository.deleteById(groupId);
+    }
+
+    public List<ChatConversationResponse> listGroupConversations(Long userId, Long groupId) {
+        requireGroupMember(userId, groupId);
+        return chatConversationRepository.findByGroupIdOrderByUpdatedAtDesc(groupId).stream()
+                .map(c -> new ChatConversationResponse(c.getId(), c.getTitle(), c.getUpdatedAt()))
+                .collect(Collectors.toList());
+    }
+
+    public ChatMessageResponse editMessage(Long userId, Long messageId, String content) {
+        ChatMessage msg = chatMessageRepository.findById(messageId).orElseThrow(() -> new RuntimeException("Message not found"));
+        ChatConversation c = chatConversationRepository.findById(msg.getConversationId()).orElseThrow(() -> new RuntimeException("Conversation not found"));
+        assertCanAccessConversation(userId, c);
+        if (!msg.getUserId().equals(userId) && !isGroupOwner(userId, c.getGroupId())) {
+            throw new RuntimeException("No permission to edit this message");
+        }
+        msg.setContent(sanitize(content));
+        ChatMessage saved = chatMessageRepository.save(msg);
+        return new ChatMessageResponse(
+                saved.getRole(),
+                saved.getContent(),
+                saved.getUserId(),
+                userRepository.findById(saved.getUserId())
+                        .map(u -> (u.getFullName() != null && !u.getFullName().isBlank()) ? u.getFullName() : u.getUsername())
+                        .orElse("Unknown"),
+                saved.getCreatedAt()
+        );
+    }
+
+    private void requireConversationAccess(Long userId, Long conversationId) {
+        ChatConversation c = chatConversationRepository.findById(conversationId).orElseThrow(() -> new RuntimeException("Conversation not found"));
+        assertCanAccessConversation(userId, c);
+    }
+
+    private void assertCanAccessConversation(Long userId, ChatConversation c) {
+        if (c.getGroupId() != null) {
+            requireGroupMember(userId, c.getGroupId());
+            return;
+        }
+        if (!c.getUserId().equals(userId)) throw new RuntimeException("Forbidden");
+    }
+
+    private void requireGroupMember(Long userId, Long groupId) {
+        chatGroupMemberRepository.findByGroupIdAndUserId(groupId, userId).orElseThrow(() -> new RuntimeException("Not a group member"));
+    }
+
+    private void requireGroupOwner(Long userId, Long groupId) {
+        if (!isGroupOwner(userId, groupId)) throw new RuntimeException("Only owner can do this action");
+    }
+
+    private boolean isGroupOwner(Long userId, Long groupId) {
+        if (groupId == null) return false;
+        return chatGroupMemberRepository.findByGroupIdAndUserId(groupId, userId)
+                .map(m -> "OWNER".equalsIgnoreCase(m.getRole()))
+                .orElse(false);
+    }
+
+    private String roleOf(Long userId, Long groupId) {
+        return chatGroupMemberRepository.findByGroupIdAndUserId(groupId, userId).map(ChatGroupMember::getRole).orElse("MEMBER");
+    }
+
+    private String sanitizeTitle(String input) {
+        String t = sanitize(input);
+        if (t.isBlank()) return "New chat";
+        return t.length() > 80 ? t.substring(0, 80) : t;
+    }
+
+    private String sanitizeProjectName(String input) {
+        String t = sanitize(input);
+        if (t.isBlank()) return "New project";
+        return t.length() > 60 ? t.substring(0, 60) : t;
+    }
+
+    private String deriveTitleFromFirstMessage(String message) {
+        String t = sanitize(message).replaceAll("\\s+", " ").trim();
+        if (t.isBlank()) return "New chat";
+        return t.length() > 60 ? t.substring(0, 60) : t;
+    }
+
+    private boolean isGenericTitle(String title) {
+        if (title == null) return true;
+        String t = title.trim().toLowerCase();
+        return t.isBlank() || t.equals("general") || t.equals("new chat") || t.matches("chat\\s*\\d+");
     }
 
     private String fallbackReply(String message) {
@@ -731,6 +1068,37 @@ public class ChatbotService {
         }
     }
 
+    public String translateText(String text, String targetLang) {
+        String target = (targetLang == null || targetLang.isBlank()) ? properties.getDefaultVoiceLang() : targetLang.trim().toLowerCase();
+        String prompt = "Translate to " + ("vi".equals(target) ? "Vietnamese" : "English") + ":\n" + sanitize(text);
+        String result = callLlm(prompt, "");
+        return result == null || result.isBlank() ? sanitize(text) : result.trim();
+    }
+
+    public String transcribeAudio(MultipartFile file) {
+        // Local-only baseline: browser Web Speech handles STT on client; backend keeps upload flow consistent.
+        return "[Local STT] Audio received: " + file.getOriginalFilename() + ". Use browser mic recognition to transcribe in real time.";
+    }
+
+    public String readFileAndAnswer(MultipartFile file, String question) {
+        try {
+            String name = file.getOriginalFilename() == null ? "file" : file.getOriginalFilename().toLowerCase();
+            String text;
+            if (name.endsWith(".txt") || name.endsWith(".md") || name.endsWith(".log") || name.endsWith(".csv") || name.endsWith(".json") || name.endsWith(".xml") || name.endsWith(".yml") || name.endsWith(".yaml")) {
+                text = new String(file.getBytes(), StandardCharsets.UTF_8);
+            } else {
+                return "Current local mode supports text-like files (.txt, .md, .json, .xml, .yml, .csv, .log).";
+            }
+            if (text.length() > 12000) text = text.substring(0, 12000);
+            String q = (question == null || question.isBlank()) ? "Summarize this file." : question;
+            String prompt = q + "\n\nFile content:\n" + text;
+            String out = callLlm(prompt, "");
+            return out == null || out.isBlank() ? "Cannot process file right now." : out;
+        } catch (Exception ex) {
+            return "Cannot process file right now.";
+        }
+    }
+
     private String parseLlmReply(Map<?, ?> response) {
         if (response == null) {
             return null;
@@ -760,6 +1128,59 @@ public class ChatbotService {
         }
     }
 
+    public java.util.List<com.minzetsu.ecommerce.chatbot.dto.ChatGroupMemberResponse> listGroupMembers(Long userId, Long groupId) {
+        requireGroupMember(userId, groupId);
+        return chatGroupMemberRepository.findByGroupId(groupId).stream()
+                .map(m -> userRepository.findById(m.getUserId())
+                        .map(u -> new com.minzetsu.ecommerce.chatbot.dto.ChatGroupMemberResponse(
+                                u.getId(),
+                                u.getUsername(),
+                                u.getFullName(),
+                                m.getRole()
+                        ))
+                        .orElse(null))
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void declineInvite(Long userId, Long inviteId) {
+        ChatGroupInvite invite = chatGroupInviteRepository.findByIdAndInviteeUserId(inviteId, userId)
+                .orElseThrow(() -> new RuntimeException("Invite not found"));
+        if (!"PENDING".equalsIgnoreCase(invite.getStatus())) {
+            throw new RuntimeException("Invite already processed");
+        }
+        invite.setStatus("DECLINED");
+        chatGroupInviteRepository.save(invite);
+    }
+
+    private void sendGroupInviteEmailSafely(String inviteeEmail, String groupName, Long groupId, Long inviteeUserId) {
+        try {
+            emailService.sendGroupInviteMail(inviteeEmail, groupName);
+        } catch (Exception ex) {
+            log.warn(
+                    "Group invite email failed (groupId={}, inviteeUserId={}, email={}): {}",
+                    groupId,
+                    inviteeUserId,
+                    inviteeEmail,
+                    ex.getMessage()
+            );
+        }
+    }
+
+    private void sendInviteAcceptedEmailSafely(String ownerEmail, String groupName, String memberEmail, Long inviteId) {
+        try {
+            emailService.sendInviteAcceptedMail(ownerEmail, groupName, memberEmail);
+        } catch (Exception ex) {
+            log.warn(
+                    "Invite accepted email failed (inviteId={}, ownerEmail={}): {}",
+                    inviteId,
+                    ownerEmail,
+                    ex.getMessage()
+            );
+        }
+    }
+
     private void saveMessage(Long userId, Long conversationId, String role, String content) {
         ChatMessage msg = new ChatMessage();
         msg.setUserId(userId);
@@ -770,6 +1191,9 @@ public class ChatbotService {
 
         if (conversationId != null) {
             chatConversationRepository.findById(conversationId).ifPresent(c -> {
+                if ("user".equals(role) && isGenericTitle(c.getTitle())) {
+                    c.setTitle(deriveTitleFromFirstMessage(content));
+                }
                 c.setUpdatedAt(LocalDateTime.now());
                 chatConversationRepository.save(c);
             });

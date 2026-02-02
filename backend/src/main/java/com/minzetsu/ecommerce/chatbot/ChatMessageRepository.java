@@ -17,8 +17,13 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     void deleteByUserId(Long userId);
 
     Page<ChatMessage> findByUserIdAndConversationIdOrderByCreatedAtDesc(Long userId, Long conversationId, Pageable pageable);
+    Page<ChatMessage> findByConversationIdOrderByCreatedAtDesc(Long conversationId, Pageable pageable);
 
     @Modifying
     @Transactional
     void deleteByUserIdAndConversationId(Long userId, Long conversationId);
+
+    @Modifying
+    @Transactional
+    void deleteByConversationId(Long conversationId);
 }
