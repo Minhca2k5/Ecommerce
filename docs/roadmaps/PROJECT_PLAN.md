@@ -98,6 +98,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 ## Phase 4: Advanced Features & Integrations
 **Status: Completed**
 **Focus:** Integrations + realtime + search; introduce messaging and event-driven flows.
+**Finalization Note:** HTTP caching policy for public APIs is finalized (fresh reviews/ratings + efficient cache for stable endpoints), and chatbot microphone flow is finalized to voice-to-chat response mode.
 
 *   [x] **Payment Gateway Integration**:
     *   Integrate VNPay / Momo / Stripe / PayPal.
