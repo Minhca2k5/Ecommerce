@@ -23,7 +23,6 @@ import {
   removeChatGroupMember,
   renameChatConversation,
   sendChatMessageToConversation,
-  translateVoiceText,
   uploadChatFile,
   type ChatConversation,
   type ChatGroup,
@@ -316,13 +315,30 @@ export default function ChatbotWidget() {
     rec.onresult = async (event: any) => {
       const transcript = event?.results?.[0]?.[0]?.transcript ?? "";
       if (!transcript) return;
-      setMessage(transcript);
+      if (sendingRef.current || !activeConversationId) {
+        setMessage(transcript);
+        return;
+      }
+      sendingRef.current = true;
+      setIsSending(true);
       setItems((prev) => [...prev, { role: "user", content: transcript }]);
       try {
-        const translated = await translateVoiceText(transcript, "vi");
-        setItems((prev) => [...prev, { role: "assistant", content: `Translated (VI): ${translated.text}` }]);
-      } catch {
-        // ignore
+        const res = await sendChatMessageToConversation(
+          transcript,
+          activeConversationId,
+          scope === "group" ? activeGroupId ?? undefined : undefined,
+        );
+        setItems((prev) => [...prev, { role: "assistant", content: res.reply }]);
+        setConversations((prev) =>
+          prev.map((c) => (c.id === activeConversationId ? { ...c, updatedAt: new Date().toISOString() } : c)),
+        );
+        setMessage("");
+      } catch (e) {
+        toast.push({ variant: "error", title: "Chatbot error", message: getErrorMessage(e, "Please try again.") });
+        setMessage(transcript);
+      } finally {
+        setIsSending(false);
+        sendingRef.current = false;
       }
     };
     rec.start();
