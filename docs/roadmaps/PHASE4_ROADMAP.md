@@ -22,6 +22,7 @@ Guiding principles:
 - Chatbot is LLM-backed with RAG (project + DB context), conversation/workspace management, practical multimodal I/O, and guardrails + logs.
 - Anonymous cart works for guests and merges safely on login.
 - Inventory reservations expire and release stock automatically.
+- Public APIs include HTTP caching semantics (Cache-Control/ETag + conditional GET).
 
 ---
 
@@ -147,21 +148,36 @@ Checkpoint:
 
 ---
 
-## 7) Phase 4 Review (P4-M7)
+## 7) HTTP Caching for Public APIs (P4-M7)
+### 7.1 Cache header strategy
+- Add Cache-Control policy by endpoint type (home/list/detail/category).
+- Return ETag for cacheable public responses.
+
+### 7.2 Conditional GET
+- Support If-None-Match and return 304 Not Modified when ETag matches.
+- Keep behavior safe with existing Redis cache invalidation on product/category/banner/review updates.
+
+Checkpoint:
+- Repeat reads on public endpoints return 304 when unchanged and preserve correctness after writes.
+
+---
+
+## 8) Phase 4 Review (P4-M8)
 - Payment flows: success/fail/cancel + idempotency proof.
 - Broker: events + retry/DLQ evidence.
 - Search: precision/recall + fallback test.
 - Realtime: WS/SSE verified.
 - Chatbot: RAG demo + logs + workspace/conversation CRUD + multimodal demo.
+- HTTP cache: headers + conditional GET evidence.
 
 ---
 
-## 8) Anonymous Cart + Merge on Login (P4-M8)
-### 8.1 Guest cart
+## 9) Anonymous Cart + Merge on Login (P4-M9)
+### 9.1 Guest cart
 - Persist guest cart by device/session (cookie or local storage with server sync).
 - Support add/remove/update for guest users.
 
-### 8.2 Merge rules
+### 9.2 Merge rules
 - On login, merge guest cart into user cart.
 - Resolve conflicts (same SKU -> sum quantity, cap by inventory).
 
@@ -170,14 +186,16 @@ Checkpoint:
 
 ---
 
-## 9) Inventory Reservation TTL + Release (P4-M9)
-### 9.1 Reservation
+## 10) Inventory Reservation TTL + Release (P4-M10)
+### 10.1 Reservation
 - Reserve stock at checkout with TTL.
 - Record reservation metadata (orderId, sku, qty, expiresAt).
 
-### 9.2 Release flow
+### 10.2 Release flow
 - Auto-release on TTL expiry or payment failure.
 - Release on manual cancel.
 
 Checkpoint:
 - Stock is restored after TTL or failed payment.
+
+

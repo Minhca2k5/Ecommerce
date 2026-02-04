@@ -140,10 +140,14 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [x] **Inventory Reservation TTL + Release**:
     *   Reserve stock during checkout with expiration.
     *   Release inventory on timeout/cancel/fail.
+*   [x] **HTTP Caching for Public APIs**:
+    *   Add Cache-Control/ETag for home, product list/detail, and category public endpoints.
+    *   Apply conditional GET (If-None-Match) to reduce payload and improve repeat-read latency.
 *   [x] **Phase 4 Review**:
     *   Sandbox Testing: Verify payment flows (Success/Failure/Cancel).
     *   Verify search accuracy and relevance.
     *   Verify event delivery + retry/DLQ behavior.
+    *   Verify HTTP caching behavior (cache headers + 304 responses).
 
 ## Phase 5: Advanced Data & Quality
 **Status: Pending**
@@ -212,3 +216,4 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [ ] **Cost & Capacity Observability**:
     *   Cost dashboards/alerts for Redis, Elasticsearch, broker, and outbound integrations.
     *   Capacity thresholds + autoscaling trigger runbooks.
+
