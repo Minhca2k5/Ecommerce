@@ -183,9 +183,16 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Migration rehearsal on production-like data volume.
 *   [ ] **API Documentation**:
     *   Finalize Swagger/OpenAPI + examples + error model.
+*   [ ] **Service Level Objectives & Reliability Policy**:
+    *   Define production SLI/SLO/SLA per critical flow (auth, checkout, payment callback, order status).
+    *   Error budget policy + on-call alert thresholds + escalation matrix.
+*   [ ] **Architecture Decision Records (ADR)**:
+    *   Capture monolith-first decision, service boundaries, and criteria to split to microservices.
+    *   Map decisions to current constraints (team size, ops overhead, delivery speed).
 *   [ ] **Phase 5 Review**:
     *   Data reliability report (backup/restore, replication checks).
     *   Test coverage summary.
+    *   SLO/SLA and ADR documents approved and versioned.
 
 ## Phase 6: DevOps, Observability & Scale
 **Status: Pending**
@@ -199,6 +206,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Staging deploy + smoke tests, then promote to production.
     *   Blue-green or canary strategy.
     *   Release gates: migration check, API contract check, security scan check.
+    *   Add lightweight periodic load test on staging to catch latency regressions before production.
 *   [ ] **Observability Stack**:
     *   Centralized logging (ELK/Loki).
     *   Metrics monitoring (Prometheus + Grafana).
@@ -209,6 +217,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Horizontal scaling, load balancer, autoscaling (optional).
     *   Rate limiting + backpressure validation under load.
     *   Disaster recovery drill (RTO/RPO targets), backup verification, rollback playbook.
+    *   Incident runbook for cache outage, broker outage, payment webhook delay/failure, and DB failover.
 *   [ ] **Experimentation**:
     *   Feature flags + A/B testing rollout support.
 *   [ ] **Secrets & Environments**:
@@ -216,4 +225,6 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [ ] **Cost & Capacity Observability**:
     *   Cost dashboards/alerts for Redis, Elasticsearch, broker, and outbound integrations.
     *   Capacity thresholds + autoscaling trigger runbooks.
+
+
 
