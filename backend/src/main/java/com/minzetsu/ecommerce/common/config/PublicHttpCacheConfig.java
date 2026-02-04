@@ -50,6 +50,14 @@ public class PublicHttpCacheConfig {
                     response.setHeader("Cache-Control", "public, max-age=60, must-revalidate");
                     return;
                 }
+                if (uri.matches("^/api/public/products/[^/]+/reviews$")) {
+                    response.setHeader("Cache-Control", "no-store");
+                    return;
+                }
+                if (uri.matches("^/api/public/products/[^/]+$") || uri.matches("^/api/public/products/slug/[^/]+$")) {
+                    response.setHeader("Cache-Control", "no-cache, must-revalidate");
+                    return;
+                }
                 if (uri.startsWith("/api/public/products") || uri.startsWith("/api/public/categories")) {
                     response.setHeader("Cache-Control", "public, max-age=120, must-revalidate");
                 }
