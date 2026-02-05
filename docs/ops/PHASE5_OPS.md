@@ -1,5 +1,7 @@
 # Phase 5 Ops
 
+Status: Active (operations baseline completed for M1-M8; testing evidence to be finalized in Phase 5 test milestone)
+
 ## Objective
 Operate Phase 5 with production-readiness focus:
 - reliability runbooks

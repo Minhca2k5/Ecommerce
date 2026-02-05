@@ -1,9 +1,9 @@
 # E-commerce System (Phase 5)
 
 > **Branch:** `phase5`  
-> **Status:** Phase 5 In Progress (Reliability + Ops Hardening)  
+> **Status:** Phase 5 In Progress (M0-M8 done, testing milestone pending)  
 > **Author:** Phan Dinh Minh (Minzetsu)  
-> **Last Updated:** February 2, 2026
+> **Last Updated:** February 5, 2026
 
 ## Overview
 This repository is an end-to-end E-commerce system:

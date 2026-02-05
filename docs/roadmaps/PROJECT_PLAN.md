@@ -151,22 +151,23 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Verify HTTP caching behavior (cache headers + 304 responses).
 
 ## Phase 5: Advanced Data & Quality
-**Status: Pending**
+**Status: In Progress (Feature Track Done, Testing Pending)**
 **Focus:** Deepen database capabilities + testing + reliability.
 
-*   [ ] **Advanced Database**:
+*   [x] **Advanced Database**:
     *   Isolation levels, lock analysis, deadlock handling.
     *   Replication (read replica) + read/write split (optional).
     *   Backup/restore drill and data retention policy.
-*   [ ] **Audit Log Hardening**:
+*   [x] **Audit Log Hardening**:
     *   Retention policy (TTL/archive) + scheduled cleanup.
     *   Mask sensitive fields (PII/token/password) in logs.
     *   Admin audit log search/viewer endpoint + filters.
-*   [ ] **NoSQL Expansion**:
+*   [x] **NoSQL Expansion**:
     *   Redis advanced usage (streams/pubsub).
     *   One document DB (MongoDB) for logs/analytics (optional).
-*   [ ] **Checkout Enhancements**:
+*   [x] **Checkout Enhancements**:
     *   Guest checkout (no account required).
+    *   Guest secure re-open flow (access token + guest order page + guest MoMo path).
     *   Fraud/abuse detection (basic rules).
     *   Multi-currency + tax/shipping rules.
 *   [ ] **Testing Suite**:
@@ -175,19 +176,19 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   E2E tests (Playwright/Cypress): register/login, browse/search, cart, checkout, admin flows.
     *   API contract tests (consumer/provider) to keep frontend-backend schema aligned.
     *   Security tests: auth bypass, rate-limit abuse, OTP brute-force, token misuse scenarios.
-*   [ ] **Security & Supply Chain Quality**:
+*   [x] **Security & Supply Chain Quality**:
     *   SAST + dependency vulnerability scanning (OWASP/dependency-check style).
     *   Secret scanning in CI and commit hooks.
     *   DAST smoke checks for public endpoints.
-*   [ ] **Migration Safety**:
+*   [x] **Migration Safety**:
     *   Liquibase rollback strategy per release.
     *   Migration rehearsal on production-like data volume.
-*   [ ] **API Documentation**:
+*   [x] **API Documentation**:
     *   Finalize Swagger/OpenAPI + examples + error model.
-*   [ ] **Service Level Objectives & Reliability Policy**:
+*   [x] **Service Level Objectives & Reliability Policy**:
     *   Define production SLI/SLO/SLA per critical flow (auth, checkout, payment callback, order status).
     *   Error budget policy + on-call alert thresholds + escalation matrix.
-*   [ ] **Architecture Decision Records (ADR)**:
+*   [x] **Architecture Decision Records (ADR)**:
     *   Capture monolith-first decision, service boundaries, and criteria to split to microservices.
     *   Map decisions to current constraints (team size, ops overhead, delivery speed).
 *   [ ] **Phase 5 Review**:

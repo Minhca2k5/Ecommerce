@@ -1,6 +1,6 @@
 # Phase 5 Roadmap: Advanced Data, Quality, and Reliability
 
-Status: Planned
+Status: In Progress (M0-M8 implemented, M9 testing pending)
 
 Goal: complete the remaining core capabilities for data safety, security quality, and operational reliability, then execute testing as the final milestone before Phase 6.
 
@@ -9,6 +9,10 @@ Guiding principles:
 - Keep backward compatibility for current APIs and data flows.
 - Every milestone must have rollout/rollback notes.
 - Prefer pragmatic scope over adding new technologies.
+
+Progress snapshot (2026-02-05):
+- Completed: P5-M0 to P5-M8 implementation/docs track.
+- In progress: P5-M9 testing suite (kept as final milestone by plan).
 
 ---
 
