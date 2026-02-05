@@ -59,6 +59,7 @@ Checkpoint:
 ## 2) Audit Log Hardening (P5-M2)
 ### 2.1 Retention and cleanup
 - Add TTL/archive policy and scheduled cleanup job.
+- Deliverable doc: `docs/ops/P5_M2_1_AUDIT_LOG_RETENTION.md`.
 
 ### 2.2 Sensitive data protection
 - Mask PII/token/password fields in logs and audit payloads.
