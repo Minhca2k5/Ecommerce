@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+set -eu
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "gitleaks is required for pre-push. Install: https://github.com/gitleaks/gitleaks"
+  exit 1
+fi
+
+if git rev-parse --verify origin/main >/dev/null 2>&1; then
+  gitleaks detect --redact --verbose --log-opts "origin/main..HEAD"
+else
+  gitleaks detect --redact --verbose --source .
+fi
