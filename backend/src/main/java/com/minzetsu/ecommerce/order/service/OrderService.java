@@ -22,5 +22,6 @@ public interface OrderService {
     List<OrderResponse> getOrderResponsesByUserId(Long userId);
     OrderResponse getFullOrderResponseByIdAndUserId(Long id, Long userId);
     OrderResponse createOrderResponse(OrderRequest request, Long userId, String idempotencyKey);
+    OrderResponse createGuestOrderResponse(OrderRequest request, String guestId, String idempotencyKey);
     BigDecimal getDisCountAmount(OrderRequest request, Long userId);
 }

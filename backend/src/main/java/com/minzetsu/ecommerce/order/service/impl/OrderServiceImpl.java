@@ -5,6 +5,7 @@ import com.minzetsu.ecommerce.cart.service.CartItemService;
 import com.minzetsu.ecommerce.cart.service.CartService;
 import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.utils.DatabaseRetryExecutor;
+import com.minzetsu.ecommerce.order.config.GuestCheckoutProperties;
 import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
 import com.minzetsu.ecommerce.messaging.DomainEventType;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
@@ -26,6 +27,7 @@ import com.minzetsu.ecommerce.order.repository.OrderItemRepository;
 import com.minzetsu.ecommerce.order.repository.OrderRepository;
 import com.minzetsu.ecommerce.order.repository.OrderSpecification;
 import com.minzetsu.ecommerce.order.service.CreateOrderItemsService;
+import com.minzetsu.ecommerce.order.service.GuestCheckoutIdentityService;
 import com.minzetsu.ecommerce.order.service.OrderService;
 import com.minzetsu.ecommerce.product.entity.ProductStatus;
 import com.minzetsu.ecommerce.promotion.entity.Voucher;
@@ -67,6 +69,8 @@ public class OrderServiceImpl implements OrderService {
     private final SseEmitterService sseEmitterService;
     private final DatabaseRetryExecutor databaseRetryExecutor;
     private final PlatformTransactionManager transactionManager;
+    private final GuestCheckoutIdentityService guestCheckoutIdentityService;
+    private final GuestCheckoutProperties guestCheckoutProperties;
 
     private Order getExistingOrder(Long id) {
         return orderRepository.findById(id)
@@ -231,7 +235,31 @@ public class OrderServiceImpl implements OrderService {
                         userId,
                         "ORDER",
                         id -> getFullOrderResponseByIdAndUserId(id, userId),
-                        () -> createOrderInternal(request, userId),
+                        () -> createOrderInternal(request, userId, false, null),
+                        OrderResponse::getId
+                ))
+        );
+    }
+
+    @Override
+    @AuditAction(action = "GUEST_ORDER_CREATED", entityType = "ORDER")
+    public OrderResponse createGuestOrderResponse(OrderRequest request, String guestId, String idempotencyKey) {
+        if (!guestCheckoutProperties.isEnabled()) {
+            throw new UnAuthorizedException("Guest checkout is disabled");
+        }
+        Long guestUserId = guestCheckoutIdentityService.resolveGuestCheckoutUserId();
+        Long guestCartId = cartService.getCartByGuestId(guestId).getId();
+        request.setCartId(guestCartId);
+
+        return databaseRetryExecutor.execute(
+                "guest-order-create",
+                () -> withWriteTransaction(() -> idempotencyService.execute(
+                        idempotencyKey,
+                        "GUEST_ORDER_CREATE",
+                        guestUserId,
+                        "ORDER",
+                        id -> getFullOrderResponseByIdAndUserId(id, guestUserId),
+                        () -> createOrderInternal(request, guestUserId, true, guestId),
                         OrderResponse::getId
                 ))
         );
@@ -243,8 +271,8 @@ public class OrderServiceImpl implements OrderService {
         return template.execute(status -> supplier.get());
     }
 
-    private OrderResponse createOrderInternal(OrderRequest request, Long userId) {
-        Map<String, BigDecimal> totals = handleVoucherDiscount(request, userId);
+    private OrderResponse createOrderInternal(OrderRequest request, Long userId, boolean guestCheckout, String guestId) {
+        Map<String, BigDecimal> totals = handleVoucherDiscount(request, userId, guestCheckout, guestId);
         User user = userService.getUserById(userId);
         Order order = orderMapper.toEntity(request);
         order.setUser(user);
@@ -267,14 +295,25 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public BigDecimal getDisCountAmount(OrderRequest request, Long userId) {
-        return handleVoucherDiscount(request, userId).get("discountAmount");
+        return handleVoucherDiscount(request, userId, false, null).get("discountAmount");
     }
 
-    private Map<String, BigDecimal> handleVoucherDiscount(OrderRequest request, Long userId) {
-        request.setUserId(userId);
-        Long cartId = cartService.getCartByUserId(userId).getId();
-        request.setCartId(cartId);
+    private Map<String, BigDecimal> handleVoucherDiscount(OrderRequest request, Long userId, boolean guestCheckout, String guestId) {
+        Long cartId = request.getCartId();
+        if (cartId == null) {
+            throw new NotFoundException("Cart ID is required");
+        }
         validateUserAndCart(userId, cartId);
+        var cart = cartService.getCartById(cartId);
+        if (guestCheckout) {
+            if (cart.getGuestId() == null || !cart.getGuestId().equals(guestId)) {
+                throw new UnAuthorizedException("Guest cart does not match checkout guest id");
+            }
+        } else {
+            if (cart.getUser() == null || !cart.getUser().getId().equals(userId)) {
+                throw new UnAuthorizedException("Cart does not belong to current user");
+            }
+        }
         List<CartItem> cartItems = cartItemService.getCartItemsByActiveProductTrueAndCartId(cartId, ProductStatus.ACTIVE);
         BigDecimal shippingFee = request.getShippingFee();
         return calculateTotalAmount(cartItems, shippingFee, request.getVoucherId());

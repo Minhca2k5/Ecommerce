@@ -92,6 +92,7 @@ Checkpoint:
 ## 4) Checkout Enhancements (P5-M4)
 ### 4.1 Guest checkout
 - Support checkout without account while preserving fraud/rate controls.
+- Deliverable doc: `docs/ops/P5_M4_1_GUEST_CHECKOUT.md`.
 
 ### 4.2 Fraud/abuse baseline
 - Add rules for suspicious retry bursts / repeated failed attempts.
