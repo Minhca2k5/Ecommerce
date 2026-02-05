@@ -173,7 +173,7 @@ export default function AppLayout() {
                       setIsMenuOpen(false);
                       setIsNotifOpen((v) => !v);
                     }}
-                    className="relative rounded-full px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground ring-1 ring-transparent hover:ring-primary/10"
+                    className="relative cursor-pointer rounded-full px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground ring-1 ring-transparent hover:ring-primary/10"
                     aria-label="Notifications"
                   >
                     <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
@@ -196,7 +196,7 @@ export default function AppLayout() {
                         <div className="text-sm font-medium">Notifications</div>
                         <button
                           type="button"
-                          className="rounded-lg px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                          className="cursor-pointer rounded-lg px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
                           onClick={() => notifications.markAllRead()}
                         >
                           Mark all read
@@ -207,7 +207,7 @@ export default function AppLayout() {
                           <div
                             key={String(n.id)}
                             className={[
-                              "w-full px-3 py-3 text-left transition hover:bg-muted",
+                              "w-full cursor-pointer px-3 py-3 text-left transition hover:bg-muted",
                               n.isRead ? "bg-rose-500/10" : "bg-emerald-500/10",
                             ].join(" ")}
                             onClick={() => {
@@ -238,7 +238,7 @@ export default function AppLayout() {
                               <div className="mt-2 flex gap-1">
                                 <button
                                   type="button"
-                                  className="rounded border px-2 py-1 text-[11px]"
+                                  className="cursor-pointer rounded border px-2 py-1 text-[11px]"
                                   onClick={async (e) => {
                                     e.stopPropagation();
                                     try {
@@ -255,7 +255,7 @@ export default function AppLayout() {
                                 </button>
                                 <button
                                   type="button"
-                                  className="rounded border px-2 py-1 text-[11px] text-red-500"
+                                  className="cursor-pointer rounded border px-2 py-1 text-[11px] text-red-500"
                                   onClick={async (e) => {
                                     e.stopPropagation();
                                     try {
@@ -281,7 +281,7 @@ export default function AppLayout() {
                       <div className="border-t p-2">
                         <button
                           type="button"
-                          className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                          className="w-full cursor-pointer rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                           onClick={() => {
                             setIsNotifOpen(false);
                             navigate("/notifications");
