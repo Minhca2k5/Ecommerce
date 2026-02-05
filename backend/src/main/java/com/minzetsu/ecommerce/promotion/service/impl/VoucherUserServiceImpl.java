@@ -91,4 +91,10 @@ public class VoucherUserServiceImpl implements VoucherUseService {
         Page<VoucherUse> voucherUses = voucherUseRepository.findByVoucherIdAndUserId(voucherId, userId, pageable);
         return voucherUses.map(voucherUseMapper::toResponse);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByOrderId(Long orderId) {
+        return voucherUseRepository.existsByOrderId(orderId);
+    }
 }

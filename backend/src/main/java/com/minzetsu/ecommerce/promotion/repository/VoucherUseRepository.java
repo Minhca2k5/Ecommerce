@@ -19,4 +19,5 @@ public interface VoucherUseRepository extends JpaRepository<VoucherUse, Long>, J
     Page<VoucherUse> findByVoucherIdAndUserId(Long voucherId, Long userId, Pageable pageable);
     Integer countByVoucherIdAndUserId(Long voucherId, Long userId);
     Integer countByVoucherId(Long voucherId);
+    boolean existsByOrderId(Long orderId);
 }

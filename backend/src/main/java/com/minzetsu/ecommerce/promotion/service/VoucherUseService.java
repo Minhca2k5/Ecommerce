@@ -15,4 +15,5 @@ public interface VoucherUseService {
     Page<VoucherUseResponse> searchVoucherUseResponses(VoucherUseFilter filter, Pageable pageable);
     Page<VoucherUseResponse> getVoucherUseResponseByOrderIdAndUserId(Long orderId, Long userId, Pageable pageable);
     Page<VoucherUseResponse> getVoucherUseResponseByVoucherIdAndUserId(Long voucherId, Long userId, Pageable pageable);
+    boolean existsByOrderId(Long orderId);
 }

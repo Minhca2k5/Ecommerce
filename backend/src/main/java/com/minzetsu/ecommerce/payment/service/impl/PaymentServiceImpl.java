@@ -186,9 +186,12 @@ public class PaymentServiceImpl implements PaymentService {
         ));
         domainEventPublisher.publish(DomainEventType.PAYMENT_CREATED, savedPayment.getId(), userId, Map.of());
         notifyPaymentCreated(savedPayment, userId);
-        Long voucherId = request.getVoucherId();
-        BigDecimal discountAmount = request.getDiscountAmount();
-        if (voucherId != null && discountAmount != null) {
+        Long voucherId = order.getVoucher() != null ? order.getVoucher().getId() : null;
+        BigDecimal discountAmount = order.getDiscountAmount();
+        if (voucherId != null
+                && discountAmount != null
+                && discountAmount.compareTo(BigDecimal.ZERO) > 0
+                && !voucherUseService.existsByOrderId(orderId)) {
             voucherUseService.createVoucherUse(voucherId, userId, orderId, discountAmount);
         }
         return paymentMapper.toResponse(savedPayment);
