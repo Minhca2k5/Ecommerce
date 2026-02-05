@@ -104,16 +104,17 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal subtotalVnd = cartItems.stream()
                 .map(item -> item.getUnitPriceSnapshot().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal discountVnd = calculateDiscountAmount(subtotalVnd, request.getVoucherId());
-        BigDecimal subtotal = convertCurrency(subtotalVnd, rate);
-        BigDecimal discount = convertCurrency(discountVnd, rate);
-
         BigDecimal shipping = request.getShippingFee();
         if (shipping == null) {
             shipping = checkoutPricingProperties.getShippingFlatFees()
                     .getOrDefault(currency, BigDecimal.ZERO);
         }
         shipping = shipping.max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal shippingVnd = shipping.divide(rate, 2, RoundingMode.HALF_UP);
+
+        BigDecimal discountVnd = calculateDiscountAmount(subtotalVnd, shippingVnd, request.getVoucherId());
+        BigDecimal subtotal = convertCurrency(subtotalVnd, rate);
+        BigDecimal discount = convertCurrency(discountVnd, rate);
 
         BigDecimal taxRate = checkoutPricingProperties.getTaxRates().getOrDefault(currency, BigDecimal.ZERO);
         BigDecimal taxableAmount = subtotal.subtract(discount).max(BigDecimal.ZERO).add(shipping);
@@ -129,13 +130,13 @@ public class OrderServiceImpl implements OrderService {
         return pricing;
     }
 
-    private BigDecimal calculateDiscountAmount(BigDecimal subtotalVnd, Long voucherId) {
+    private BigDecimal calculateDiscountAmount(BigDecimal subtotalVnd, BigDecimal shippingVnd, Long voucherId) {
         if (voucherId == null) {
             return BigDecimal.ZERO;
         }
         Voucher voucher = voucherService.getVoucherById(voucherId);
         VoucherDiscountType discountType = voucher.getDiscountType();
-        BigDecimal discountValue = voucher.getDiscountValue();
+        BigDecimal discountValue = voucher.getDiscountValue() == null ? BigDecimal.ZERO : voucher.getDiscountValue();
         if (discountType == VoucherDiscountType.FIXED) {
             return subtotalVnd.min(discountValue);
         }
@@ -143,9 +144,13 @@ public class OrderServiceImpl implements OrderService {
             BigDecimal discount = subtotalVnd.multiply(discountValue)
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
             BigDecimal maxDiscount = voucher.getMaxDiscountAmount();
-            return (maxDiscount != null && discount.compareTo(maxDiscount) > 0) ? maxDiscount : discount;
+            BigDecimal capped = (maxDiscount != null && discount.compareTo(maxDiscount) > 0) ? maxDiscount : discount;
+            return capped.min(subtotalVnd);
         }
-        return subtotalVnd;
+        if (discountType == VoucherDiscountType.FREESHIP) {
+            return shippingVnd.max(BigDecimal.ZERO);
+        }
+        return BigDecimal.ZERO;
     }
 
     private BigDecimal convertCurrency(BigDecimal amountVnd, BigDecimal rate) {
