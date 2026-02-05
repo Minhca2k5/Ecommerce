@@ -29,6 +29,9 @@ export type OrderResponse = {
   addressIdSnapshot?: number;
   voucherId?: number;
   discountAmount?: number;
+  subtotalAmount?: number;
+  shippingFee?: number;
+  taxAmount?: number;
   totalAmount?: number;
   currency?: string;
   status?: string;
@@ -48,8 +51,22 @@ export function getMyOrder(orderId: number) {
   return apiJson<OrderResponse>(`/api/users/me/orders/${orderId}`, { method: "GET", auth: true });
 }
 
-export function createMyOrder(request: OrderRequest) {
-  return apiJson<OrderResponseAfterCreating>("/api/users/me/orders", { method: "POST", auth: true, body: request });
+export function createMyOrder(request: OrderRequest, idempotencyKey?: string) {
+  return apiJson<OrderResponseAfterCreating>("/api/users/me/orders", {
+    method: "POST",
+    auth: true,
+    body: request,
+    headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
+  });
+}
+
+export function createGuestOrder(guestId: string, request: OrderRequest, idempotencyKey?: string) {
+  return apiJson<OrderResponseAfterCreating>(`/api/public/checkout/guest/${encodeURIComponent(guestId)}`, {
+    method: "POST",
+    auth: false,
+    body: request,
+    headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
+  });
 }
 
 export function getMyVoucherDiscount(request: OrderRequest) {
