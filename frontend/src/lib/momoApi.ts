@@ -17,3 +17,12 @@ export async function createMomoPayment(orderId: number, idempotencyKey?: string
     headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
   });
 }
+
+export async function createGuestMomoPayment(orderId: number, accessToken: string, idempotencyKey?: string) {
+  const q = new URLSearchParams({ accessToken }).toString();
+  return apiJson<MomoCreateResponse>(`/api/public/guest/orders/${orderId}/payments/momo/create?${q}`, {
+    method: "POST",
+    auth: false,
+    headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
+  });
+}

@@ -15,6 +15,7 @@ import PasswordPage from "@/pages/PasswordPage";
 import AddressesPage from "@/pages/AddressesPage";
 import CartPage from "@/pages/CartPage";
 import CheckoutPage from "@/pages/CheckoutPage";
+import GuestOrderPage from "@/pages/GuestOrderPage";
 import OrdersPage from "@/pages/OrdersPage";
 import OrderDetailPage from "@/pages/OrderDetailPage";
 import NotificationsPage from "@/pages/NotificationsPage";
@@ -62,6 +63,7 @@ export const router = createBrowserRouter([
       { path: "categories/:categoryId", element: <CategoryDetailPage /> },
       { path: "cart", element: <CartPage /> },
       { path: "checkout", element: <CheckoutPage /> },
+      { path: "guest/orders/:orderId", element: <GuestOrderPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> },
       {

@@ -287,12 +287,18 @@ export default function CheckoutPage() {
         });
       }
       if (isGuest) {
+        const guestToken = String(created.guestAccessToken || "");
         toast.push({
           variant: "default",
           title: "Guest order created",
-          message: `Order id: ${orderId || "N/A"}. Please save it for support.`,
+          message: `Order id: ${orderId || "N/A"}. A secure guest tracking link is ready.`,
         });
-        navigate("/products", { replace: true });
+        if (orderId && guestToken) {
+          const q = new URLSearchParams({ token: guestToken }).toString();
+          navigate(`/guest/orders/${orderId}?${q}`, { replace: true });
+        } else {
+          navigate("/products", { replace: true });
+        }
       } else {
         navigate(orderId ? `/orders/${orderId}` : "/orders", { replace: true });
       }

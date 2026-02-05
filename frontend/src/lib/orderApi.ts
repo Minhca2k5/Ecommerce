@@ -32,6 +32,7 @@ export type OrderResponse = {
   subtotalAmount?: number;
   shippingFee?: number;
   taxAmount?: number;
+  guestAccessToken?: string;
   totalAmount?: number;
   currency?: string;
   status?: string;
@@ -67,6 +68,11 @@ export function createGuestOrder(guestId: string, request: OrderRequest, idempot
     body: request,
     headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
   });
+}
+
+export function getGuestOrder(orderId: number, accessToken: string) {
+  const q = new URLSearchParams({ accessToken }).toString();
+  return apiJson<OrderResponse>(`/api/public/guest/orders/${orderId}?${q}`, { method: "GET", auth: false });
 }
 
 export function getMyVoucherDiscount(request: OrderRequest) {

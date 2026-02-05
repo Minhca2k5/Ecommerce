@@ -32,3 +32,8 @@ export function createPayment(orderId: number, request: PaymentRequest) {
 export function getPayment(orderId: number, paymentId: number) {
   return apiJson<PaymentResponse>(`/api/users/me/orders/${orderId}/payments/${paymentId}`, { method: "GET", auth: true });
 }
+
+export function listGuestPayments(orderId: number, accessToken: string) {
+  const q = new URLSearchParams({ accessToken }).toString();
+  return apiJson<PaymentResponse[]>(`/api/public/guest/orders/${orderId}/payments?${q}`, { method: "GET", auth: false });
+}
