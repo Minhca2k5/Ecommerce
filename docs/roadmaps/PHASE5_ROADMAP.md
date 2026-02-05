@@ -92,6 +92,8 @@ Checkpoint:
 ## 4) Checkout Enhancements (P5-M4)
 ### 4.1 Guest checkout
 - Support checkout without account while preserving fraud/rate controls.
+- Add secure guest order access token so guest can reopen order detail and pay later.
+- Add public guest order/payment endpoints protected by guest access token.
 - Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 4.2 Fraud/abuse baseline

@@ -50,6 +50,9 @@ Operate Phase 5 with production-readiness focus:
 ### 4) Checkout Reliability Enhancements (M4)
 - Guest checkout flow:
   - public checkout endpoint with guest/cart ownership constraints
+  - secure guest order access token (HMAC-signed, TTL) to re-open guest order safely
+  - public guest order/payment endpoints guarded by token
+  - guest can trigger MoMo payment from guest order page without account login
   - idempotency integrated for duplicate-submit safety
 - Abuse baseline:
   - Redis failure counters by scope

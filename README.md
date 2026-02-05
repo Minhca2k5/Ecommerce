@@ -1,17 +1,18 @@
-# E-commerce System (Phase 4)
+# E-commerce System (Phase 5)
 
-> **Branch:** `phase4`  
-> **Status:** Phase 4 Completed (Advanced Integrations)  
+> **Branch:** `phase5`  
+> **Status:** Phase 5 In Progress (Reliability + Ops Hardening)  
 > **Author:** Phan Dinh Minh (Minzetsu)  
 > **Last Updated:** February 2, 2026
 
 ## Overview
 This repository is an end-to-end E-commerce system:
 - **Backend:** Spring Boot 3 + Spring Security 6 (JWT + Refresh Token + RBAC), Liquibase, MySQL
-- **Integrations (Phase 4):** RabbitMQ events, Elasticsearch product search, MoMo payment (sandbox), SSE realtime
+- **Integrations:** RabbitMQ events, Elasticsearch product search, MoMo payment (sandbox), SSE realtime
 - **Reliability:** Idempotency keys for order/payment, inventory reservation TTL + release
 - **Observability:** Request ID + structured logs + audit logs
 - **Customer Experience:** Anonymous cart + merge on login
+- **Guest Checkout (Phase 5):** secure guest order access token + guest order tracking + guest MoMo payment
 - **Chatbot:** LLM-backed assistant with project/DB context + conversation history
 - **Chatbot Collaboration (Phase 4):** personal/project/group scopes, group invites (accept/refuse), member list + sender display names in group chat
 - **Auth Hardening (Phase 4):** email OTP verification for registration
@@ -68,6 +69,7 @@ This repository is an end-to-end E-commerce system:
 ## Roadmap
 - Phase 3 roadmap (performance/caching/reliability): `docs/roadmaps/PHASE3_ROADMAP.md`
 - Phase 4 roadmap (integrations/realtime/search/chatbot): `docs/roadmaps/PHASE4_ROADMAP.md`
+- Phase 5 roadmap (reliability/security/ops hardening): `docs/roadmaps/PHASE5_ROADMAP.md`
 - Phase 3 report: `docs/perf/phase3_report.md`
 - High-level project plan: `docs/roadmaps/PROJECT_PLAN.md`
 
