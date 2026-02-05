@@ -1,4 +1,4 @@
-package com.minzetsu.ecommerce.cart.controller.publics;
+package com.minzetsu.ecommerce.cart.controller.pub;
 
 import com.minzetsu.ecommerce.cart.dto.request.CartItemRequest;
 import com.minzetsu.ecommerce.cart.dto.request.GuestCartItemRequest;

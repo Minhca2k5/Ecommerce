@@ -105,7 +105,9 @@ export default function ProductDetailPage() {
 
         const imageList = resolvedImages ?? [];
         setImages(imageList);
-        setReviews(resolvedReviews ?? []);
+        const reviewList = resolvedReviews ?? [];
+        setReviews(reviewList);
+        syncProductRatingFromReviews(reviewList);
 
         const primary =
           primaryImage ??
@@ -161,10 +163,22 @@ export default function ProductDetailPage() {
   const description = getString(product, "description", "shortDescription");
   const resolvedId = getNumber(product, "id") ?? productIdNumber;
 
+  function syncProductRatingFromReviews(nextReviews: unknown[]) {
+    const list = asArray(nextReviews);
+    const values = list
+      .map((r) => Number(getNumber(r, "rating") ?? 0))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    const average = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+    const rounded = Math.round(average * 10) / 10;
+    setProduct((prev: unknown) => (isRecord(prev) ? ({ ...(prev as any), recentlyAverageRating: rounded } as unknown) : prev));
+  }
+
   async function refreshPublicReviews() {
     if (!resolvedId) return;
     const next = await apiGetOrNull<unknown[]>(`/api/public/products/${resolvedId}/reviews`);
-    setReviews(next ?? []);
+    const list = next ?? [];
+    setReviews(list);
+    syncProductRatingFromReviews(list);
   }
 
   async function onAddWishlist() {
@@ -195,7 +209,11 @@ export default function ProductDetailPage() {
       if (!editId) {
         const created = await createMyReview({ productId: Number(resolvedId), rating: myRating, comment: myComment.trim() || undefined });
         setMyReviews((prev) => [created, ...prev]);
-        setReviews((prev) => [created as unknown, ...(prev ?? [])]);
+        setReviews((prev) => {
+          const next = [created as unknown, ...(prev ?? [])];
+          syncProductRatingFromReviews(next);
+          return next;
+        });
         toast.push({ variant: "success", title: "Review posted", message: "Thanks for your feedback!" });
         notifications.push({
           type: "REVIEW",
@@ -209,13 +227,15 @@ export default function ProductDetailPage() {
         if (current && Number(current.rating) !== Number(myRating)) await updateMyReviewRating(editId, myRating);
         if (current && String(current.comment || "") !== String(myComment || "")) await updateMyReviewComment(editId, myComment);
         setMyReviews((prev) => prev.map((r) => (Number(r.id) === editId ? { ...r, rating: myRating, comment: myComment } : r)));
-        setReviews((prev) =>
-          (prev ?? []).map((r) => {
+        setReviews((prev) => {
+          const next = (prev ?? []).map((r) => {
             const id = getNumber(r, "id");
             if (id && Number(id) === editId) return { ...(r as any), rating: myRating, comment: myComment } as unknown;
             return r;
-          }),
-        );
+          });
+          syncProductRatingFromReviews(next);
+          return next;
+        });
         toast.push({ variant: "success", title: "Review updated", message: "Your review has been updated." });
         notifications.push({
           type: "REVIEW",
@@ -254,7 +274,11 @@ export default function ProductDetailPage() {
         referenceType: "PRODUCT",
       });
       setMyReviews((prev) => prev.filter((r) => Number(r.id) !== id));
-      setReviews((prev) => (prev ?? []).filter((r) => Number(getNumber(r, "id") ?? 0) !== id));
+      setReviews((prev) => {
+        const next = (prev ?? []).filter((r) => Number(getNumber(r, "id") ?? 0) !== id);
+        syncProductRatingFromReviews(next);
+        return next;
+      });
       setEditingReviewId(null);
       setMyRating(5);
       setMyComment("");
@@ -575,13 +599,15 @@ export default function ProductDetailPage() {
                                     try {
                                       if (Number(ratingValue) !== Number(editDraftRating)) await updateMyReviewRating(Number(reviewId), editDraftRating);
                                       if (String(comment || "") !== String(editDraftComment || "")) await updateMyReviewComment(Number(reviewId), editDraftComment);
-                                      setReviews((prev) =>
-                                        (prev ?? []).map((x) => {
+                                      setReviews((prev) => {
+                                        const next = (prev ?? []).map((x) => {
                                           const rid = getNumber(x, "id");
                                           if (rid && Number(rid) === Number(reviewId)) return { ...(x as any), rating: editDraftRating, comment: editDraftComment } as unknown;
                                           return x;
-                                        }),
-                                      );
+                                        });
+                                        syncProductRatingFromReviews(next);
+                                        return next;
+                                      });
                                       toast.push({ variant: "success", title: "Updated", message: "Review updated." });
                                       setEditingReviewId(null);
                                       await refreshPublicReviews();
