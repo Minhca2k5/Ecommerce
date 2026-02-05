@@ -33,6 +33,7 @@ public interface OrderMapper {
     @Mapping(target = "discountAmount", source = "discountAmount")
     @Mapping(target = "voucherId", source = "voucher.id")
     @Mapping(target = "itemCount", ignore = true)
+    @Mapping(target = "guestAccessToken", ignore = true)
     OrderResponse toResponse(Order order);
 
     // build full response (order + items)

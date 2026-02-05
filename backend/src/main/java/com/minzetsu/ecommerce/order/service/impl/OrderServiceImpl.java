@@ -30,6 +30,7 @@ import com.minzetsu.ecommerce.order.repository.OrderRepository;
 import com.minzetsu.ecommerce.order.repository.OrderSpecification;
 import com.minzetsu.ecommerce.order.service.CreateOrderItemsService;
 import com.minzetsu.ecommerce.order.service.GuestCheckoutIdentityService;
+import com.minzetsu.ecommerce.order.service.GuestOrderAccessTokenService;
 import com.minzetsu.ecommerce.order.service.OrderService;
 import com.minzetsu.ecommerce.product.entity.ProductStatus;
 import com.minzetsu.ecommerce.promotion.entity.Voucher;
@@ -75,6 +76,7 @@ public class OrderServiceImpl implements OrderService {
     private final DatabaseRetryExecutor databaseRetryExecutor;
     private final PlatformTransactionManager transactionManager;
     private final GuestCheckoutIdentityService guestCheckoutIdentityService;
+    private final GuestOrderAccessTokenService guestOrderAccessTokenService;
     private final GuestCheckoutProperties guestCheckoutProperties;
     private final CheckoutPricingProperties checkoutPricingProperties;
 
@@ -275,7 +277,7 @@ public class OrderServiceImpl implements OrderService {
                         "GUEST_ORDER_CREATE",
                         guestUserId,
                         "ORDER",
-                        id -> getFullOrderResponseByIdAndUserId(id, guestUserId),
+                        id -> getGuestFullOrderResponseWithToken(id, guestUserId),
                         () -> createOrderInternal(request, guestUserId, true, guestId),
                         OrderResponse::getId
                 ))
@@ -311,7 +313,18 @@ public class OrderServiceImpl implements OrderService {
         sseEmitterService.sendToUser(userId, "order-created", Map.of("orderId", savedOrder.getId()));
         sseEmitterService.sendToAdmins("order-created", Map.of("orderId", savedOrder.getId(), "userId", userId));
         List<OrderItemResponse> orderItemResponses = orderItemMapper.toResponseList(orderItems);
-        return orderMapper.toFullResponse(savedOrder, orderItemResponses);
+        OrderResponse response = orderMapper.toFullResponse(savedOrder, orderItemResponses);
+        if (guestCheckout) {
+            response.setGuestAccessToken(guestOrderAccessTokenService.issueToken(savedOrder));
+        }
+        return response;
+    }
+
+    private OrderResponse getGuestFullOrderResponseWithToken(Long orderId, Long guestUserId) {
+        OrderResponse response = getFullOrderResponseByIdAndUserId(orderId, guestUserId);
+        Order order = getOrderByIdAndUserId(orderId, guestUserId);
+        response.setGuestAccessToken(guestOrderAccessTokenService.issueToken(order));
+        return response;
     }
 
     @Override

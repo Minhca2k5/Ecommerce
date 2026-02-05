@@ -29,6 +29,7 @@ public class OrderResponse extends BaseDTO {
     private BigDecimal subtotalAmount;
     private BigDecimal shippingFee;
     private BigDecimal taxAmount;
+    private String guestAccessToken;
 
     // danh sách item
     private List<OrderItemResponse> items;

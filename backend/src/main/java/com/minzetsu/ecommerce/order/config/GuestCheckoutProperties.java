@@ -10,6 +10,8 @@ public class GuestCheckoutProperties {
     private String username = "guest_checkout";
     private String email = "guest.checkout@local.invalid";
     private String password = "GuestCheckout@123";
+    private String accessTokenSecret = "guest-order-access-secret-change-me";
+    private long accessTokenTtlMinutes = 4320;
 
     public boolean isEnabled() {
         return enabled;
@@ -41,5 +43,21 @@ public class GuestCheckoutProperties {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getAccessTokenSecret() {
+        return accessTokenSecret;
+    }
+
+    public void setAccessTokenSecret(String accessTokenSecret) {
+        this.accessTokenSecret = accessTokenSecret;
+    }
+
+    public long getAccessTokenTtlMinutes() {
+        return accessTokenTtlMinutes;
+    }
+
+    public void setAccessTokenTtlMinutes(long accessTokenTtlMinutes) {
+        this.accessTokenTtlMinutes = accessTokenTtlMinutes;
     }
 }
