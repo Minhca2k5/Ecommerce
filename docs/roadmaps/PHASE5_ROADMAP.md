@@ -100,6 +100,7 @@ Checkpoint:
 
 ### 4.3 Multi-currency + tax/shipping rules
 - Add deterministic calculation pipeline and response breakdown.
+- Deliverable doc: `docs/ops/P5_M4_3_MULTI_CURRENCY_TAX_SHIPPING.md`.
 
 Checkpoint:
 - Guest and authenticated checkout flows are functionally complete.

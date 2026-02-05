@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v14-001-order-pricing-breakdown" author="codex">
+        <addColumn tableName="orders">
+            <column name="subtotal_amount" type="DECIMAL(12,2)" defaultValueNumeric="0"/>
+            <column name="shipping_fee" type="DECIMAL(12,2)" defaultValueNumeric="0"/>
+            <column name="tax_amount" type="DECIMAL(12,2)" defaultValueNumeric="0"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

@@ -4,7 +4,9 @@ import com.minzetsu.ecommerce.cart.entity.CartItem;
 import com.minzetsu.ecommerce.cart.service.CartItemService;
 import com.minzetsu.ecommerce.cart.service.CartService;
 import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.exception.AppException;
 import com.minzetsu.ecommerce.common.utils.DatabaseRetryExecutor;
+import com.minzetsu.ecommerce.order.config.CheckoutPricingProperties;
 import com.minzetsu.ecommerce.order.config.GuestCheckoutProperties;
 import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
 import com.minzetsu.ecommerce.messaging.DomainEventType;
@@ -39,6 +41,7 @@ import com.minzetsu.ecommerce.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -46,6 +49,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -71,6 +76,7 @@ public class OrderServiceImpl implements OrderService {
     private final PlatformTransactionManager transactionManager;
     private final GuestCheckoutIdentityService guestCheckoutIdentityService;
     private final GuestCheckoutProperties guestCheckoutProperties;
+    private final CheckoutPricingProperties checkoutPricingProperties;
 
     private Order getExistingOrder(Long id) {
         return orderRepository.findById(id)
@@ -86,51 +92,62 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private Map<String, BigDecimal> calculateTotalAmount(List<CartItem> cartItems, BigDecimal shippingFee, Long voucherId) {
-        if (voucherId == null) {
-            BigDecimal totalAmount = cartItems.stream()
-                    .map(item -> item.getUnitPriceSnapshot()
-                            .multiply(BigDecimal.valueOf(item.getQuantity())))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add)
-                    .add(shippingFee);
-            return Map.of(
-                    "totalAmount", totalAmount,
-                    "discountAmount", BigDecimal.ZERO
-            );
+    private Map<String, BigDecimal> calculatePricing(List<CartItem> cartItems, OrderRequest request) {
+        String currency = checkoutPricingProperties.normalizeCurrency(request.getCurrency());
+        BigDecimal rate = checkoutPricingProperties.getExchangeRates().get(currency);
+        if (rate == null || rate.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new AppException("Unsupported currency: " + currency, HttpStatus.BAD_REQUEST);
         }
-        System.out.println("Shipping Fee: " + shippingFee);
+
+        BigDecimal subtotalVnd = cartItems.stream()
+                .map(item -> item.getUnitPriceSnapshot().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal discountVnd = calculateDiscountAmount(subtotalVnd, request.getVoucherId());
+        BigDecimal subtotal = convertCurrency(subtotalVnd, rate);
+        BigDecimal discount = convertCurrency(discountVnd, rate);
+
+        BigDecimal shipping = request.getShippingFee();
+        if (shipping == null) {
+            shipping = checkoutPricingProperties.getShippingFlatFees()
+                    .getOrDefault(currency, BigDecimal.ZERO);
+        }
+        shipping = shipping.max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal taxRate = checkoutPricingProperties.getTaxRates().getOrDefault(currency, BigDecimal.ZERO);
+        BigDecimal taxableAmount = subtotal.subtract(discount).max(BigDecimal.ZERO).add(shipping);
+        BigDecimal tax = taxableAmount.multiply(taxRate).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal total = taxableAmount.add(tax).setScale(2, RoundingMode.HALF_UP);
+
+        Map<String, BigDecimal> pricing = new LinkedHashMap<>();
+        pricing.put("subtotalAmount", subtotal);
+        pricing.put("discountAmount", discount);
+        pricing.put("shippingFee", shipping);
+        pricing.put("taxAmount", tax);
+        pricing.put("totalAmount", total);
+        return pricing;
+    }
+
+    private BigDecimal calculateDiscountAmount(BigDecimal subtotalVnd, Long voucherId) {
+        if (voucherId == null) {
+            return BigDecimal.ZERO;
+        }
         Voucher voucher = voucherService.getVoucherById(voucherId);
         VoucherDiscountType discountType = voucher.getDiscountType();
         BigDecimal discountValue = voucher.getDiscountValue();
-        BigDecimal Amount = cartItems.stream()
-                .map(item -> item.getUnitPriceSnapshot()
-                        .multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal discountAmount;
         if (discountType == VoucherDiscountType.FIXED) {
-            if (Amount.compareTo(discountValue) < 0) {
-                discountAmount = Amount;
-                Amount = BigDecimal.ZERO;
-            } else {
-                discountAmount = discountValue;
-                Amount = Amount.subtract(discountValue);
-            }
-        } else if (discountType == VoucherDiscountType.PERCENT) {
-            discountAmount = Amount.multiply(discountValue).divide(BigDecimal.valueOf(100));
-            BigDecimal maxDiscount = voucher.getMaxDiscountAmount();
-            if (maxDiscount != null && discountAmount.compareTo(maxDiscount) > 0) {
-                discountAmount = maxDiscount;
-            }
-            Amount = Amount.subtract(discountAmount);
-        } else {
-            discountAmount = shippingFee;
-            shippingFee = BigDecimal.ZERO;
+            return subtotalVnd.min(discountValue);
         }
-        BigDecimal totalAmount = Amount.add(shippingFee);
-        return Map.of(
-                "totalAmount", totalAmount,
-                "discountAmount", discountAmount
-        );
+        if (discountType == VoucherDiscountType.PERCENT) {
+            BigDecimal discount = subtotalVnd.multiply(discountValue)
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            BigDecimal maxDiscount = voucher.getMaxDiscountAmount();
+            return (maxDiscount != null && discount.compareTo(maxDiscount) > 0) ? maxDiscount : discount;
+        }
+        return subtotalVnd;
+    }
+
+    private BigDecimal convertCurrency(BigDecimal amountVnd, BigDecimal rate) {
+        return amountVnd.multiply(rate).setScale(2, RoundingMode.HALF_UP);
     }
 
     @Override
@@ -272,17 +289,21 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private OrderResponse createOrderInternal(OrderRequest request, Long userId, boolean guestCheckout, String guestId) {
-        Map<String, BigDecimal> totals = handleVoucherDiscount(request, userId, guestCheckout, guestId);
+        Map<String, BigDecimal> pricing = handleVoucherDiscount(request, userId, guestCheckout, guestId);
         User user = userService.getUserById(userId);
         Order order = orderMapper.toEntity(request);
         order.setUser(user);
+        order.setCurrency(checkoutPricingProperties.normalizeCurrency(request.getCurrency()));
         Long voucherId = request.getVoucherId();
         if (voucherId != null) {
             Voucher voucher = voucherService.getVoucherById(voucherId);
             order.setVoucher(voucher);
         }
-        order.setTotalAmount(totals.get("totalAmount"));
-        order.setDiscountAmount(totals.get("discountAmount"));
+        order.setSubtotalAmount(pricing.get("subtotalAmount"));
+        order.setDiscountAmount(pricing.get("discountAmount"));
+        order.setShippingFee(pricing.get("shippingFee"));
+        order.setTaxAmount(pricing.get("taxAmount"));
+        order.setTotalAmount(pricing.get("totalAmount"));
         Order savedOrder = orderRepository.save(order);
         List<OrderItem> orderItems = createOrderItemsService.createOrderItems(savedOrder, request.getCartId());
         eventPublisher.publishEvent(new OrderCreatedEvent(savedOrder.getId(), userId));
@@ -315,7 +336,6 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         List<CartItem> cartItems = cartItemService.getCartItemsByActiveProductTrueAndCartId(cartId, ProductStatus.ACTIVE);
-        BigDecimal shippingFee = request.getShippingFee();
-        return calculateTotalAmount(cartItems, shippingFee, request.getVoucherId());
+        return calculatePricing(cartItems, request);
     }
 }

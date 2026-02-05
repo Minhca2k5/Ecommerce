@@ -38,6 +38,15 @@ public class Order extends BaseEntity {
     @Column(name = "discount_amount", precision = 12, scale = 2)
     private BigDecimal discountAmount;
 
+    @Column(name = "subtotal_amount", precision = 12, scale = 2)
+    private BigDecimal subtotalAmount;
+
+    @Column(name = "shipping_fee", precision = 12, scale = 2)
+    private BigDecimal shippingFee;
+
+    @Column(name = "tax_amount", precision = 12, scale = 2)
+    private BigDecimal taxAmount;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
