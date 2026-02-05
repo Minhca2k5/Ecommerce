@@ -26,6 +26,14 @@ function toNumber(value: number | string | undefined) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function makeGuestAddressSnapshotId(seed: string) {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  return (hash % 900000000) + 100000000;
+}
+
 function voucherDiscountLabel(v: VoucherResponse) {
   const type = (v.discountType || "").toUpperCase();
   if (type === "FREE_SHIPPING") return "Free shipping";
@@ -47,7 +55,13 @@ export default function CheckoutPage() {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [addresses, setAddresses] = useState<AddressResponse[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
-  const [guestAddressSnapshotId, setGuestAddressSnapshotId] = useState<string>("1");
+  const [guestAddress, setGuestAddress] = useState({
+    fullName: "",
+    phone: "",
+    line1: "",
+    city: "",
+    country: "Vietnam",
+  });
   const [shippingFee, setShippingFee] = useState<string>("0");
   const [selectedCurrency, setSelectedCurrency] = useState<string>("VND");
 
@@ -83,15 +97,45 @@ export default function CheckoutPage() {
   const taxable = Math.max(0, originTotal - discount);
   const tax = taxable * taxRate;
   const total = taxable + tax;
+  const guestAddressSnapshotId = useMemo(() => {
+    const seed = [
+      guestAddress.fullName.trim(),
+      guestAddress.phone.trim(),
+      guestAddress.line1.trim(),
+      guestAddress.city.trim(),
+      guestAddress.country.trim(),
+    ].join("|");
+    if (!seed.replace(/\|/g, "").trim()) return 0;
+    return makeGuestAddressSnapshotId(seed);
+  }, [guestAddress.city, guestAddress.country, guestAddress.fullName, guestAddress.line1, guestAddress.phone]);
 
   const canSubmit = useMemo(() => {
     if (isSubmitting) return false;
     if (!cart?.id) return false;
     if (!cart.items?.length) return false;
-    if (isGuest) return Number(guestAddressSnapshotId) > 0;
+    if (isGuest) {
+      return Boolean(
+        guestAddress.fullName.trim() &&
+          guestAddress.phone.trim() &&
+          guestAddress.line1.trim() &&
+          guestAddress.city.trim() &&
+          guestAddressSnapshotId > 0,
+      );
+    }
     if (!selectedAddressId) return false;
     return true;
-  }, [cart?.id, cart?.items?.length, guestAddressSnapshotId, isGuest, isSubmitting, selectedAddressId]);
+  }, [
+    cart?.id,
+    cart?.items?.length,
+    guestAddress.city,
+    guestAddress.fullName,
+    guestAddress.line1,
+    guestAddress.phone,
+    guestAddressSnapshotId,
+    isGuest,
+    isSubmitting,
+    selectedAddressId,
+  ]);
 
   useEffect(() => {
     let alive = true;
@@ -203,7 +247,7 @@ export default function CheckoutPage() {
 
   async function placeOrder() {
     if (!cart?.id) return;
-    const addressIdSnapshot = isGuest ? Number(guestAddressSnapshotId) : Number(selectedAddressId);
+    const addressIdSnapshot = isGuest ? guestAddressSnapshotId : Number(selectedAddressId);
     if (!addressIdSnapshot) return;
     setIsSubmitting(true);
     try {
@@ -343,15 +387,42 @@ export default function CheckoutPage() {
             <CardContent className="relative space-y-3">
               {isGuest ? (
                 <div className="space-y-2">
-                  <div className="text-xs text-muted-foreground">
-                    Guest checkout requires address snapshot id. Use an existing snapshot id from backend data.
-                  </div>
+                  <div className="text-xs text-muted-foreground">Enter shipping info for guest checkout.</div>
                   <Input
                     className="rounded-xl bg-background/70 backdrop-blur"
-                    value={guestAddressSnapshotId}
-                    onChange={(e) => setGuestAddressSnapshotId(e.target.value)}
-                    inputMode="numeric"
+                    value={guestAddress.fullName}
+                    onChange={(e) => setGuestAddress((s) => ({ ...s, fullName: e.target.value }))}
+                    placeholder="Full name"
                   />
+                  <Input
+                    className="rounded-xl bg-background/70 backdrop-blur"
+                    value={guestAddress.phone}
+                    onChange={(e) => setGuestAddress((s) => ({ ...s, phone: e.target.value }))}
+                    placeholder="Phone number"
+                  />
+                  <Input
+                    className="rounded-xl bg-background/70 backdrop-blur"
+                    value={guestAddress.line1}
+                    onChange={(e) => setGuestAddress((s) => ({ ...s, line1: e.target.value }))}
+                    placeholder="Address line"
+                  />
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Input
+                      className="rounded-xl bg-background/70 backdrop-blur"
+                      value={guestAddress.city}
+                      onChange={(e) => setGuestAddress((s) => ({ ...s, city: e.target.value }))}
+                      placeholder="City"
+                    />
+                    <Input
+                      className="rounded-xl bg-background/70 backdrop-blur"
+                      value={guestAddress.country}
+                      onChange={(e) => setGuestAddress((s) => ({ ...s, country: e.target.value }))}
+                      placeholder="Country"
+                    />
+                  </div>
+                  <div className="rounded-xl border bg-background/60 px-3 py-2 text-xs text-muted-foreground">
+                    Snapshot id (auto): <span className="font-medium text-foreground">{guestAddressSnapshotId || "-"}</span>
+                  </div>
                 </div>
               ) : (
                 <>
