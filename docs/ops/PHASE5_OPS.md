@@ -1,99 +1,117 @@
 # Phase 5 Ops
 
-This file consolidates all previous `docs/ops/P5_*` runbooks into one place.
+## Objective
+Operate Phase 5 with production-readiness focus:
+- reliability runbooks
+- security gates
+- migration safety
+- API consumer clarity
+- reliability policy and architecture decisions
 
-## M1 - Advanced Database Reliability
+## Runtime & Dependency Context
+- Backend runtime: Spring Boot + MySQL + Redis + RabbitMQ + Elasticsearch (existing stack).
+- CI runtime: GitHub Actions security workflow (`security-gates.yml`).
+- Local operational tools used in this phase:
+  - `mysqldump` / `mysql`
+  - `gitleaks`
+  - curl/bash (DAST smoke)
 
-### M1.2 Backup / Restore / Retention
-- Backup by `mysqldump` (with `--no-tablespaces` when DB grants are limited).
-- Restore drill to a secondary database and compare row counts.
-- Record observed RTO/RPO and backup artifact path.
+## Operational Streams
 
-### M1.3 Read Replica Plan (optional track)
-- Primary handles writes, replica handles read-heavy queries.
-- Define fallback to primary if replica is unavailable/lagging.
-- Rollout target remains Phase 6 deployment topology.
+### 1) Database Reliability (M1)
+- Backup/restore drill:
+  - dump production-like data (`mysqldump`, use `--no-tablespaces` when grants are limited)
+  - restore into rehearsal DB
+  - compare key table row counts and record RTO
+- Retention discipline:
+  - retain backup artifacts with timestamp/version naming
+  - track restore evidence in release notes
+- Read-replica plan (prepared, optional rollout in Phase 6):
+  - write on primary, read-heavy flows on replica
+  - fallback to primary when replica is lagging/down
 
-## M2 - Audit Log Hardening
+### 2) Audit Hardening (M2)
+- Retention/cleanup:
+  - scheduled cleanup via `audit-log.retention.*`
+  - batch deletion to avoid heavy long transactions
+- Sensitive data masking:
+  - mask secrets/passwords/tokens/authorization/otp/PII before persistence
+- Investigation surface:
+  - admin audit query endpoint with filters + pagination
+  - supports incident forensics and compliance review
 
-### M2.1 Retention & Cleanup
-- Scheduled cleanup with retention window and batch deletion.
-- Configurable via `audit-log.retention.*` properties.
+### 3) NoSQL Expansion Ops (M3)
+- Redis telemetry channel:
+  - publish audit telemetry events to Redis pub/sub
+  - subscriber path available for monitoring and async extensions
+- Optional Mongo track:
+  - explicitly deferred with documented trigger criteria (no silent scope drift)
 
-### M2.2 Sensitive Data Masking
-- Mask passwords/tokens/secrets/api-key/authorization/otp/email/phone in audit payloads.
-- Keep audit searchable while removing plaintext sensitive data exposure.
-
-### M2.3 Audit Query Surface
-- Admin audit search endpoint with filters and pagination.
-- Supports incident investigation and compliance review workflows.
-
-## M3 - NoSQL Expansion
-
-### M3.1 Redis Pub/Sub Audit Telemetry
-- Publish audit events to Redis channel.
-- Subscriber consumes events for observability/async integrations.
-
-### M3.2 Optional Mongo Track
-- Mongo path documented as optional, with defer rationale and trigger conditions.
-
-## M4 - Checkout Enhancements
-
-### M4.1 Guest Checkout
-- Public guest checkout endpoint integrated with existing order flow.
-- Guest identity/cart constraints enforced before order creation.
-
-### M4.2 Fraud/Abuse Baseline
-- Redis-backed failed checkout counter per scope.
-- Block repeated failures with HTTP 429 windowed threshold policy.
-
-### M4.3 Multi-Currency + Tax/Shipping
-- Deterministic pricing pipeline:
+### 4) Checkout Reliability Enhancements (M4)
+- Guest checkout flow:
+  - public checkout endpoint with guest/cart ownership constraints
+  - idempotency integrated for duplicate-submit safety
+- Abuse baseline:
+  - Redis failure counters by scope
+  - threshold-based `429` block window for repeated failed attempts
+- Deterministic pricing:
   - subtotal -> discount -> shipping -> tax -> total
-- Persist response breakdown fields (`subtotal`, `discount`, `shipping`, `tax`, `total`).
+  - response + DB persist pricing breakdown fields
 
-## M5 - Security & Supply Chain Gates
+### 5) Security & Supply Chain Gates (M5)
+- SAST + dependency scanning in CI:
+  - CodeQL (SAST)
+  - OWASP Dependency-Check (vulnerability scan)
+- Secret scanning:
+  - CI gitleaks gate
+  - local `.githooks` pre-commit/pre-push blocking
+- DAST smoke:
+  - scripted checks for public/auth endpoints
+  - verifies core security headers and basic abuse patterns
 
-### M5.1 SAST + Dependency Scan CI
-- GitHub Actions jobs for CodeQL (SAST) and OWASP Dependency-Check.
+### 6) Migration Safety (M6)
+- Rollback-ready release checklist:
+  - backup before migration
+  - changelog checkpoint + rollback conditions
+  - defined rollback execution order
+- Rehearsal flow:
+  - run migration on production-like dataset
+  - run smoke checks
+  - record migration duration and recovery notes
 
-### M5.2 Secret Scanning
-- Gitleaks in CI.
-- Local pre-commit/pre-push hooks for developer-side secret blocking.
+### 7) API Consumer Operations (M7)
+- OpenAPI contract:
+  - `/docs` remains source-of-truth
+  - standard error shape published
+- Consumer guide:
+  - auth, pagination/filter contracts
+  - idempotency behavior
+  - cache/conditional request behavior
 
-### M5.3 DAST Smoke
-- Scripted smoke checks for public/auth endpoints and key security headers.
-- Optional CI run when `DAST_TARGET_URL` is configured.
+### 8) Reliability Policy & ADR Governance (M8)
+- Reliability policy:
+  - SLI/SLO/SLA targets for auth, checkout, callback, order status
+  - error budget + escalation path
+- ADR governance:
+  - monolith-first rationale captured
+  - service split trigger criteria documented
 
-## M6 - Migration Safety
+## Common Failure Modes (Phase 5)
+- Backup restore passes partially due to missing DB privileges.
+- Security workflows flaky because target URL/secrets not configured in CI.
+- Over-aggressive retention/masking breaks expected audit investigation fields.
+- Checkout anti-abuse blocks legitimate retries when scope rules are too strict.
+- Migration rehearsal skipped -> production rollback confidence drops.
 
-### M6.1 Rollback Checklist
-- Pre-release backup + changelog checkpoint.
-- Rollback trigger conditions and execution steps.
+## Minimal Incident Playbook
+1. Stabilize writes first (if data integrity risk exists).
+2. Validate latest migration/security gate changes as potential regression points.
+3. Use audit query + request id to reconstruct timeline.
+4. If data path is impacted, execute rollback checklist from M6.1.
+5. Log evidence: impact window, trigger, remediation, and preventive action.
 
-### M6.2 Migration Rehearsal
-- Rehearsal on production-like dataset.
-- Capture migration timing, smoke checks, and recovery notes.
-
-## M7 - API Documentation Finalization
-
-### M7.1 OpenAPI Completion
-- `/docs` remains source-of-truth for endpoint contracts.
-- Standardized error model documented for clients.
-
-### M7.2 API Consumer Guide
-- Auth contract, pagination/filter behavior, idempotency expectations, caching notes.
-
-## M8 - Reliability Policy & ADR
-
-### M8.1 SLI/SLO/SLA Policy
-- Defined SLI/SLO targets for auth, checkout, payment callback, order status.
-- Error budget + escalation path documented.
-
-### M8.2 ADR Set
-- Monolith-first decision and service-split trigger criteria captured.
-
-## Verification Summary
-- Backend compile check used during implementation: `mvn -q -DskipTests compile`.
-- Frontend build check used during integration: `npm run -s build`.
-- DB backup/restore drill validated with row-count parity and measured RTO.
+## Verification Evidence Summary
+- Backend verification baseline: `mvn -q -DskipTests compile`.
+- Frontend integration verification baseline: `npm run -s build`.
+- DB reliability evidence: backup/restore parity checks + measured RTO.
+- CI evidence: security gates workflow artifacts and job logs.
