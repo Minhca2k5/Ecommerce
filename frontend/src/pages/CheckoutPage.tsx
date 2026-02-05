@@ -11,8 +11,8 @@ import { useNotifications } from "@/app/NotificationProvider";
 import { ApiError } from "@/lib/apiError";
 import { getErrorMessage } from "@/lib/errors";
 import { formatCurrency } from "@/lib/format";
-import { getOrCreateCart, type CartResponse } from "@/lib/cartApi";
-import { createMyOrder, getMyVoucherDiscount } from "@/lib/orderApi";
+import { getOrCreateCart, getOrCreateGuestCart, getStoredGuestId, type CartResponse } from "@/lib/cartApi";
+import { createGuestOrder, createMyOrder, getMyVoucherDiscount } from "@/lib/orderApi";
 import { getDefaultAddress, listAddresses, type AddressResponse } from "@/lib/userApi";
 import { filterMyVouchersByMinOrderAmount, getMyVouchersByCode, type VoucherResponse } from "@/lib/voucherApi";
 
@@ -47,6 +47,7 @@ export default function CheckoutPage() {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [addresses, setAddresses] = useState<AddressResponse[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [guestAddressSnapshotId, setGuestAddressSnapshotId] = useState<string>("1");
   const [shippingFee, setShippingFee] = useState<string>("0");
   const [selectedCurrency, setSelectedCurrency] = useState<string>("VND");
 
@@ -71,6 +72,7 @@ export default function CheckoutPage() {
   const [discountAmount, setDiscountAmount] = useState<number>(0);
   const [discountStatus, setDiscountStatus] = useState<"idle" | "loading" | "error">("idle");
   const [discountError, setDiscountError] = useState<string | null>(null);
+  const isGuest = !auth.isAuthenticated;
 
   const currency = selectedCurrency || cart?.currency || "VND";
   const subtotal = Number(cart?.itemsSubtotal ?? cart?.totalAmount ?? 0);
@@ -86,23 +88,25 @@ export default function CheckoutPage() {
     if (isSubmitting) return false;
     if (!cart?.id) return false;
     if (!cart.items?.length) return false;
+    if (isGuest) return Number(guestAddressSnapshotId) > 0;
     if (!selectedAddressId) return false;
     return true;
-  }, [cart?.id, cart?.items?.length, isSubmitting, selectedAddressId]);
+  }, [cart?.id, cart?.items?.length, guestAddressSnapshotId, isGuest, isSubmitting, selectedAddressId]);
 
   useEffect(() => {
     let alive = true;
     setIsLoading(true);
     setError(null);
 
-    if (!auth.isAuthenticated) {
-      setIsLoading(false);
-      return () => {
-        alive = false;
-      };
-    }
+    const loadCheckout = auth.isAuthenticated
+      ? Promise.all([
+          getOrCreateCart(),
+          listAddresses().catch(() => [] as AddressResponse[]),
+          getDefaultAddress().catch(() => null as AddressResponse | null),
+        ])
+      : Promise.all([getOrCreateGuestCart(), Promise.resolve([] as AddressResponse[]), Promise.resolve(null as AddressResponse | null)]);
 
-    Promise.all([getOrCreateCart(), listAddresses().catch(() => [] as AddressResponse[]), getDefaultAddress().catch(() => null as AddressResponse | null)])
+    loadCheckout
       .then(([c, list, def]) => {
         if (!alive) return;
         setCart(c);
@@ -122,20 +126,6 @@ export default function CheckoutPage() {
     };
   }, [auth.isAuthenticated]);
 
-  if (!auth.isAuthenticated) {
-    return (
-      <EmptyState
-        title="Login required"
-        description="Please sign in to proceed with checkout."
-        action={
-          <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
-            <Link to="/login">Go to login</Link>
-          </Button>
-        }
-      />
-    );
-  }
-
   async function loadEligibleVouchers(nextPage: number) {
     setEligibleLoading(true);
     setEligibleError(null);
@@ -152,6 +142,12 @@ export default function CheckoutPage() {
   }
 
   async function refreshDiscount(nextVoucherId?: number | null) {
+    if (isGuest) {
+      setDiscountAmount(0);
+      setDiscountStatus("idle");
+      setDiscountError(null);
+      return;
+    }
     if (!cart?.id || !selectedAddressId) return;
     const voucherId = nextVoucherId ?? (appliedVoucher?.id ? Number(appliedVoucher.id) : null);
     setDiscountStatus("loading");
@@ -203,10 +199,12 @@ export default function CheckoutPage() {
     const t = window.setTimeout(() => void refreshDiscount(null), 250);
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cart?.id, selectedAddressId, shippingFee, appliedVoucher?.id]);
+  }, [cart?.id, isGuest, selectedAddressId, shippingFee, appliedVoucher?.id]);
 
   async function placeOrder() {
-    if (!cart?.id || !selectedAddressId) return;
+    if (!cart?.id) return;
+    const addressIdSnapshot = isGuest ? Number(guestAddressSnapshotId) : Number(selectedAddressId);
+    if (!addressIdSnapshot) return;
     setIsSubmitting(true);
     try {
       const itemNames = (cart?.items ?? [])
@@ -215,17 +213,22 @@ export default function CheckoutPage() {
       const preview = itemNames.slice(0, 3).join(", ");
       const suffix = itemNames.length > 3 ? ", ..." : "";
 
-      const voucherId = appliedVoucher?.id ? Number(appliedVoucher.id) : undefined;
+      const voucherId = !isGuest && appliedVoucher?.id ? Number(appliedVoucher.id) : undefined;
       const idempotencyKey =
         typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `order_${Date.now()}`;
-      const created = await createMyOrder({
+      const request = {
         cartId: Number(cart.id),
-        addressIdSnapshot: Number(selectedAddressId),
+        addressIdSnapshot,
         ...(voucherId ? { voucherId } : {}),
         shippingFee: shipping,
         currency,
         status: "PENDING",
-      }, idempotencyKey);
+      };
+      const guestId = cart.guestId || getStoredGuestId() || "";
+      if (isGuest && !guestId) throw new Error("Missing guest checkout id");
+      const created = isGuest
+        ? await createGuestOrder(guestId, request, idempotencyKey)
+        : await createMyOrder(request, idempotencyKey);
 
       toast.push({ variant: "success", title: "Order placed", message: "Your order has been created." });
 
@@ -239,7 +242,16 @@ export default function CheckoutPage() {
           referenceType: "ORDER",
         });
       }
-      navigate(orderId ? `/orders/${orderId}` : "/orders", { replace: true });
+      if (isGuest) {
+        toast.push({
+          variant: "default",
+          title: "Guest order created",
+          message: `Order id: ${orderId || "N/A"}. Please save it for support.`,
+        });
+        navigate("/products", { replace: true });
+      } else {
+        navigate(orderId ? `/orders/${orderId}` : "/orders", { replace: true });
+      }
     } catch (e) {
       if (e instanceof ApiError && e.status === 429) {
         toast.push({
@@ -292,7 +304,7 @@ export default function CheckoutPage() {
     );
   }
 
-  if (!addresses.length) {
+  if (!isGuest && !addresses.length) {
     return (
       <EmptyState
         title="Add an address first"
@@ -326,37 +338,53 @@ export default function CheckoutPage() {
         <div className="space-y-4">
           <Card className="overflow-hidden bg-background/70 backdrop-blur">
             <CardHeader className="relative">
-              <CardTitle>Delivery address</CardTitle>
+              <CardTitle>{isGuest ? "Guest shipping info" : "Delivery address"}</CardTitle>
             </CardHeader>
             <CardContent className="relative space-y-3">
-              <div className="grid gap-2">
-                {addresses.map((a) => {
-                  const id = Number(a.id ?? 0);
-                  const active = selectedAddressId === id;
-                  return (
-                    <button
-                      key={String(a.id)}
-                      type="button"
-                      onClick={() => setSelectedAddressId(id)}
-                      className={[
-                        "pressable rounded-2xl border p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md",
-                        active ? "border-primary bg-primary/10 ring-1 ring-primary/20" : "bg-background/70 hover:bg-muted",
-                      ].join(" ")}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="font-medium">{a.city || a.country || "Address"}</div>
-                        {a.isDefault ? (
-                          <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-xs text-emerald-700 ring-1 ring-emerald-500/20">Default</span>
-                        ) : null}
-                      </div>
-                      <div className="mt-1 text-sm text-muted-foreground">{[a.line1, a.line2, a.state, a.zipcode, a.country].filter(Boolean).join(", ")}</div>
-                    </button>
-                  );
-                })}
-              </div>
-              <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
-                <Link to="/me/addresses">Manage addresses</Link>
-              </Button>
+              {isGuest ? (
+                <div className="space-y-2">
+                  <div className="text-xs text-muted-foreground">
+                    Guest checkout requires address snapshot id. Use an existing snapshot id from backend data.
+                  </div>
+                  <Input
+                    className="rounded-xl bg-background/70 backdrop-blur"
+                    value={guestAddressSnapshotId}
+                    onChange={(e) => setGuestAddressSnapshotId(e.target.value)}
+                    inputMode="numeric"
+                  />
+                </div>
+              ) : (
+                <>
+                  <div className="grid gap-2">
+                    {addresses.map((a) => {
+                      const id = Number(a.id ?? 0);
+                      const active = selectedAddressId === id;
+                      return (
+                        <button
+                          key={String(a.id)}
+                          type="button"
+                          onClick={() => setSelectedAddressId(id)}
+                          className={[
+                            "pressable rounded-2xl border p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md",
+                            active ? "border-primary bg-primary/10 ring-1 ring-primary/20" : "bg-background/70 hover:bg-muted",
+                          ].join(" ")}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="font-medium">{a.city || a.country || "Address"}</div>
+                            {a.isDefault ? (
+                              <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-xs text-emerald-700 ring-1 ring-emerald-500/20">Default</span>
+                            ) : null}
+                          </div>
+                          <div className="mt-1 text-sm text-muted-foreground">{[a.line1, a.line2, a.state, a.zipcode, a.country].filter(Boolean).join(", ")}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
+                    <Link to="/me/addresses">Manage addresses</Link>
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -383,6 +411,9 @@ export default function CheckoutPage() {
               </div>
               <div className="space-y-2 sm:col-span-2">
                 <div className="text-xs font-medium text-muted-foreground">Voucher</div>
+                {isGuest ? (
+                  <div className="text-xs text-muted-foreground">Voucher is available for signed-in checkout only.</div>
+                ) : (
                 <div className="flex flex-wrap items-center gap-2">
                   <Button
                     type="button"
@@ -416,13 +447,14 @@ export default function CheckoutPage() {
                     <Link to="/me/vouchers">My vouchers</Link>
                   </Button>
                 </div>
-                {appliedVoucher?.id ? (
+                )}
+                {!isGuest && appliedVoucher?.id ? (
                   <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 backdrop-blur">
                     Applied: <span className="font-medium">{appliedVoucher.code}</span> — {appliedVoucher.name || "Voucher"}
                   </div>
-                ) : (
+                ) : !isGuest ? (
                   <div className="text-xs text-muted-foreground">Pick a voucher from the eligible list, or search by code.</div>
-                )}
+                ) : null}
               </div>
             </CardContent>
           </Card>
