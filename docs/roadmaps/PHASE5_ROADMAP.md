@@ -77,6 +77,7 @@ Checkpoint:
 ## 3) NoSQL Expansion (P5-M3)
 ### 3.1 Redis advanced usage
 - Add streams/pubsub use case (event telemetry or async audit pipeline).
+- Deliverable doc: `docs/ops/P5_M3_1_REDIS_PUBSUB_AUDIT_TELEMETRY.md`.
 
 ### 3.2 Optional document DB track
 - If enabled: scaffold Mongo usage for analytics/log documents.

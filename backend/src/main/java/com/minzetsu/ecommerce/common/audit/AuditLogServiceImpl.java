@@ -10,11 +10,13 @@ import org.springframework.stereotype.Service;
 public class AuditLogServiceImpl implements AuditLogService {
 
     private final AuditLogRepository auditLogRepository;
+    private final AuditTelemetryPublisher telemetryPublisher;
 
     @Override
     public void save(AuditLog log) {
         try {
-            auditLogRepository.save(log);
+            AuditLog saved = auditLogRepository.save(log);
+            telemetryPublisher.publish(saved);
         } catch (Exception ex) {
             AuditLogServiceImpl.log.warn("Failed to persist audit log: {}", ex.getMessage(), ex);
         }
