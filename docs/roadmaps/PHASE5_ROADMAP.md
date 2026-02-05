@@ -63,6 +63,7 @@ Checkpoint:
 
 ### 2.2 Sensitive data protection
 - Mask PII/token/password fields in logs and audit payloads.
+- Deliverable doc: `docs/ops/P5_M2_2_AUDIT_MASKING.md`.
 
 ### 2.3 Audit query surface
 - Implement/finish admin audit search endpoint + filters.

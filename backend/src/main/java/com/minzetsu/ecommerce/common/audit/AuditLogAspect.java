@@ -15,12 +15,19 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
+import java.util.regex.Pattern;
 
 @Aspect
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class AuditLogAspect {
+    private static final Pattern SECRET_KV_PATTERN = Pattern.compile(
+            "(?i)\\b(password|pass|pwd|token|secret|api[-_\\s]?key|authorization|otp)\\b\\s*[:=]\\s*([^,;\\s]+)"
+    );
+    private static final Pattern BEARER_PATTERN = Pattern.compile("(?i)\\bBearer\\s+[A-Za-z0-9._\\-]+");
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("(?i)\\b([a-z0-9._%+-]+)@([a-z0-9.-]+\\.[a-z]{2,})\\b");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("\\b\\+?\\d{9,15}\\b");
 
     private final AuditLogService auditLogService;
 
@@ -114,9 +121,18 @@ public class AuditLogAspect {
         if (message == null) {
             return null;
         }
-        if (message.length() <= 1000) {
-            return message;
+        String masked = maskSensitive(message);
+        if (masked.length() <= 1000) {
+            return masked;
         }
-        return message.substring(0, 1000);
+        return masked.substring(0, 1000);
+    }
+
+    private String maskSensitive(String input) {
+        String masked = SECRET_KV_PATTERN.matcher(input).replaceAll("$1=***");
+        masked = BEARER_PATTERN.matcher(masked).replaceAll("Bearer ***");
+        masked = EMAIL_PATTERN.matcher(masked).replaceAll("***@$2");
+        masked = PHONE_PATTERN.matcher(masked).replaceAll("***");
+        return masked;
     }
 }
