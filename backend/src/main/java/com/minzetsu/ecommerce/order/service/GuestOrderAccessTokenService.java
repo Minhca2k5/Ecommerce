@@ -13,8 +13,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.HexFormat;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class GuestOrderAccessTokenService {
 
     private static final String HMAC_ALGO = "HmacSHA256";
@@ -24,16 +26,6 @@ public class GuestOrderAccessTokenService {
     private final GuestCheckoutProperties properties;
     private final GuestCheckoutIdentityService guestCheckoutIdentityService;
     private final OrderRepository orderRepository;
-
-    public GuestOrderAccessTokenService(
-            GuestCheckoutProperties properties,
-            GuestCheckoutIdentityService guestCheckoutIdentityService,
-            OrderRepository orderRepository
-    ) {
-        this.properties = properties;
-        this.guestCheckoutIdentityService = guestCheckoutIdentityService;
-        this.orderRepository = orderRepository;
-    }
 
     public String issueToken(Order order) {
         long expiresAt = order.getCreatedAt()
