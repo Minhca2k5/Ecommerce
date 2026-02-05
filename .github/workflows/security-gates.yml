@@ -58,3 +58,14 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dast-smoke:
+    name: DAST Smoke (Public/Auth)
+    runs-on: ubuntu-latest
+    if: ${{ vars.DAST_TARGET_URL != '' || secrets.DAST_TARGET_URL != '' }}
+    env:
+      DAST_TARGET_URL: ${{ vars.DAST_TARGET_URL != '' && vars.DAST_TARGET_URL || secrets.DAST_TARGET_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run DAST smoke script
+        run: bash scripts/security/dast_smoke.sh "$DAST_TARGET_URL"
