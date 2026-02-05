@@ -57,7 +57,10 @@ export default function OrderDetailPage() {
 
   const currency = order?.currency || "VND";
   const voucherId = useMemo(() => getNumber(order, "voucherId"), [order]);
-  const discountAmount = useMemo(() => getNumber(order, "discountAmount"), [order]);
+  const discountAmount = useMemo(() => getNumber(order, "discountAmount") ?? 0, [order]);
+  const subtotalAmount = useMemo(() => getNumber(order, "subtotalAmount") ?? 0, [order]);
+  const shippingFee = useMemo(() => getNumber(order, "shippingFee") ?? 0, [order]);
+  const taxAmount = useMemo(() => getNumber(order, "taxAmount") ?? 0, [order]);
 
   useEffect(() => {
     if (!orderId) return;
@@ -320,6 +323,20 @@ export default function OrderDetailPage() {
         </Card>
 
         <div className="space-y-4">
+          <Card className="bg-background/70 backdrop-blur">
+            <CardHeader>
+              <CardTitle>Order summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatCurrency(subtotalAmount, currency)}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Discount</span><span className={discountAmount > 0 ? "text-emerald-600" : ""}>- {formatCurrency(discountAmount, currency)}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Shipping</span><span>{formatCurrency(shippingFee, currency)}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Tax</span><span>{formatCurrency(taxAmount, currency)}</span></div>
+              <div className="h-px bg-border" />
+              <div className="flex items-center justify-between font-semibold"><span>Total</span><span>{formatCurrency(Number(order.totalAmount ?? 0), currency)}</span></div>
+            </CardContent>
+          </Card>
+
           <Card className="bg-background/70 backdrop-blur">
             <CardHeader>
               <CardTitle>Payment</CardTitle>

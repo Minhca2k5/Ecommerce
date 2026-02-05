@@ -138,6 +138,9 @@ export default function OrdersPage() {
             <CardHeader className="relative flex flex-row items-start justify-between gap-3">
               <div>
                 <CardTitle>Order</CardTitle>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {`Subtotal ${formatCurrency(Number(order.subtotalAmount ?? 0), order.currency || "VND")} • Tax ${formatCurrency(Number(order.taxAmount ?? 0), order.currency || "VND")}`}
+                </div>
                 <div className="mt-1 text-sm text-muted-foreground">Total • {formatCurrency(Number(order.totalAmount ?? 0), order.currency || "VND")}</div>
               </div>
               {statusBadge(order.status)}
