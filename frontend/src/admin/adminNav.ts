@@ -15,6 +15,7 @@ import {
   TicketPercent,
   Bell,
   Star,
+  ScrollText,
 } from "lucide-react";
 
 export type AdminNavItem = {
@@ -52,6 +53,6 @@ export const adminNav: AdminNavItem[] = [
   { to: "/admin/voucher-uses", label: "Voucher uses", icon: TicketPercent, group: "Marketing" },
 
   { to: "/admin/notifications", label: "Notifications", icon: Bell, group: "System" },
+  { to: "/admin/audit-logs", label: "Audit logs", icon: ScrollText, group: "System" },
   { to: "/admin/reviews", label: "Reviews", icon: Star, group: "System" },
 ];
-

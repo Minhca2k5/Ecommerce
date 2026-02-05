@@ -42,6 +42,7 @@ import AdminVouchersPage from "@/pages/admin/AdminVouchersPage";
 import AdminVoucherUsesPage from "@/pages/admin/AdminVoucherUsesPage";
 import AdminNotificationsPage from "@/pages/admin/AdminNotificationsPage";
 import AdminReviewsPage from "@/pages/admin/AdminReviewsPage";
+import AdminAuditLogsPage from "@/pages/admin/AdminAuditLogsPage";
 import ChooseRolePage from "@/pages/ChooseRolePage";
 import AdminProfilePage from "@/pages/admin/AdminProfilePage";
 import AdminProfileEditPage from "@/pages/admin/AdminProfileEditPage";
@@ -104,6 +105,7 @@ export const router = createBrowserRouter([
               { path: "vouchers", element: <AdminVouchersPage /> },
               { path: "voucher-uses", element: <AdminVoucherUsesPage /> },
               { path: "notifications", element: <AdminNotificationsPage /> },
+              { path: "audit-logs", element: <AdminAuditLogsPage /> },
               { path: "reviews", element: <AdminReviewsPage /> },
               { path: "profile", element: <AdminProfilePage /> },
               { path: "profile/edit", element: <AdminProfileEditPage /> },
