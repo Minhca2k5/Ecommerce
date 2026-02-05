@@ -67,6 +67,7 @@ Checkpoint:
 
 ### 2.3 Audit query surface
 - Implement/finish admin audit search endpoint + filters.
+- Deliverable doc: `docs/ops/P5_M2_3_AUDIT_QUERY_SURFACE.md`.
 
 Checkpoint:
 - Audit logs are searchable, retained by policy, and free of sensitive plaintext.
