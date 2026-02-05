@@ -9,6 +9,7 @@ import com.minzetsu.ecommerce.chatbot.dto.ChatGroupResponse;
 import com.minzetsu.ecommerce.chatbot.dto.ChatGroupInviteResponse;
 import com.minzetsu.ecommerce.notification.dto.request.NotificationCreateRequest;
 import com.minzetsu.ecommerce.notification.service.NotificationService;
+import com.minzetsu.ecommerce.realtime.ChatbotRealtimeService;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.entity.ProductStatus;
 import com.minzetsu.ecommerce.product.entity.Category;
@@ -69,6 +70,7 @@ public class ChatbotService {
     private final ChatGroupMemberRepository chatGroupMemberRepository;
     private final ChatGroupInviteRepository chatGroupInviteRepository;
     private final NotificationService notificationService;
+    private final ChatbotRealtimeService chatbotRealtimeService;
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final ProductRepository productRepository;
@@ -452,6 +454,10 @@ public class ChatbotService {
     private void requireConversationAccess(Long userId, Long conversationId) {
         ChatConversation c = chatConversationRepository.findById(conversationId).orElseThrow(() -> new RuntimeException("Conversation not found"));
         assertCanAccessConversation(userId, c);
+    }
+
+    public void requireConversationAccessForRealtime(Long userId, Long conversationId) {
+        requireConversationAccess(userId, conversationId);
     }
 
     private void assertCanAccessConversation(Long userId, ChatConversation c) {
@@ -1187,7 +1193,7 @@ public class ChatbotService {
         msg.setConversationId(conversationId);
         msg.setRole(role);
         msg.setContent(content);
-        chatMessageRepository.save(msg);
+        ChatMessage saved = chatMessageRepository.save(msg);
 
         if (conversationId != null) {
             chatConversationRepository.findById(conversationId).ifPresent(c -> {
@@ -1196,6 +1202,22 @@ public class ChatbotService {
                 }
                 c.setUpdatedAt(LocalDateTime.now());
                 chatConversationRepository.save(c);
+
+                String senderName = "";
+                if ("user".equals(saved.getRole())) {
+                    senderName = userRepository.findById(saved.getUserId())
+                            .map(u -> (u.getFullName() != null && !u.getFullName().isBlank()) ? u.getFullName() : u.getUsername())
+                            .orElse("Unknown");
+                }
+                Map<String, Object> payload = Map.of(
+                        "conversationId", conversationId,
+                        "role", saved.getRole(),
+                        "content", saved.getContent(),
+                        "userId", saved.getUserId(),
+                        "senderName", senderName,
+                        "createdAt", (saved.getCreatedAt() == null ? LocalDateTime.now() : saved.getCreatedAt()).toString()
+                );
+                chatbotRealtimeService.publishToConversation(conversationId, "chat-message", payload);
             });
         }
     }

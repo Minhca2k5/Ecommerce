@@ -1,11 +1,13 @@
 package com.minzetsu.ecommerce.realtime;
 
 import lombok.RequiredArgsConstructor;
+import com.minzetsu.ecommerce.chatbot.ChatbotService;
 import com.minzetsu.ecommerce.common.config.CustomUserDetails;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -16,13 +18,20 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequiredArgsConstructor
 public class UserRealtimeController {
     private final SseEmitterService emitterService;
-
-    
+    private final ChatbotRealtimeService chatbotRealtimeService;
+    private final ChatbotService chatbotService;
 
     @GetMapping("/orders")
     public SseEmitter subscribeOrders() {
         Long userId = getCurrentUserId();
         return emitterService.createUserEmitter(userId);
+    }
+
+    @GetMapping("/chatbot/conversations/{conversationId}")
+    public SseEmitter subscribeChatConversation(@PathVariable Long conversationId) {
+        Long userId = getCurrentUserId();
+        chatbotService.requireConversationAccessForRealtime(userId, conversationId);
+        return chatbotRealtimeService.subscribe(conversationId, userId);
     }
 
     private Long getCurrentUserId() {

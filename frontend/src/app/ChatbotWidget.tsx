@@ -33,8 +33,9 @@ import {
 import { useAuth } from "@/app/AuthProvider";
 import { useToast } from "@/app/ToastProvider";
 import { getErrorMessage } from "@/lib/errors";
+import { createAuthedEventSource } from "@/lib/sse";
 
-type ChatItem = { role: "user" | "assistant"; content: string; userId?: number; senderName?: string };
+type ChatItem = { role: "user" | "assistant"; content: string; userId?: number; senderName?: string; createdAt?: string };
 type Scope = "personal" | "project" | "group";
 type ChatConversationView = ChatConversation & { scopeLabel?: "PERSONAL" | "PROJECT" | "GROUP" };
 
@@ -60,6 +61,8 @@ export default function ChatbotWidget() {
   const sendingRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const selfSenderName = auth.user?.fullName?.trim() ? auth.user.fullName : auth.user?.username ?? "You";
+  const useGroupSseRender = scope === "group";
 
   const [stickerPos, setStickerPos] = useState({ x: 0, y: 0 });
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 });
@@ -115,7 +118,15 @@ export default function ChatbotWidget() {
     setIsLoading(true);
     try {
       const history = await getChatHistory(conversationId, 30);
-      setItems(history?.map((h) => ({ role: h.role, content: h.content, userId: h.userId, senderName: h.senderName })) ?? []);
+      setItems(
+        history?.map((h) => ({
+          role: h.role,
+          content: h.content,
+          userId: h.userId,
+          senderName: h.senderName,
+          createdAt: h.createdAt,
+        })) ?? [],
+      );
     } catch {
       setItems([]);
     } finally {
@@ -131,16 +142,38 @@ export default function ChatbotWidget() {
     setIsSending(true);
     try {
       if (pendingFile) {
-        setItems((prev) => [...prev, { role: "user", content: `[File] ${pendingFile.name}${text ? `\n${text}` : ""}` }]);
+        setItems((prev) => [
+          ...prev,
+          {
+            role: "user",
+            content: `[File] ${pendingFile.name}${text ? `\n${text}` : ""}`,
+            userId: auth.user?.id,
+            senderName: scope === "group" ? selfSenderName : undefined,
+            createdAt: new Date().toISOString(),
+          },
+        ]);
         const res = await uploadChatFile(pendingFile, text || "Summarize and answer key points");
         setItems((prev) => [...prev, { role: "assistant", content: res.reply }]);
         setPendingFile(null);
       }
 
       if (text && !pendingFile) {
-        setItems((prev) => [...prev, { role: "user", content: text }]);
+        if (!useGroupSseRender) {
+          setItems((prev) => [
+            ...prev,
+            {
+              role: "user",
+              content: text,
+              userId: auth.user?.id,
+              senderName: undefined,
+              createdAt: new Date().toISOString(),
+            },
+          ]);
+        }
         const res = await sendChatMessageToConversation(text, activeConversationId, scope === "group" ? activeGroupId ?? undefined : undefined);
-        setItems((prev) => [...prev, { role: "assistant", content: res.reply }]);
+        if (!useGroupSseRender) {
+          setItems((prev) => [...prev, { role: "assistant", content: res.reply }]);
+        }
         setConversations((prev) => prev.map((c) => (c.id === activeConversationId ? { ...c, updatedAt: new Date().toISOString() } : c)));
       }
 
@@ -321,14 +354,27 @@ export default function ChatbotWidget() {
       }
       sendingRef.current = true;
       setIsSending(true);
-      setItems((prev) => [...prev, { role: "user", content: transcript }]);
+      if (!useGroupSseRender) {
+        setItems((prev) => [
+          ...prev,
+          {
+            role: "user",
+            content: transcript,
+            userId: auth.user?.id,
+            senderName: undefined,
+            createdAt: new Date().toISOString(),
+          },
+        ]);
+      }
       try {
         const res = await sendChatMessageToConversation(
           transcript,
           activeConversationId,
           scope === "group" ? activeGroupId ?? undefined : undefined,
         );
-        setItems((prev) => [...prev, { role: "assistant", content: res.reply }]);
+        if (!useGroupSseRender) {
+          setItems((prev) => [...prev, { role: "assistant", content: res.reply }]);
+        }
         setConversations((prev) =>
           prev.map((c) => (c.id === activeConversationId ? { ...c, updatedAt: new Date().toISOString() } : c)),
         );
@@ -363,6 +409,53 @@ export default function ChatbotWidget() {
     if (!open || !activeConversationId) return;
     void loadHistory(activeConversationId);
   }, [open, activeConversationId]);
+
+  useEffect(() => {
+    if (!open || scope !== "group" || !activeConversationId) return;
+    const es = createAuthedEventSource(`/api/users/me/realtime/chatbot/conversations/${activeConversationId}`);
+    const onChatMessage = (evt: MessageEvent) => {
+      try {
+        const data = JSON.parse(evt.data ?? "{}") as {
+          conversationId?: number;
+          role?: "user" | "assistant";
+          content?: string;
+          userId?: number;
+          senderName?: string;
+          createdAt?: string;
+        };
+        if (!data || Number(data.conversationId) !== Number(activeConversationId) || !data.role || !data.content) {
+          return;
+        }
+        const nextItem: ChatItem = {
+          role: data.role,
+          content: data.content,
+          userId: data.userId,
+          senderName: data.senderName,
+          createdAt: data.createdAt,
+        };
+        setItems((prev) => {
+          const duplicated = prev.some(
+            (x) =>
+              x.role === nextItem.role &&
+              x.content === nextItem.content &&
+              Number(x.userId ?? 0) === Number(data.userId ?? 0) &&
+              String(x.createdAt ?? "") === String(data.createdAt ?? ""),
+          );
+          if (duplicated) return prev;
+          return [...prev, nextItem];
+        });
+      } catch {
+        // ignore malformed event payload
+      }
+    };
+    es.addEventListener("chat-message", onChatMessage as EventListener);
+    es.onerror = () => {
+      // browser auto-reconnects EventSource
+    };
+    return () => {
+      es.close();
+    };
+  }, [open, scope, activeConversationId]);
 
   useEffect(() => {
     if (!activeConversationId) return;
