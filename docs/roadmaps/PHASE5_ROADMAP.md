@@ -49,6 +49,7 @@ Checkpoint:
 
 ### 1.3 Replication/read split plan (optional but prepared)
 - Define read replica routing rules and fallback behavior.
+- Deliverable doc: `docs/ops/P5_M1_3_READ_REPLICA_PLAN.md`.
 
 Checkpoint:
 - Reliability runbook for DB operations exists and is executable.
