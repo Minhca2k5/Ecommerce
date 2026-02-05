@@ -110,12 +110,15 @@ Checkpoint:
 ## 5) Security & Supply Chain Quality (P5-M5)
 ### 5.1 Static and dependency scanning
 - Add SAST and dependency vulnerability scan in CI.
+- Deliverable doc: `docs/ops/P5_M5_1_SAST_DEP_SCAN_CI.md`.
 
 ### 5.2 Secret scanning
 - Enable repository secret scanning in CI and pre-commit/pre-push hooks.
+- Deliverable doc: `docs/ops/P5_M5_2_SECRET_SCAN.md`.
 
 ### 5.3 DAST smoke
 - Add lightweight dynamic checks for public/auth endpoints.
+- Deliverable doc: `docs/ops/P5_M5_3_DAST_SMOKE.md`.
 
 Checkpoint:
 - Security gates produce reports and block high-severity issues.
@@ -125,9 +128,11 @@ Checkpoint:
 ## 6) Migration Safety (P5-M6)
 ### 6.1 Rollback-ready changes
 - Add rollback note/checklist per Liquibase release.
+- Deliverable doc: `docs/ops/P5_M6_1_MIGRATION_ROLLBACK_CHECKLIST.md`.
 
 ### 6.2 Rehearsal on production-like data
 - Run migration rehearsal with timing + failure recovery notes.
+- Deliverable doc: `docs/ops/P5_M6_2_MIGRATION_REHEARSAL.md`.
 
 Checkpoint:
 - Migration process has tested rollback and rehearsal evidence.
@@ -137,9 +142,11 @@ Checkpoint:
 ## 7) API Documentation Finalization (P5-M7)
 ### 7.1 OpenAPI completion
 - Finalize endpoint coverage, examples, and standardized error model.
+- Deliverable doc: `docs/ops/P5_M7_1_OPENAPI_COMPLETION.md`.
 
 ### 7.2 Consumer clarity
 - Add auth notes, pagination/filter contracts, idempotency behavior.
+- Deliverable doc: `docs/ops/P5_M7_2_API_CONSUMER_GUIDE.md`.
 
 Checkpoint:
 - API documentation is accurate enough for independent frontend consumption.
@@ -150,9 +157,11 @@ Checkpoint:
 ### 8.1 SLI/SLO/SLA policy
 - Define SLI/SLO/SLA for auth, checkout, payment callback, and order status.
 - Add error-budget and escalation policy.
+- Deliverable doc: `docs/ops/P5_M8_1_RELIABILITY_POLICY.md`.
 
 ### 8.2 ADR set
 - Capture monolith-first decision and split criteria for future services.
+- Deliverable doc: `docs/ops/P5_M8_2_ADR_SET.md`.
 
 Checkpoint:
 - Reliability policy and ADR docs are versioned and referenced in plan.
