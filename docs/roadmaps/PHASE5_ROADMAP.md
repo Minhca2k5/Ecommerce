@@ -82,6 +82,7 @@ Checkpoint:
 ### 3.2 Optional document DB track
 - If enabled: scaffold Mongo usage for analytics/log documents.
 - If skipped: document rationale and future trigger conditions.
+- Deliverable doc: `docs/ops/P5_M3_2_MONGO_OPTIONAL_TRACK.md`.
 
 Checkpoint:
 - At least one production-meaningful Redis advanced flow is active.
