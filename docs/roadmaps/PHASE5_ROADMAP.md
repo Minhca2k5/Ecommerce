@@ -45,11 +45,11 @@ Checkpoint:
 ### 1.2 Data durability operations
 - Backup/restore drill with timing (RTO/RPO notes).
 - Data retention policy for transactional and audit data.
-- Deliverable doc: `docs/ops/P5_M1_2_DB_BACKUP_RESTORE_RETENTION.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 1.3 Replication/read split plan (optional but prepared)
 - Define read replica routing rules and fallback behavior.
-- Deliverable doc: `docs/ops/P5_M1_3_READ_REPLICA_PLAN.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 Checkpoint:
 - Reliability runbook for DB operations exists and is executable.
@@ -59,15 +59,15 @@ Checkpoint:
 ## 2) Audit Log Hardening (P5-M2)
 ### 2.1 Retention and cleanup
 - Add TTL/archive policy and scheduled cleanup job.
-- Deliverable doc: `docs/ops/P5_M2_1_AUDIT_LOG_RETENTION.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 2.2 Sensitive data protection
 - Mask PII/token/password fields in logs and audit payloads.
-- Deliverable doc: `docs/ops/P5_M2_2_AUDIT_MASKING.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 2.3 Audit query surface
 - Implement/finish admin audit search endpoint + filters.
-- Deliverable doc: `docs/ops/P5_M2_3_AUDIT_QUERY_SURFACE.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 Checkpoint:
 - Audit logs are searchable, retained by policy, and free of sensitive plaintext.
@@ -77,12 +77,12 @@ Checkpoint:
 ## 3) NoSQL Expansion (P5-M3)
 ### 3.1 Redis advanced usage
 - Add streams/pubsub use case (event telemetry or async audit pipeline).
-- Deliverable doc: `docs/ops/P5_M3_1_REDIS_PUBSUB_AUDIT_TELEMETRY.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 3.2 Optional document DB track
 - If enabled: scaffold Mongo usage for analytics/log documents.
 - If skipped: document rationale and future trigger conditions.
-- Deliverable doc: `docs/ops/P5_M3_2_MONGO_OPTIONAL_TRACK.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 Checkpoint:
 - At least one production-meaningful Redis advanced flow is active.
@@ -92,15 +92,15 @@ Checkpoint:
 ## 4) Checkout Enhancements (P5-M4)
 ### 4.1 Guest checkout
 - Support checkout without account while preserving fraud/rate controls.
-- Deliverable doc: `docs/ops/P5_M4_1_GUEST_CHECKOUT.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 4.2 Fraud/abuse baseline
 - Add rules for suspicious retry bursts / repeated failed attempts.
-- Deliverable doc: `docs/ops/P5_M4_2_CHECKOUT_ABUSE_BASELINE.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 4.3 Multi-currency + tax/shipping rules
 - Add deterministic calculation pipeline and response breakdown.
-- Deliverable doc: `docs/ops/P5_M4_3_MULTI_CURRENCY_TAX_SHIPPING.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 Checkpoint:
 - Guest and authenticated checkout flows are functionally complete.
@@ -110,15 +110,15 @@ Checkpoint:
 ## 5) Security & Supply Chain Quality (P5-M5)
 ### 5.1 Static and dependency scanning
 - Add SAST and dependency vulnerability scan in CI.
-- Deliverable doc: `docs/ops/P5_M5_1_SAST_DEP_SCAN_CI.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 5.2 Secret scanning
 - Enable repository secret scanning in CI and pre-commit/pre-push hooks.
-- Deliverable doc: `docs/ops/P5_M5_2_SECRET_SCAN.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 5.3 DAST smoke
 - Add lightweight dynamic checks for public/auth endpoints.
-- Deliverable doc: `docs/ops/P5_M5_3_DAST_SMOKE.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 Checkpoint:
 - Security gates produce reports and block high-severity issues.
@@ -128,11 +128,11 @@ Checkpoint:
 ## 6) Migration Safety (P5-M6)
 ### 6.1 Rollback-ready changes
 - Add rollback note/checklist per Liquibase release.
-- Deliverable doc: `docs/ops/P5_M6_1_MIGRATION_ROLLBACK_CHECKLIST.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 6.2 Rehearsal on production-like data
 - Run migration rehearsal with timing + failure recovery notes.
-- Deliverable doc: `docs/ops/P5_M6_2_MIGRATION_REHEARSAL.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 Checkpoint:
 - Migration process has tested rollback and rehearsal evidence.
@@ -142,11 +142,11 @@ Checkpoint:
 ## 7) API Documentation Finalization (P5-M7)
 ### 7.1 OpenAPI completion
 - Finalize endpoint coverage, examples, and standardized error model.
-- Deliverable doc: `docs/ops/P5_M7_1_OPENAPI_COMPLETION.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 7.2 Consumer clarity
 - Add auth notes, pagination/filter contracts, idempotency behavior.
-- Deliverable doc: `docs/ops/P5_M7_2_API_CONSUMER_GUIDE.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 Checkpoint:
 - API documentation is accurate enough for independent frontend consumption.
@@ -157,11 +157,11 @@ Checkpoint:
 ### 8.1 SLI/SLO/SLA policy
 - Define SLI/SLO/SLA for auth, checkout, payment callback, and order status.
 - Add error-budget and escalation policy.
-- Deliverable doc: `docs/ops/P5_M8_1_RELIABILITY_POLICY.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 8.2 ADR set
 - Capture monolith-first decision and split criteria for future services.
-- Deliverable doc: `docs/ops/P5_M8_2_ADR_SET.md`.
+- Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 Checkpoint:
 - Reliability policy and ADR docs are versioned and referenced in plan.
