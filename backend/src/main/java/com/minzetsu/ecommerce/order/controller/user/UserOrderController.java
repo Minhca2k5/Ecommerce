@@ -3,6 +3,7 @@ package com.minzetsu.ecommerce.order.controller.user;
 import com.minzetsu.ecommerce.common.config.CustomUserDetails;
 import com.minzetsu.ecommerce.order.dto.request.OrderRequest;
 import com.minzetsu.ecommerce.order.dto.response.OrderResponse;
+import com.minzetsu.ecommerce.order.service.CheckoutAbuseService;
 import com.minzetsu.ecommerce.order.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.List;
 public class UserOrderController {
 
     private final OrderService orderService;
+    private final CheckoutAbuseService checkoutAbuseService;
 
     @Operation(
             summary = "Lấy danh sách đơn hàng của người dùng hiện tại",
@@ -68,12 +71,21 @@ public class UserOrderController {
     )
     @PostMapping
     public ResponseEntity<OrderResponse> createCurrentUserOrder(
+            HttpServletRequest httpRequest,
             @Valid @RequestBody OrderRequest request,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey
     ) {
         Long userId = getCurrentUserId();
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(orderService.createOrderResponse(request, userId, idempotencyKey));
+        String scope = "user:" + userId + ":ip:" + httpRequest.getRemoteAddr();
+        checkoutAbuseService.assertAllowed(scope);
+        try {
+            OrderResponse response = orderService.createOrderResponse(request, userId, idempotencyKey);
+            checkoutAbuseService.recordSuccess(scope);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException ex) {
+            checkoutAbuseService.recordFailure(scope);
+            throw ex;
+        }
     }
 
     private Long getCurrentUserId() {

@@ -96,6 +96,7 @@ Checkpoint:
 
 ### 4.2 Fraud/abuse baseline
 - Add rules for suspicious retry bursts / repeated failed attempts.
+- Deliverable doc: `docs/ops/P5_M4_2_CHECKOUT_ABUSE_BASELINE.md`.
 
 ### 4.3 Multi-currency + tax/shipping rules
 - Add deterministic calculation pipeline and response breakdown.
