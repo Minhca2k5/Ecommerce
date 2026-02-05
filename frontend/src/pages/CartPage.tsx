@@ -255,9 +255,9 @@ export default function CartPage() {
             </Button>
             <Button
               className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
-              onClick={() => navigate(isGuest ? "/login" : "/checkout")}
+              onClick={() => navigate("/checkout")}
             >
-              {isGuest ? "Login to checkout" : "Checkout"}
+              {isGuest ? "Guest checkout" : "Checkout"}
             </Button>
           </div>
         </div>
@@ -352,9 +352,9 @@ export default function CartPage() {
             </div>
             <Button
               className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
-              onClick={() => navigate(isGuest ? "/login" : "/checkout")}
+              onClick={() => navigate("/checkout")}
             >
-              {isGuest ? "Login to checkout" : "Proceed to checkout"}
+              {isGuest ? "Proceed as guest" : "Proceed to checkout"}
             </Button>
           </CardContent>
         </Card>

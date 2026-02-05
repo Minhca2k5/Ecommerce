@@ -59,6 +59,8 @@ export const router = createBrowserRouter([
       { path: "products/:productId", element: <ProductDetailPage /> },
       { path: "categories/slug/:slug", element: <CategoryDetailPage /> },
       { path: "categories/:categoryId", element: <CategoryDetailPage /> },
+      { path: "cart", element: <CartPage /> },
+      { path: "checkout", element: <CheckoutPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> },
       {
@@ -75,8 +77,6 @@ export const router = createBrowserRouter([
           { path: "me/wishlist", element: <WishlistPage /> },
           { path: "me/search-logs", element: <SearchLogsPage /> },
           { path: "notifications", element: <NotificationsPage /> },
-          { path: "cart", element: <CartPage /> },
-          { path: "checkout", element: <CheckoutPage /> },
           { path: "orders", element: <OrdersPage /> },
           { path: "orders/:orderId", element: <OrderDetailPage /> },
         ],
