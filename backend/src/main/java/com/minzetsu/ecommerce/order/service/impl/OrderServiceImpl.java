@@ -4,6 +4,7 @@ import com.minzetsu.ecommerce.cart.entity.CartItem;
 import com.minzetsu.ecommerce.cart.service.CartItemService;
 import com.minzetsu.ecommerce.cart.service.CartService;
 import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.utils.DatabaseRetryExecutor;
 import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
 import com.minzetsu.ecommerce.messaging.DomainEventType;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
@@ -37,11 +38,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +65,8 @@ public class OrderServiceImpl implements OrderService {
     private final DomainEventPublisher domainEventPublisher;
     private final IdempotencyService idempotencyService;
     private final SseEmitterService sseEmitterService;
+    private final DatabaseRetryExecutor databaseRetryExecutor;
+    private final PlatformTransactionManager transactionManager;
 
     private Order getExistingOrder(Long id) {
         return orderRepository.findById(id)
@@ -214,18 +221,26 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
     @AuditAction(action = "ORDER_CREATED", entityType = "ORDER")
     public OrderResponse createOrderResponse(OrderRequest request, Long userId, String idempotencyKey) {
-        return idempotencyService.execute(
-                idempotencyKey,
-                "ORDER_CREATE",
-                userId,
-                "ORDER",
-                id -> getFullOrderResponseByIdAndUserId(id, userId),
-                () -> createOrderInternal(request, userId),
-                OrderResponse::getId
+        return databaseRetryExecutor.execute(
+                "order-create",
+                () -> withWriteTransaction(() -> idempotencyService.execute(
+                        idempotencyKey,
+                        "ORDER_CREATE",
+                        userId,
+                        "ORDER",
+                        id -> getFullOrderResponseByIdAndUserId(id, userId),
+                        () -> createOrderInternal(request, userId),
+                        OrderResponse::getId
+                ))
         );
+    }
+
+    private <T> T withWriteTransaction(Supplier<T> supplier) {
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        template.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+        return template.execute(status -> supplier.get());
     }
 
     private OrderResponse createOrderInternal(OrderRequest request, Long userId) {

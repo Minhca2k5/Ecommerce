@@ -4,6 +4,7 @@ import com.minzetsu.ecommerce.common.exception.AlreadyExistException;
 import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
+import com.minzetsu.ecommerce.common.utils.DatabaseRetryExecutor;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
 import com.minzetsu.ecommerce.common.idempotency.IdempotencyService;
 import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
@@ -28,11 +29,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.List;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +52,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final IdempotencyService idempotencyService;
     private final NotificationService notificationService;
     private final SseEmitterService sseEmitterService;
+    private final DatabaseRetryExecutor databaseRetryExecutor;
+    private final PlatformTransactionManager transactionManager;
 
     private Payment getExistingPayment(Long id) {
         return paymentRepository.findById(id)
@@ -137,18 +144,26 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional
     @AuditAction(action = "PAYMENT_CREATED", entityType = "PAYMENT")
     public PaymentResponse createPaymentResponse(PaymentRequest request, Long userId, Long orderId, String idempotencyKey) {
-        return idempotencyService.execute(
-                idempotencyKey,
-                "PAYMENT_CREATE",
-                userId,
-                "PAYMENT",
-                id -> getPaymentResponseById(id, userId),
-                () -> createPaymentInternal(request, userId, orderId),
-                PaymentResponse::getId
+        return databaseRetryExecutor.execute(
+                "payment-create",
+                () -> withWriteTransaction(() -> idempotencyService.execute(
+                        idempotencyKey,
+                        "PAYMENT_CREATE",
+                        userId,
+                        "PAYMENT",
+                        id -> getPaymentResponseById(id, userId),
+                        () -> createPaymentInternal(request, userId, orderId),
+                        PaymentResponse::getId
+                ))
         );
+    }
+
+    private <T> T withWriteTransaction(Supplier<T> supplier) {
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        template.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+        return template.execute(status -> supplier.get());
     }
 
     private PaymentResponse createPaymentInternal(PaymentRequest request, Long userId, Long orderId) {
