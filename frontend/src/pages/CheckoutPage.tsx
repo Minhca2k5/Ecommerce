@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/app/AuthProvider";
 import { useToast } from "@/app/ToastProvider";
 import { useNotifications } from "@/app/NotificationProvider";
+import { ApiError } from "@/lib/apiError";
 import { getErrorMessage } from "@/lib/errors";
 import { formatCurrency } from "@/lib/format";
 import { getOrCreateCart, type CartResponse } from "@/lib/cartApi";
@@ -47,6 +48,7 @@ export default function CheckoutPage() {
   const [addresses, setAddresses] = useState<AddressResponse[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
   const [shippingFee, setShippingFee] = useState<string>("0");
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("VND");
 
   const [appliedVoucher, setAppliedVoucher] = useState<VoucherResponse | null>(null);
   const [isVoucherPickerOpen, setIsVoucherPickerOpen] = useState(false);
@@ -70,12 +72,15 @@ export default function CheckoutPage() {
   const [discountStatus, setDiscountStatus] = useState<"idle" | "loading" | "error">("idle");
   const [discountError, setDiscountError] = useState<string | null>(null);
 
-  const currency = cart?.currency || "VND";
+  const currency = selectedCurrency || cart?.currency || "VND";
   const subtotal = Number(cart?.itemsSubtotal ?? cart?.totalAmount ?? 0);
   const shipping = Math.max(0, Number(shippingFee || "0"));
   const originTotal = subtotal + shipping;
   const discount = Math.max(0, Number(discountAmount || 0));
-  const total = Math.max(0, originTotal - discount);
+  const taxRate = useMemo(() => ((currency || "VND").toUpperCase() === "JPY" ? 0.1 : 0.08), [currency]);
+  const taxable = Math.max(0, originTotal - discount);
+  const tax = taxable * taxRate;
+  const total = taxable + tax;
 
   const canSubmit = useMemo(() => {
     if (isSubmitting) return false;
@@ -101,6 +106,7 @@ export default function CheckoutPage() {
       .then(([c, list, def]) => {
         if (!alive) return;
         setCart(c);
+        setSelectedCurrency((c.currency || "VND").toUpperCase());
         setAddresses(list);
         const defaultId = def?.id ?? list.find((a) => a.isDefault)?.id ?? list[0]?.id ?? null;
         setSelectedAddressId(defaultId ? Number(defaultId) : null);
@@ -210,6 +216,8 @@ export default function CheckoutPage() {
       const suffix = itemNames.length > 3 ? ", ..." : "";
 
       const voucherId = appliedVoucher?.id ? Number(appliedVoucher.id) : undefined;
+      const idempotencyKey =
+        typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `order_${Date.now()}`;
       const created = await createMyOrder({
         cartId: Number(cart.id),
         addressIdSnapshot: Number(selectedAddressId),
@@ -217,7 +225,7 @@ export default function CheckoutPage() {
         shippingFee: shipping,
         currency,
         status: "PENDING",
-      });
+      }, idempotencyKey);
 
       toast.push({ variant: "success", title: "Order placed", message: "Your order has been created." });
 
@@ -233,7 +241,15 @@ export default function CheckoutPage() {
       }
       navigate(orderId ? `/orders/${orderId}` : "/orders", { replace: true });
     } catch (e) {
-      toast.push({ variant: "error", title: "Checkout failed", message: getErrorMessage(e, "Failed to place order.") });
+      if (e instanceof ApiError && e.status === 429) {
+        toast.push({
+          variant: "error",
+          title: "Too many attempts",
+          message: "You are submitting too quickly. Please wait a bit and try again.",
+        });
+      } else {
+        toast.push({ variant: "error", title: "Checkout failed", message: getErrorMessage(e, "Failed to place order.") });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -354,6 +370,18 @@ export default function CheckoutPage() {
                 <Input className="rounded-xl bg-background/70 backdrop-blur" value={shippingFee} onChange={(e) => setShippingFee(e.target.value)} inputMode="numeric" />
               </div>
               <div className="space-y-2">
+                <div className="text-xs font-medium text-muted-foreground">Currency</div>
+                <select
+                  className="h-10 w-full rounded-xl border bg-background/70 px-3 text-sm backdrop-blur"
+                  value={currency}
+                  onChange={(e) => setSelectedCurrency(e.target.value)}
+                >
+                  <option value="VND">VND</option>
+                  <option value="USD">USD</option>
+                  <option value="JPY">JPY</option>
+                </select>
+              </div>
+              <div className="space-y-2 sm:col-span-2">
                 <div className="text-xs font-medium text-muted-foreground">Voucher</div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Button
@@ -416,6 +444,10 @@ export default function CheckoutPage() {
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Discount</span>
               <span className={discount > 0 ? "text-emerald-600" : ""}>- {money(discount, currency)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Tax</span>
+              <span>{money(tax, currency)}</span>
             </div>
             {discountStatus === "loading" ? <div className="text-xs text-muted-foreground">Calculating discount…</div> : null}
             {discountStatus === "error" && discountError ? <div className="text-xs text-rose-600">{discountError}</div> : null}
