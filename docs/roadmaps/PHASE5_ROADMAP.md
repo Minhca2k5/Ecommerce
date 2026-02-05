@@ -45,6 +45,7 @@ Checkpoint:
 ### 1.2 Data durability operations
 - Backup/restore drill with timing (RTO/RPO notes).
 - Data retention policy for transactional and audit data.
+- Deliverable doc: `docs/ops/P5_M1_2_DB_BACKUP_RESTORE_RETENTION.md`.
 
 ### 1.3 Replication/read split plan (optional but prepared)
 - Define read replica routing rules and fallback behavior.
