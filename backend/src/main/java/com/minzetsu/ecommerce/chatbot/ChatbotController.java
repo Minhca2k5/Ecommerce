@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping("/api/users/me/chatbot")
@@ -42,6 +44,13 @@ public class ChatbotController {
     @PostMapping
     public ChatResponse chat(@Valid @RequestBody ChatRequest request) {
         return chatbotService.chat(getCurrentUserId(), request);
+    }
+
+    @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter stream(@Valid @RequestBody ChatRequest request) {
+        SseEmitter emitter = new SseEmitter(120000L);
+        chatbotService.streamChat(getCurrentUserId(), request, emitter);
+        return emitter;
     }
 
     @GetMapping("/conversations")

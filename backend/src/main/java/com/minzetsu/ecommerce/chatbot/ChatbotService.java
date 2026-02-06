@@ -53,10 +53,12 @@ import java.util.Map;
 import java.time.LocalDateTime;
 import java.text.Normalizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.function.Supplier;
 import java.nio.charset.StandardCharsets;
 import com.minzetsu.ecommerce.common.exception.AppException;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
 @RequiredArgsConstructor
@@ -130,6 +132,31 @@ public class ChatbotService {
 
         saveMessage(userId, conversationId, "assistant", reply);
         return new ChatResponse(reply);
+    }
+
+    public void streamChat(Long userId, ChatRequest request, SseEmitter emitter) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                ChatResponse response = chat(userId, request);
+                String reply = response == null ? "" : response.getReply();
+                if (reply == null) {
+                    reply = "";
+                }
+                int chunkSize = 32;
+                for (int i = 0; i < reply.length(); i += chunkSize) {
+                    String chunk = reply.substring(i, Math.min(reply.length(), i + chunkSize));
+                    emitter.send(SseEmitter.event().name("chunk").data(chunk));
+                }
+                emitter.send(SseEmitter.event().name("done").data("ok"));
+                emitter.complete();
+            } catch (Exception ex) {
+                try {
+                    emitter.send(SseEmitter.event().name("error").data("Chat stream failed"));
+                } catch (Exception ignored) {
+                }
+                emitter.completeWithError(ex);
+            }
+        });
     }
 
     public List<ChatMessageResponse> listHistory(Long userId, Long conversationId, int limit) {
