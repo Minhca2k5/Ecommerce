@@ -100,7 +100,12 @@ export async function streamChatMessageToConversation(
   onChunk: (chunk: string) => void,
   onDone?: () => void,
 ) {
-  const url = `${getApiBaseUrl()}/api/users/me/chatbot/stream`;
+  const baseUrl = `${getApiBaseUrl()}/api/users/me/chatbot/stream`;
+  const buildStreamUrl = (tokens: ReturnType<typeof getStoredTokens>) => {
+    if (!tokens?.accessToken) return baseUrl;
+    const qs = new URLSearchParams({ access_token: tokens.accessToken }).toString();
+    return `${baseUrl}?${qs}`;
+  };
   const makeHeaders = (tokens: ReturnType<typeof getStoredTokens>) => {
     const headers: Record<string, string> = {
       Accept: "text/event-stream",
@@ -114,6 +119,7 @@ export async function streamChatMessageToConversation(
   };
 
   let tokens = getStoredTokens();
+  let url = buildStreamUrl(tokens);
   let response = await fetch(url, {
     method: "POST",
     headers: makeHeaders(tokens),
@@ -122,6 +128,7 @@ export async function streamChatMessageToConversation(
 
   if (response.status === 401 || response.status === 403) {
     tokens = await refreshTokensIfNeeded();
+    url = buildStreamUrl(tokens);
     response = await fetch(url, {
       method: "POST",
       headers: makeHeaders(tokens),
