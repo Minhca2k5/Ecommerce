@@ -9,6 +9,7 @@ import com.minzetsu.ecommerce.chatbot.dto.ChatGroupResponse;
 import com.minzetsu.ecommerce.chatbot.dto.ChatGroupInviteResponse;
 import com.minzetsu.ecommerce.notification.dto.request.NotificationCreateRequest;
 import com.minzetsu.ecommerce.notification.service.NotificationService;
+import com.minzetsu.ecommerce.mongo.ChatbotTranscriptService;
 import com.minzetsu.ecommerce.realtime.ChatbotRealtimeService;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.entity.ProductStatus;
@@ -70,6 +71,7 @@ public class ChatbotService {
     private final ChatGroupMemberRepository chatGroupMemberRepository;
     private final ChatGroupInviteRepository chatGroupInviteRepository;
     private final NotificationService notificationService;
+    private final ChatbotTranscriptService chatbotTranscriptService;
     private final ChatbotRealtimeService chatbotRealtimeService;
     private final UserRepository userRepository;
     private final EmailService emailService;
@@ -1209,6 +1211,14 @@ public class ChatbotService {
                             .map(u -> (u.getFullName() != null && !u.getFullName().isBlank()) ? u.getFullName() : u.getUsername())
                             .orElse("Unknown");
                 }
+                chatbotTranscriptService.archiveMessage(
+                        conversationId,
+                        saved.getUserId(),
+                        saved.getRole(),
+                        saved.getContent(),
+                        senderName,
+                        saved.getCreatedAt()
+                );
                 Map<String, Object> payload = Map.of(
                         "conversationId", conversationId,
                         "role", saved.getRole(),

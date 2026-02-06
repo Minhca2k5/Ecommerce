@@ -15,6 +15,7 @@ public class ChatbotTranscriptDocument {
     private String role;
     private String content;
     private String senderName;
+    private String requestId;
     private LocalDateTime createdAt;
 
     public String getId() {
@@ -63,6 +64,14 @@ public class ChatbotTranscriptDocument {
 
     public void setSenderName(String senderName) {
         this.senderName = senderName;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
     public LocalDateTime getCreatedAt() {
