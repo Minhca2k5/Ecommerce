@@ -135,6 +135,8 @@ public class ChatbotService {
     }
 
     public void streamChat(Long userId, ChatRequest request, SseEmitter emitter) {
+        emitter.onTimeout(emitter::complete);
+        emitter.onError(ex -> emitter.complete());
         CompletableFuture.runAsync(() -> {
             try {
                 ChatResponse response = chat(userId, request);
@@ -150,11 +152,12 @@ public class ChatbotService {
                 emitter.send(SseEmitter.event().name("done").data("ok"));
                 emitter.complete();
             } catch (Exception ex) {
+                log.warn("Chatbot stream failed", ex);
                 try {
                     emitter.send(SseEmitter.event().name("error").data("Chat stream failed"));
                 } catch (Exception ignored) {
                 }
-                emitter.completeWithError(ex);
+                emitter.complete();
             }
         });
     }
