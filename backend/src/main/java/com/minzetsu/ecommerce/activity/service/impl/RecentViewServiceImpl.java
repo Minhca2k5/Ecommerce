@@ -9,6 +9,7 @@ import com.minzetsu.ecommerce.activity.service.RecentViewService;
 import com.minzetsu.ecommerce.common.audit.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
+import com.minzetsu.ecommerce.mongo.ClickstreamEventService;
 import com.minzetsu.ecommerce.product.entity.ProductImage;
 import com.minzetsu.ecommerce.product.repository.ProductImageRepository;
 import com.minzetsu.ecommerce.product.service.ProductService;
@@ -35,6 +36,7 @@ public class RecentViewServiceImpl implements RecentViewService {
     private final ProductService productService;
     private final UserService userService;
     private final ProductImageRepository productImageRepository;
+    private final ClickstreamEventService clickstreamEventService;
 
     private Map<Long, String> getPrimaryImageUrlMap(List<Long> productIds) {
         if (productIds == null || productIds.isEmpty()) {
@@ -102,6 +104,7 @@ public class RecentViewServiceImpl implements RecentViewService {
         if (!userService.existsById(userId)) {
             throw new NotFoundException("User with ID " + userId + " not found.");
         }
+        clickstreamEventService.recordProductView(userId, productId);
         Optional<RecentView> existing = recentViewRepository.findByUserIdAndProductId(userId, productId);
         if (existing.isPresent()) {
             RecentView view = existing.get();

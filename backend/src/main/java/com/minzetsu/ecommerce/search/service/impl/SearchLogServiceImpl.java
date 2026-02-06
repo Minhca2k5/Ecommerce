@@ -8,6 +8,7 @@ import com.minzetsu.ecommerce.search.mapper.SearchLogMapper;
 import com.minzetsu.ecommerce.search.repository.SearchLogRepository;
 import com.minzetsu.ecommerce.search.service.SearchLogService;
 import com.minzetsu.ecommerce.user.service.UserService;
+import com.minzetsu.ecommerce.mongo.ClickstreamEventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class SearchLogServiceImpl implements SearchLogService {
     private final SearchLogRepository searchLogRepository;
     private final SearchLogMapper searchLogMapper;
     private final UserService userService;
+    private final ClickstreamEventService clickstreamEventService;
 
     @Override
     @Transactional
@@ -31,6 +33,7 @@ public class SearchLogServiceImpl implements SearchLogService {
             throw new NotFoundException("User not found with id: " + userId);
         }
         String keyword = request.getKeyword();
+        clickstreamEventService.recordSearch(userId, keyword);
         Optional<SearchLog> existingLog = searchLogRepository.findByUserIdAndKeywordIgnoreCase(userId, keyword);
         if (existingLog.isPresent()) {
             SearchLog log = existingLog.get();
