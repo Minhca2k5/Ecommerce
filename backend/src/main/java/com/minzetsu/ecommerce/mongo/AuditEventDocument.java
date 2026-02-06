@@ -16,6 +16,7 @@ public class AuditEventDocument {
     private String entityId;
     private Boolean success;
     private String payload;
+    private String requestId;
     private LocalDateTime createdAt;
 
     public String getId() {
@@ -72,6 +73,14 @@ public class AuditEventDocument {
 
     public void setPayload(String payload) {
         this.payload = payload;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
     public LocalDateTime getCreatedAt() {
