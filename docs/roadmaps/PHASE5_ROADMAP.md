@@ -10,17 +10,16 @@ Guiding principles:
 - Every milestone must have rollout/rollback notes.
 - Prefer pragmatic scope over adding new technologies.
 
-Progress snapshot (2026-02-05):
-- Completed: P5-M0 to P5-M8 implementation/docs track.
+Progress snapshot (2026-02-06):
+- Completed: P5-M0 to P5-M8 implementation/docs track, including Mongo sink scope.
 - In progress: P5-M9 testing suite (kept as final milestone by plan).
-- Mongo track approved: clickstream + chatbot transcript + audit archive (implementation pending).
 
 ---
 
 ## Phase 5 Definition of Done (DoD)
 - Database reliability controls are documented and runnable (isolation/deadlock handling, backup/restore drill, replication/read split plan).
 - Audit logging is production-safe (retention, masking, searchable endpoints).
-- NoSQL expansion scope is implemented (Redis streams/pubsub; optional Mongo module scaffold if selected).
+- NoSQL expansion scope is implemented (Redis streams/pubsub + Mongo sink: clickstream, chatbot transcripts, audit archive).
 - Checkout enhancements are completed (guest checkout, anti-abuse baseline, multi-currency + tax/shipping rules).
 - Security/supply chain checks are integrated in CI (SAST, dependency scan, secret scan, DAST smoke).
 - Migration safety process is in place (rollback strategy + rehearsal).

@@ -14,6 +14,7 @@ This repository is an end-to-end E-commerce system:
 - **Customer Experience:** Anonymous cart + merge on login
 - **Guest Checkout (Phase 5):** secure guest order access token + guest order tracking + guest MoMo payment
 - **Chatbot:** LLM-backed assistant with project/DB context + conversation history
+- **MongoDB Analytics/Log Sink (Phase 5):** clickstream events, chatbot transcript archive, audit event archive (Mongo is sink-only; MySQL remains system of record)
 - **Chatbot Collaboration (Phase 4):** personal/project/group scopes, group invites (accept/refuse), member list + sender display names in group chat
 - **Auth Hardening (Phase 4):** email OTP verification for registration
 - **Frontend (Phase 2+4):** React + TypeScript (see `frontend/`), integrating with backend APIs, SSE, MoMo
@@ -70,6 +71,7 @@ This repository is an end-to-end E-commerce system:
 - Phase 3 roadmap (performance/caching/reliability): `docs/roadmaps/PHASE3_ROADMAP.md`
 - Phase 4 roadmap (integrations/realtime/search/chatbot): `docs/roadmaps/PHASE4_ROADMAP.md`
 - Phase 5 roadmap (reliability/security/ops hardening): `docs/roadmaps/PHASE5_ROADMAP.md`
+- Phase 5 ops notes (runbooks + Mongo collections): `docs/ops/PHASE5_OPS.md`
 - Phase 3 report: `docs/perf/phase3_report.md`
 - High-level project plan: `docs/roadmaps/PROJECT_PLAN.md`
 
