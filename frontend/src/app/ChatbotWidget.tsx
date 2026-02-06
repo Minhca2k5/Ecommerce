@@ -65,9 +65,6 @@ export default function ChatbotWidget() {
   const selfSenderName = auth.user?.fullName?.trim() ? auth.user.fullName : auth.user?.username ?? "You";
   const useGroupSseRender = scope === "group";
 
-  const [stickerPos, setStickerPos] = useState({ x: 0, y: 0 });
-  const dragRef = useRef({ dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 });
-
   const activeGroup = useMemo(() => groups.find((g) => g.id === activeGroupId) ?? null, [groups, activeGroupId]);
 
   async function refreshMeta() {
@@ -478,41 +475,6 @@ export default function ChatbotWidget() {
     setLastByScope((prev) => ({ ...prev, [key]: activeConversationId }));
   }, [activeConversationId, scope, activeProjectId, activeGroupId]);
 
-  useEffect(() => {
-    const margin = 20;
-    const width = 76;
-    const height = 76;
-    setStickerPos({ x: Math.max(margin, window.innerWidth - width - margin), y: Math.max(margin, window.innerHeight - height - margin) });
-  }, []);
-
-  function clampSticker(x: number, y: number) {
-    const margin = 12;
-    const width = 76;
-    const height = 76;
-    const maxX = Math.max(margin, window.innerWidth - width - margin);
-    const maxY = Math.max(margin, window.innerHeight - height - margin);
-    return { x: Math.min(Math.max(margin, x), maxX), y: Math.min(Math.max(margin, y), maxY) };
-  }
-
-  function onDragStart(clientX: number, clientY: number) {
-    dragRef.current.dragging = true;
-    dragRef.current.startX = clientX;
-    dragRef.current.startY = clientY;
-    dragRef.current.originX = stickerPos.x;
-    dragRef.current.originY = stickerPos.y;
-  }
-
-  function onDragMove(clientX: number, clientY: number) {
-    if (!dragRef.current.dragging) return;
-    const dx = clientX - dragRef.current.startX;
-    const dy = clientY - dragRef.current.startY;
-    setStickerPos(clampSticker(dragRef.current.originX + dx, dragRef.current.originY + dy));
-  }
-
-  function onDragEnd() {
-    dragRef.current.dragging = false;
-  }
-
   return (
     <>
       <div
@@ -527,15 +489,7 @@ export default function ChatbotWidget() {
           }
           setOpen((v) => !v);
         }}
-        onMouseDown={(e) => { e.preventDefault(); onDragStart(e.clientX, e.clientY); }}
-        onMouseMove={(e) => onDragMove(e.clientX, e.clientY)}
-        onMouseUp={onDragEnd}
-        onMouseLeave={onDragEnd}
-        onTouchStart={(e) => { const t = e.touches[0]; if (t) onDragStart(t.clientX, t.clientY); }}
-        onTouchMove={(e) => { const t = e.touches[0]; if (t) onDragMove(t.clientX, t.clientY); }}
-        onTouchEnd={onDragEnd}
-        className="fixed z-40 flex h-[72px] w-[72px] select-none items-center justify-center transition hover:-translate-y-1"
-        style={{ left: stickerPos.x, top: stickerPos.y, touchAction: "none" }}
+        className="fixed bottom-6 right-6 z-40 flex h-[72px] w-[72px] select-none items-center justify-center transition hover:-translate-y-1"
       >
         <div className="relative">
           <svg viewBox="0 0 64 64" className="h-14 w-14 drop-shadow-[0_10px_16px_rgba(0,0,0,0.35)]" aria-hidden="true">
