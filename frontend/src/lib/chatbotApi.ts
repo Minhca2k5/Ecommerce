@@ -1,6 +1,6 @@
 import { apiJson, apiMultipart } from "@/lib/http";
 import { getApiBaseUrl } from "@/lib/env";
-import { getStoredTokens } from "@/lib/authStorage";
+import { clearStoredTokens, getStoredTokens, setStoredTokens } from "@/lib/authStorage";
 
 export type ChatResponse = {
   reply: string;
@@ -65,6 +65,34 @@ function createRequestId() {
   return `req_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
+async function refreshTokensIfNeeded() {
+  const tokens = getStoredTokens();
+  if (!tokens?.refreshToken) {
+    clearStoredTokens();
+    return null;
+  }
+  const response = await fetch(`${getApiBaseUrl()}/api/auth/refresh-token`, {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({ refreshToken: tokens.refreshToken }),
+  });
+  if (!response.ok) {
+    clearStoredTokens();
+    return null;
+  }
+  const payload = (await response.json()) as { accessToken?: string; refreshToken?: string; tokenType?: string };
+  if (!payload.accessToken || !payload.refreshToken) {
+    clearStoredTokens();
+    return null;
+  }
+  setStoredTokens({
+    accessToken: payload.accessToken,
+    refreshToken: payload.refreshToken,
+    tokenType: payload.tokenType || tokens.tokenType || "Bearer",
+  });
+  return getStoredTokens();
+}
+
 export async function streamChatMessageToConversation(
   message: string,
   conversationId: number,
@@ -73,20 +101,33 @@ export async function streamChatMessageToConversation(
   onDone?: () => void,
 ) {
   const url = `${getApiBaseUrl()}/api/users/me/chatbot/stream`;
-  const headers: Record<string, string> = {
-    Accept: "text/event-stream",
-    "Content-Type": "application/json",
-    "X-Request-Id": createRequestId(),
+  const makeHeaders = (tokens: ReturnType<typeof getStoredTokens>) => {
+    const headers: Record<string, string> = {
+      Accept: "text/event-stream",
+      "Content-Type": "application/json",
+      "X-Request-Id": createRequestId(),
+    };
+    if (tokens?.accessToken) {
+      headers.Authorization = `${tokens.tokenType || "Bearer"} ${tokens.accessToken}`;
+    }
+    return headers;
   };
-  const tokens = getStoredTokens();
-  if (tokens?.accessToken) {
-    headers.Authorization = `${tokens.tokenType || "Bearer"} ${tokens.accessToken}`;
-  }
-  const response = await fetch(url, {
+
+  let tokens = getStoredTokens();
+  let response = await fetch(url, {
     method: "POST",
-    headers,
+    headers: makeHeaders(tokens),
     body: JSON.stringify({ message, conversationId, ...(groupId != null ? { groupId } : {}) }),
   });
+
+  if (response.status === 401 || response.status === 403) {
+    tokens = await refreshTokensIfNeeded();
+    response = await fetch(url, {
+      method: "POST",
+      headers: makeHeaders(tokens),
+      body: JSON.stringify({ message, conversationId, ...(groupId != null ? { groupId } : {}) }),
+    });
+  }
   if (!response.ok || !response.body) {
     throw new Error(`Stream request failed: ${response.status}`);
   }
