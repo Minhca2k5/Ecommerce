@@ -102,7 +102,9 @@ public class UserServiceImpl implements UserService {
                 cartItemRepository.deleteAllInBatch(cartItems);
             }
         }
-        cartRepository.deleteByUserId(id);
+        if (cart != null) {
+            cartRepository.delete(cart);
+        }
         reviewRepository.deleteByUserId(id);
         addressRepository.deleteByUserId(id);
         refreshTokenRepository.deleteByUser(user);
