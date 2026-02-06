@@ -624,8 +624,29 @@ export default function ChatbotWidget() {
                 </div>
                 <div className="max-h-80 flex-1 overflow-auto px-4 py-3">
                   {isLoading ? <div className="text-sm text-muted-foreground">Loading...</div> : items.length ? (
-                    <div className="space-y-2">{items.map((item, idx) => <div key={`${item.role}-${idx}`} className={`rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap ${item.role === "user" ? "ml-auto max-w-[80%] bg-primary text-primary-foreground" : "mr-auto max-w-[80%] bg-muted"}`}>{scope === "group" && item.role === "user" && item.senderName ? <div className="mb-1 text-[11px] opacity-80">{item.senderName}</div> : null}{item.content}</div>)}</div>
-                  ) : <div className="text-sm text-muted-foreground">Ask something...</div>}
+                    <div className="space-y-2">
+                      {items.map((item, idx) => (
+                        <div key={`${item.role}-${idx}`} className={`rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap ${item.role === "user" ? "ml-auto max-w-[80%] bg-primary text-primary-foreground" : "mr-auto max-w-[80%] bg-muted"}`}>
+                          {scope === "group" && item.role === "user" && item.senderName ? <div className="mb-1 text-[11px] opacity-80">{item.senderName}</div> : null}
+                          {item.content}
+                        </div>
+                      ))}
+                      {isSending ? (
+                        <div className="mr-auto max-w-[80%] rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground">
+                          Đang suy nghĩ...
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="text-sm text-muted-foreground">Ask something...</div>
+                      {isSending ? (
+                        <div className="mr-auto max-w-[80%] rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground">
+                          Đang suy nghĩ...
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
                 </div>
                 <div className="border-t px-3 py-2">
                   {(pendingFile) ? (
