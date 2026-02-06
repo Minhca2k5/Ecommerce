@@ -1,4 +1,6 @@
 import { apiJson, apiMultipart } from "@/lib/http";
+import { getApiBaseUrl } from "@/lib/env";
+import { getStoredTokens } from "@/lib/authStorage";
 
 export type ChatResponse = {
   reply: string;
@@ -54,6 +56,71 @@ export async function sendChatMessageToConversation(message: string, conversatio
     auth: true,
     body: { message, conversationId, ...(groupId != null ? { groupId } : {}) },
   });
+}
+
+function createRequestId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `req_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+export async function streamChatMessageToConversation(
+  message: string,
+  conversationId: number,
+  groupId: number | undefined,
+  onChunk: (chunk: string) => void,
+  onDone?: () => void,
+) {
+  const url = `${getApiBaseUrl()}/api/users/me/chatbot/stream`;
+  const headers: Record<string, string> = {
+    Accept: "text/event-stream",
+    "Content-Type": "application/json",
+    "X-Request-Id": createRequestId(),
+  };
+  const tokens = getStoredTokens();
+  if (tokens?.accessToken) {
+    headers.Authorization = `${tokens.tokenType || "Bearer"} ${tokens.accessToken}`;
+  }
+  const response = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ message, conversationId, ...(groupId != null ? { groupId } : {}) }),
+  });
+  if (!response.ok || !response.body) {
+    throw new Error(`Stream request failed: ${response.status}`);
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let splitIndex = buffer.indexOf("\n\n");
+    while (splitIndex !== -1) {
+      const raw = buffer.slice(0, splitIndex);
+      buffer = buffer.slice(splitIndex + 2);
+      const lines = raw.split("\n");
+      let event = "message";
+      let data = "";
+      for (const line of lines) {
+        if (line.startsWith("event:")) {
+          event = line.slice(6).trim();
+        } else if (line.startsWith("data:")) {
+          data += line.slice(5).trim();
+        }
+      }
+      if (event === "chunk" && data) {
+        onChunk(data);
+      }
+      if (event === "done") {
+        onDone?.();
+      }
+      splitIndex = buffer.indexOf("\n\n");
+    }
+  }
+  onDone?.();
 }
 
 export async function listChatConversations() {

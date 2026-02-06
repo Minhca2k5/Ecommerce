@@ -23,6 +23,7 @@ import {
   removeChatGroupMember,
   renameChatConversation,
   sendChatMessageToConversation,
+  streamChatMessageToConversation,
   uploadChatFile,
   type ChatConversation,
   type ChatGroup,
@@ -35,7 +36,7 @@ import { useToast } from "@/app/ToastProvider";
 import { getErrorMessage } from "@/lib/errors";
 import { createAuthedEventSource } from "@/lib/sse";
 
-type ChatItem = { role: "user" | "assistant"; content: string; userId?: number; senderName?: string; createdAt?: string };
+type ChatItem = { id?: string; role: "user" | "assistant"; content: string; userId?: number; senderName?: string; createdAt?: string };
 type Scope = "personal" | "project" | "group";
 type ChatConversationView = ChatConversation & { scopeLabel?: "PERSONAL" | "PROJECT" | "GROUP" };
 
@@ -170,9 +171,23 @@ export default function ChatbotWidget() {
             },
           ]);
         }
-        const res = await sendChatMessageToConversation(text, activeConversationId, scope === "group" ? activeGroupId ?? undefined : undefined);
-        if (!useGroupSseRender) {
-          setItems((prev) => [...prev, { role: "assistant", content: res.reply }]);
+        if (useGroupSseRender) {
+          await sendChatMessageToConversation(text, activeConversationId, activeGroupId ?? undefined);
+        } else {
+          const streamId = `stream-${Date.now()}`;
+          setItems((prev) => [...prev, { id: streamId, role: "assistant", content: "" }]);
+          await streamChatMessageToConversation(
+            text,
+            activeConversationId,
+            undefined,
+            (chunk) => {
+              setItems((prev) =>
+                prev.map((item) =>
+                  item.id === streamId ? { ...item, content: `${item.content}${chunk}` } : item,
+                ),
+              );
+            },
+          );
         }
         setConversations((prev) => prev.map((c) => (c.id === activeConversationId ? { ...c, updatedAt: new Date().toISOString() } : c)));
       }
