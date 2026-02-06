@@ -162,9 +162,9 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Retention policy (TTL/archive) + scheduled cleanup.
     *   Mask sensitive fields (PII/token/password) in logs.
     *   Admin audit log search/viewer endpoint + filters.
-*   [x] **NoSQL Expansion**:
-    *   Redis advanced usage (streams/pubsub).
-    *   One document DB (MongoDB) for logs/analytics (optional).
+*   [ ] **NoSQL Expansion**:
+    *   [x] Redis advanced usage (streams/pubsub).
+    *   [ ] MongoDB analytics/log sink (selected scope: clickstream, chatbot transcript, audit archive).
 *   [x] **Checkout Enhancements**:
     *   Guest checkout (no account required).
     *   Guest secure re-open flow (access token + guest order page + guest MoMo path).

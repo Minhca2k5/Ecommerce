@@ -46,8 +46,14 @@ Operate Phase 5 with production-readiness focus:
 - Redis telemetry channel:
   - publish audit telemetry events to Redis pub/sub
   - subscriber path available for monitoring and async extensions
-- Optional Mongo track:
-  - explicitly deferred with documented trigger criteria (no silent scope drift)
+- Mongo analytics/log sink (enabled, minimal scope):
+  - collections:
+    - `clickstream_events` (VIEW/SEARCH)
+    - `chatbot_transcripts` (message archive)
+    - `audit_events` (audit telemetry archive)
+  - best-effort write: Mongo downtime must not fail API requests
+  - TTL retention recommended (e.g., 90 days) to cap growth
+  - MySQL remains system of record for all business flows
 
 ### 4) Checkout Reliability Enhancements (M4)
 - Guest checkout flow:

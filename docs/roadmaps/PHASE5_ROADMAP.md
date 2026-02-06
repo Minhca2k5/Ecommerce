@@ -13,6 +13,7 @@ Guiding principles:
 Progress snapshot (2026-02-05):
 - Completed: P5-M0 to P5-M8 implementation/docs track.
 - In progress: P5-M9 testing suite (kept as final milestone by plan).
+- Mongo track approved: clickstream + chatbot transcript + audit archive (implementation pending).
 
 ---
 
@@ -84,8 +85,9 @@ Checkpoint:
 - Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 ### 3.2 Optional document DB track
-- If enabled: scaffold Mongo usage for analytics/log documents.
-- If skipped: document rationale and future trigger conditions.
+- Enabled scope (minimal): clickstream events, chatbot transcript archive, audit event archive.
+- Mongo is an analytics/log sink only; MySQL remains system of record.
+- Implement best-effort write (Mongo down must not fail requests).
 - Deliverable doc: `docs/ops/PHASE5_OPS.md`.
 
 Checkpoint:
