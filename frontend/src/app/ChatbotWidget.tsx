@@ -648,7 +648,12 @@ export default function ChatbotWidget() {
                       ))}
                       {isSending ? (
                         <div className="mr-auto max-w-[80%] rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground">
-                          Đang suy nghĩ...
+                          <span>Đang suy nghĩ</span>
+                          <span className="ml-2 inline-flex items-center gap-1">
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "120ms" }} />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "240ms" }} />
+                          </span>
                         </div>
                       ) : null}
                     </div>
@@ -657,7 +662,12 @@ export default function ChatbotWidget() {
                       <div className="text-sm text-muted-foreground">Ask something...</div>
                       {isSending ? (
                         <div className="mr-auto max-w-[80%] rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground">
-                          Đang suy nghĩ...
+                          <span>Đang suy nghĩ</span>
+                          <span className="ml-2 inline-flex items-center gap-1">
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "120ms" }} />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "240ms" }} />
+                          </span>
                         </div>
                       ) : null}
                     </div>
