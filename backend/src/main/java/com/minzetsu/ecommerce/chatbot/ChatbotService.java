@@ -123,7 +123,8 @@ public class ChatbotService {
                     && properties.getBaseUrl() != null
                     && !properties.getBaseUrl().isBlank()) {
                 log.info("Chatbot: LLM enabled, calling LLM");
-                reply = callLlm(message, context);
+                List<Map<String, Object>> recentHistory = buildRecentHistory(conversationId, message);
+                reply = callLlm(message, context, recentHistory);
             }
             if (reply == null || reply.isBlank()) {
                 reply = fallbackReply(message);
@@ -1031,7 +1032,7 @@ public class ChatbotService {
         }
     }
 
-    private String callLlm(String message, String context) {
+    private String callLlm(String message, String context, List<Map<String, Object>> history) {
         try {
             String baseUrl = properties.getBaseUrl();
             String apiKey = properties.getApiKey();
@@ -1047,6 +1048,9 @@ public class ChatbotService {
                             "for the missing info. For non-project questions, you may answer normally."));
             if (context != null && !context.isBlank()) {
                 messages.add(Map.of("role", "system", "content", context));
+            }
+            if (history != null && !history.isEmpty()) {
+                messages.addAll(history);
             }
             messages.add(Map.of("role", "user", "content", message));
 
@@ -1109,7 +1113,7 @@ public class ChatbotService {
     public String translateText(String text, String targetLang) {
         String target = (targetLang == null || targetLang.isBlank()) ? properties.getDefaultVoiceLang() : targetLang.trim().toLowerCase();
         String prompt = "Translate to " + ("vi".equals(target) ? "Vietnamese" : "English") + ":\n" + sanitize(text);
-        String result = callLlm(prompt, "");
+        String result = callLlm(prompt, "", null);
         return result == null || result.isBlank() ? sanitize(text) : result.trim();
     }
 
@@ -1130,11 +1134,49 @@ public class ChatbotService {
             if (text.length() > 12000) text = text.substring(0, 12000);
             String q = (question == null || question.isBlank()) ? "Summarize this file." : question;
             String prompt = q + "\n\nFile content:\n" + text;
-            String out = callLlm(prompt, "");
+            String out = callLlm(prompt, "", null);
             return out == null || out.isBlank() ? "Cannot process file right now." : out;
         } catch (Exception ex) {
             return "Cannot process file right now.";
         }
+    }
+
+    private List<Map<String, Object>> buildRecentHistory(Long conversationId, String currentMessage) {
+        if (conversationId == null) {
+            return List.of();
+        }
+        int size = 8;
+        var page = chatMessageRepository.findByConversationIdOrderByCreatedAtDesc(
+                conversationId,
+                org.springframework.data.domain.PageRequest.of(0, size)
+        );
+        if (page.isEmpty()) {
+            return List.of();
+        }
+        List<ChatMessage> ordered = page.getContent().stream()
+                .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()))
+                .toList();
+        if (!ordered.isEmpty()) {
+            ChatMessage last = ordered.get(ordered.size() - 1);
+            if ("user".equalsIgnoreCase(last.getRole())
+                    && last.getContent() != null
+                    && last.getContent().trim().equals(currentMessage)) {
+                ordered = ordered.subList(0, ordered.size() - 1);
+            }
+        }
+        List<Map<String, Object>> history = new java.util.ArrayList<>();
+        for (ChatMessage msg : ordered) {
+            String role = msg.getRole() == null ? "user" : msg.getRole().toLowerCase();
+            if (!"user".equals(role) && !"assistant".equals(role)) {
+                continue;
+            }
+            String content = msg.getContent() == null ? "" : msg.getContent();
+            if (content.length() > 800) {
+                content = content.substring(0, 800);
+            }
+            history.add(Map.of("role", role, "content", content));
+        }
+        return history;
     }
 
     private String parseLlmReply(Map<?, ?> response) {
