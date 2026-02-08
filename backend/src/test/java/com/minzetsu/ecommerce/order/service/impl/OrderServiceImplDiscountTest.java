@@ -5,6 +5,7 @@ import com.minzetsu.ecommerce.cart.entity.CartItem;
 import com.minzetsu.ecommerce.cart.service.CartItemService;
 import com.minzetsu.ecommerce.cart.service.CartService;
 import com.minzetsu.ecommerce.common.idempotency.IdempotencyService;
+import com.minzetsu.ecommerce.common.exception.AppException;
 import com.minzetsu.ecommerce.common.utils.DatabaseRetryExecutor;
 import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
 import com.minzetsu.ecommerce.order.config.CheckoutPricingProperties;
@@ -30,12 +31,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -178,6 +181,42 @@ class OrderServiceImplDiscountTest {
         BigDecimal discount = orderService.getDisCountAmount(request, userId);
 
         assertThat(discount).isEqualByComparingTo("25000.00");
+    }
+
+    @Test
+    void getDisCountAmount_shouldReturnZeroWhenNoVoucherProvided() {
+        long userId = 13L;
+        long cartId = 23L;
+
+        mockValidCartContext(userId, cartId, new BigDecimal("100000"));
+
+        OrderRequest request = OrderRequest.builder()
+                .cartId(cartId)
+                .currency("VND")
+                .build();
+
+        BigDecimal discount = orderService.getDisCountAmount(request, userId);
+
+        assertThat(discount).isEqualByComparingTo("0");
+    }
+
+    @Test
+    void getDisCountAmount_shouldThrowBadRequestForUnsupportedCurrency() {
+        long userId = 14L;
+        long cartId = 24L;
+
+        mockValidCartContext(userId, cartId, new BigDecimal("100000"));
+
+        OrderRequest request = OrderRequest.builder()
+                .cartId(cartId)
+                .currency("EUR")
+                .build();
+
+        assertThatThrownBy(() -> orderService.getDisCountAmount(request, userId))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining("Unsupported currency")
+                .extracting("status")
+                .isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     private void mockValidCartContext(long userId, long cartId, BigDecimal itemUnitPrice) {
