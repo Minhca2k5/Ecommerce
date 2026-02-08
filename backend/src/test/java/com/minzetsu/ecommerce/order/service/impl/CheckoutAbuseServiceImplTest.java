@@ -60,6 +60,15 @@ class CheckoutAbuseServiceImplTest {
     }
 
     @Test
+    void assertAllowed_shouldBypassWhenStoredFailureCountIsMalformed() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get("checkout:abuse:ip-bad")).thenReturn("abc");
+
+        assertThatCode(() -> service.assertAllowed("ip-bad"))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
     void recordFailure_shouldIncrementAndSetExpireOnFirstFailure() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.increment("checkout:abuse:ip-3")).thenReturn(1L);
