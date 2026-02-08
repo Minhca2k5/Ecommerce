@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RequestLoggingFilterTest {
 
@@ -63,5 +64,19 @@ class RequestLoggingFilterTest {
 
         assertThatCode(() -> filter.doFilter(request, response, chain)).doesNotThrowAnyException();
         assertThat(response.getStatus()).isEqualTo(202);
+    }
+
+    @Test
+    void doFilter_shouldRethrowWhenChainFails() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/public/ping");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        FilterChain chain = (req, res) -> {
+            throw new IllegalStateException("chain failed");
+        };
+
+        assertThatThrownBy(() -> filter.doFilter(request, response, chain))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("chain failed");
     }
 }
