@@ -80,6 +80,25 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
+    void doFilter_shouldNotAuthenticateWhenTokenIsInvalid() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/user/profile");
+        request.addHeader("Authorization", "Bearer token-invalid");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicInteger chainCalls = new AtomicInteger(0);
+        FilterChain chain = (req, res) -> chainCalls.incrementAndGet();
+
+        UserDetails userDetails = new User("alice", "n/a", List.of());
+        when(jwtService.extractUsername("token-invalid")).thenReturn("alice");
+        when(userDetailsService.loadUserByUsername("alice")).thenReturn(userDetails);
+        when(jwtService.isTokenValid("token-invalid", userDetails)).thenReturn(false);
+
+        filter.doFilter(request, response, chain);
+
+        assertThat(chainCalls.get()).isEqualTo(1);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    }
+
+    @Test
     void doFilter_shouldUseAccessTokenQueryParamWhenHeaderNotBearer() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/user/profile");
         request.addHeader("Authorization", "Token abc");
