@@ -67,6 +67,20 @@ class GuestOrderAccessTokenServiceTest {
     }
 
     @Test
+    void authorizeGuestOrder_shouldRejectWhenTokenMissing() {
+        assertThatThrownBy(() -> tokenService.authorizeGuestOrder(100L, null))
+                .isInstanceOf(UnAuthorizedException.class)
+                .hasMessageContaining("required");
+    }
+
+    @Test
+    void authorizeGuestOrder_shouldRejectWhenTokenFormatIsInvalid() {
+        assertThatThrownBy(() -> tokenService.authorizeGuestOrder(100L, "bad.token"))
+                .isInstanceOf(UnAuthorizedException.class)
+                .hasMessageContaining("Invalid guest access token");
+    }
+
+    @Test
     void authorizeGuestOrder_shouldRejectWhenOrderIdDoesNotMatchToken() {
         User guestUser = User.builder().username("guest_checkout").email("g@test.com").password("pw").build();
         guestUser.setId(999L);
@@ -110,5 +124,33 @@ class GuestOrderAccessTokenServiceTest {
         assertThatThrownBy(() -> tokenService.authorizeGuestOrder(300L, token))
                 .isInstanceOf(UnAuthorizedException.class)
                 .hasMessageContaining("expired");
+    }
+
+    @Test
+    void authorizeGuestOrder_shouldRejectWhenOrderIsNotGuestOwned() {
+        User guestUser = User.builder().username("guest_checkout").email("g@test.com").password("pw").build();
+        guestUser.setId(999L);
+
+        User normalUser = User.builder().username("normal").email("n@test.com").password("pw").build();
+        normalUser.setId(111L);
+
+        Order order = Order.builder()
+                .user(normalUser)
+                .addressIdSnapshot(1L)
+                .currency("VND")
+                .status(OrderStatus.PENDING)
+                .totalAmount(BigDecimal.TEN)
+                .build();
+        order.setId(400L);
+        order.setCreatedAt(LocalDateTime.now().minusMinutes(1));
+
+        String token = tokenService.issueToken(order);
+
+        when(orderRepository.findById(400L)).thenReturn(Optional.of(order));
+        when(guestCheckoutIdentityService.resolveGuestCheckoutUserId()).thenReturn(999L);
+
+        assertThatThrownBy(() -> tokenService.authorizeGuestOrder(400L, token))
+                .isInstanceOf(UnAuthorizedException.class)
+                .hasMessageContaining("not a guest checkout order");
     }
 }
