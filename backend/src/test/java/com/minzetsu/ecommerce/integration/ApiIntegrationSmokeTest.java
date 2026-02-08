@@ -38,6 +38,12 @@ class ApiIntegrationSmokeTest {
     }
 
     @Test
+    void guestOrderEndpoint_shouldRejectMissingAccessToken() throws Exception {
+        mockMvc.perform(get("/api/public/guest/orders/1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void adminEndpoint_shouldRejectAnonymousAccess() throws Exception {
         mockMvc.perform(get("/api/admin/roles"))
                 .andExpect(status().isForbidden());
