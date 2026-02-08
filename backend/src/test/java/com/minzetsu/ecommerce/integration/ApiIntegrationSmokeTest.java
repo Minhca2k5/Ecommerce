@@ -38,6 +38,12 @@ class ApiIntegrationSmokeTest {
     }
 
     @Test
+    void publicCategories_shouldBeAccessibleWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/api/public/categories"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void guestOrderEndpoint_shouldRejectMissingAccessToken() throws Exception {
         mockMvc.perform(get("/api/public/guest/orders/1"))
                 .andExpect(status().isForbidden());
