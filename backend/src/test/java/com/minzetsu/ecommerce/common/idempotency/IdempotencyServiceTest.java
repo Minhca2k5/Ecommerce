@@ -53,6 +53,29 @@ class IdempotencyServiceTest {
     }
 
     @Test
+    void execute_shouldCreateDirectlyWhenKeyIsNull() {
+        AtomicInteger creates = new AtomicInteger(0);
+
+        String result = service.execute(
+                null,
+                "ORDER_CREATE",
+                1L,
+                "ORDER",
+                id -> "loaded-" + id,
+                () -> {
+                    creates.incrementAndGet();
+                    return "created";
+                },
+                value -> 11L
+        );
+
+        assertThat(result).isEqualTo("created");
+        assertThat(creates.get()).isEqualTo(1);
+        verify(repository, never()).findByKeyValueAndScopeAndUserId(any(), any(), any());
+        verify(repository, never()).save(any(IdempotencyKey.class));
+    }
+
+    @Test
     void execute_shouldLoadExistingResourceWhenKeyAlreadyStored() {
         IdempotencyKey existing = new IdempotencyKey();
         existing.setResourceId(123L);
