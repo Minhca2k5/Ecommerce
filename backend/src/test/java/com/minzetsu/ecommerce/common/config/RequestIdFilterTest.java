@@ -47,4 +47,21 @@ class RequestIdFilterTest {
         assertThat(generated).isNotBlank();
         assertThat(MDC.get(RequestIdFilter.MDC_REQUEST_ID_KEY)).isNull();
     }
+
+    @Test
+    void doFilter_shouldGenerateRequestIdWhenHeaderIsBlank() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/test");
+        request.addHeader(RequestIdFilter.REQUEST_ID_HEADER, "   ");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        FilterChain chain = (req, res) ->
+                assertThat(MDC.get(RequestIdFilter.MDC_REQUEST_ID_KEY)).isNotBlank();
+
+        filter.doFilter(request, response, chain);
+
+        String generated = response.getHeader(RequestIdFilter.REQUEST_ID_HEADER);
+        assertThat(generated).isNotBlank();
+        assertThat(generated).isNotEqualTo("   ");
+        assertThat(MDC.get(RequestIdFilter.MDC_REQUEST_ID_KEY)).isNull();
+    }
 }
