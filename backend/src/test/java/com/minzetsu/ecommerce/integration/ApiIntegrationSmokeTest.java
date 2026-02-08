@@ -44,6 +44,18 @@ class ApiIntegrationSmokeTest {
     }
 
     @Test
+    void publicBanners_shouldBeAccessibleWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/api/public/banners"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void publicRealtime_shouldBeAccessibleWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/api/public/realtime/new-products"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void guestOrderEndpoint_shouldRejectMissingAccessToken() throws Exception {
         mockMvc.perform(get("/api/public/guest/orders/1"))
                 .andExpect(status().isForbidden());
@@ -68,6 +80,36 @@ class ApiIntegrationSmokeTest {
     }
 
     @Test
+    void userNotificationsEndpoint_shouldRejectAnonymousAccess() throws Exception {
+        mockMvc.perform(get("/api/users/me/notifications"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void userSearchLogsEndpoint_shouldRejectAnonymousAccess() throws Exception {
+        mockMvc.perform(get("/api/users/me/search-logs"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void userWishlistsEndpoint_shouldRejectAnonymousAccess() throws Exception {
+        mockMvc.perform(get("/api/users/me/wishlists"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void userRecentViewsEndpoint_shouldRejectAnonymousAccess() throws Exception {
+        mockMvc.perform(get("/api/users/me/recent-views"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void userRealtimeEndpoint_shouldRejectAnonymousAccess() throws Exception {
+        mockMvc.perform(get("/api/users/me/realtime/orders"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void adminEndpoint_shouldRejectAnonymousAccess() throws Exception {
         mockMvc.perform(get("/api/admin/roles"))
                 .andExpect(status().isForbidden());
@@ -76,6 +118,24 @@ class ApiIntegrationSmokeTest {
     @Test
     void adminUsersEndpoint_shouldRejectAnonymousAccess() throws Exception {
         mockMvc.perform(get("/api/admin/users/1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminProductsEndpoint_shouldRejectAnonymousAccess() throws Exception {
+        mockMvc.perform(get("/api/admin/products/1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminOrdersEndpoint_shouldRejectAnonymousAccess() throws Exception {
+        mockMvc.perform(get("/api/admin/orders/1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminAuditLogsEndpoint_shouldRejectAnonymousAccess() throws Exception {
+        mockMvc.perform(get("/api/admin/audit-logs"))
                 .andExpect(status().isForbidden());
     }
 
