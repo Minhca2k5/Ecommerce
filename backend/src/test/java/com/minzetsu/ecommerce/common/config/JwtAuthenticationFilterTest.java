@@ -81,6 +81,26 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
+    void doFilter_shouldAuthenticateWhenBearerPrefixIsLowercase() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/user/profile");
+        request.addHeader("Authorization", "bearer token-lower");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicInteger chainCalls = new AtomicInteger(0);
+        FilterChain chain = (req, res) -> chainCalls.incrementAndGet();
+
+        UserDetails userDetails = new User("charlie", "n/a", List.of());
+        when(jwtService.extractUsername("token-lower")).thenReturn("charlie");
+        when(userDetailsService.loadUserByUsername("charlie")).thenReturn(userDetails);
+        when(jwtService.isTokenValid("token-lower", userDetails)).thenReturn(true);
+
+        filter.doFilter(request, response, chain);
+
+        assertThat(chainCalls.get()).isEqualTo(1);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
+        assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("charlie");
+    }
+
+    @Test
     void doFilter_shouldNotAuthenticateWhenTokenIsInvalid() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/user/profile");
         request.addHeader("Authorization", "Bearer token-invalid");
