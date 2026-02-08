@@ -153,4 +153,27 @@ class GuestOrderAccessTokenServiceTest {
                 .isInstanceOf(UnAuthorizedException.class)
                 .hasMessageContaining("not a guest checkout order");
     }
+
+    @Test
+    void authorizeGuestOrder_shouldRejectWhenOrderNotFound() {
+        User guestUser = User.builder().username("guest_checkout").email("g@test.com").password("pw").build();
+        guestUser.setId(999L);
+
+        Order order = Order.builder()
+                .user(guestUser)
+                .addressIdSnapshot(1L)
+                .currency("VND")
+                .status(OrderStatus.PENDING)
+                .totalAmount(BigDecimal.TEN)
+                .build();
+        order.setId(500L);
+        order.setCreatedAt(LocalDateTime.now().minusMinutes(1));
+
+        String token = tokenService.issueToken(order);
+        when(orderRepository.findById(500L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> tokenService.authorizeGuestOrder(500L, token))
+                .isInstanceOf(UnAuthorizedException.class)
+                .hasMessageContaining("Order not found");
+    }
 }
