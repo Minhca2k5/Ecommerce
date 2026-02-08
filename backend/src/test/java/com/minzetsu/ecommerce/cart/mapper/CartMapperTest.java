@@ -105,4 +105,22 @@ class CartMapperTest {
         assertThat(result.getTotalAmount()).isEqualByComparingTo("-5000");
         assertThat(result.getCurrency()).isEqualTo("USD");
     }
+
+    @Test
+    void toFullResponse_shouldTreatNullQuantityAndUnitPriceAsZero() {
+        Cart cart = Cart.builder().guestId("guest-null-item").build();
+
+        CartItemResponse item = CartItemResponse.builder()
+                .quantity(null)
+                .unitPriceSnapshot(null)
+                .lineTotal(null)
+                .build();
+
+        CartResponse result = cartMapper.toFullResponse(cart, List.of(item), null, null, "VND");
+
+        assertThat(item.getLineTotal()).isEqualByComparingTo("0");
+        assertThat(result.getTotalQuantity()).isEqualTo(0);
+        assertThat(result.getItemsSubtotal()).isEqualByComparingTo("0");
+        assertThat(result.getTotalAmount()).isEqualByComparingTo("0");
+    }
 }
