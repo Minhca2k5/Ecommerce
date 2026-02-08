@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,5 +48,20 @@ class AuditLogServiceImplTest {
 
         verify(auditLogRepository).save(log);
         verify(telemetryPublisher, never()).publish(log);
+    }
+
+    @Test
+    void save_shouldSwallowTelemetryPublishExceptions() {
+        AuditLog log = new AuditLog();
+        log.setAction("ORDER_UPDATED");
+        when(auditLogRepository.save(log)).thenReturn(log);
+        org.mockito.Mockito.doThrow(new RuntimeException("redis down"))
+                .when(telemetryPublisher)
+                .publish(log);
+
+        assertThatCode(() -> service.save(log)).doesNotThrowAnyException();
+
+        verify(auditLogRepository).save(log);
+        verify(telemetryPublisher).publish(log);
     }
 }
