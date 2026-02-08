@@ -168,4 +168,24 @@ class RateLimitFilterTest {
         assertThat(responseB.getStatus()).isEqualTo(429);
         verify(blockedCounter).increment();
     }
+
+    @Test
+    void doFilter_shouldUseSeparateBucketsForDifferentRuleKeys() throws Exception {
+        MockHttpServletRequest publicRequest = new MockHttpServletRequest("GET", "/api/public/products");
+        publicRequest.setRemoteAddr("10.0.0.1");
+        MockHttpServletRequest authRequest = new MockHttpServletRequest("POST", "/api/auth/login");
+        authRequest.setRemoteAddr("10.0.0.1");
+
+        MockHttpServletResponse publicResponse = new MockHttpServletResponse();
+        MockHttpServletResponse authResponse = new MockHttpServletResponse();
+        AtomicInteger chainCalls = new AtomicInteger(0);
+        FilterChain chain = (req, res) -> chainCalls.incrementAndGet();
+
+        rateLimitFilter.doFilter(publicRequest, publicResponse, chain);
+        rateLimitFilter.doFilter(authRequest, authResponse, chain);
+
+        assertThat(chainCalls.get()).isEqualTo(2);
+        assertThat(publicResponse.getStatus()).isEqualTo(200);
+        assertThat(authResponse.getStatus()).isEqualTo(200);
+    }
 }
