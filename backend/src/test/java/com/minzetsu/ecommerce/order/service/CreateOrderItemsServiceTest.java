@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,9 +52,7 @@ class CreateOrderItemsServiceTest {
                 .build();
 
         when(cartItemService.getCartItemsByCartId(20L)).thenReturn(List.of(cartItem));
-
-        when(orderItemRepository.saveAll(org.mockito.ArgumentMatchers.anyList()))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(orderItemRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
         List<OrderItem> result = service.createOrderItems(order, 20L);
 
@@ -69,5 +68,22 @@ class CreateOrderItemsServiceTest {
         ArgumentCaptor<List<CartItem>> deletedCaptor = ArgumentCaptor.forClass(List.class);
         verify(cartItemService).deleteByCartItems(deletedCaptor.capture());
         assertThat(deletedCaptor.getValue()).containsExactly(cartItem);
+    }
+
+    @Test
+    void createOrderItems_shouldHandleEmptyCartItems() {
+        Order order = Order.builder().build();
+        order.setId(11L);
+
+        when(cartItemService.getCartItemsByCartId(21L)).thenReturn(List.of());
+        when(orderItemRepository.saveAll(anyList())).thenReturn(List.of());
+
+        List<OrderItem> result = service.createOrderItems(order, 21L);
+
+        assertThat(result).isEmpty();
+
+        ArgumentCaptor<List<CartItem>> deletedCaptor = ArgumentCaptor.forClass(List.class);
+        verify(cartItemService).deleteByCartItems(deletedCaptor.capture());
+        assertThat(deletedCaptor.getValue()).isEmpty();
     }
 }
