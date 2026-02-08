@@ -8,6 +8,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RequestIdFilterTest {
 
@@ -62,6 +63,21 @@ class RequestIdFilterTest {
         String generated = response.getHeader(RequestIdFilter.REQUEST_ID_HEADER);
         assertThat(generated).isNotBlank();
         assertThat(generated).isNotEqualTo("   ");
+        assertThat(MDC.get(RequestIdFilter.MDC_REQUEST_ID_KEY)).isNull();
+    }
+
+    @Test
+    void doFilter_shouldClearMdcWhenChainThrows() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/test");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        FilterChain chain = (req, res) -> {
+            throw new IllegalStateException("boom");
+        };
+
+        assertThatThrownBy(() -> filter.doFilter(request, response, chain))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("boom");
         assertThat(MDC.get(RequestIdFilter.MDC_REQUEST_ID_KEY)).isNull();
     }
 }
