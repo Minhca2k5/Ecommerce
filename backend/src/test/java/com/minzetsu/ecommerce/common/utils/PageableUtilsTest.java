@@ -37,6 +37,18 @@ class PageableUtilsTest {
     }
 
     @Test
+    void applySorting_shouldFallbackToAscendingWhenDirectionIsUnknown() {
+        Pageable pageable = PageRequest.of(0, 10);
+        SortableFilter filter = new TestFilter("id", "sideways");
+
+        Pageable result = PageableUtils.applySorting(pageable, filter);
+
+        Sort.Order order = result.getSort().getOrderFor("id");
+        assertThat(order).isNotNull();
+        assertThat(order.getDirection()).isEqualTo(Sort.Direction.ASC);
+    }
+
+    @Test
     void applySorting_shouldThrowWhenPageableOrFilterIsNull() {
         SortableFilter filter = new TestFilter("id", "asc");
         Pageable pageable = PageRequest.of(0, 10);
