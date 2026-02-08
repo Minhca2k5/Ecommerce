@@ -59,6 +59,23 @@ class RateLimitFilterTest {
     }
 
     @Test
+    void doFilter_shouldBypassWhenK6UserAgentBypassEnabled() throws Exception {
+        properties.setAllowK6UserAgentBypass(true);
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/public/products");
+        request.addHeader("User-Agent", "k6-load-test");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicInteger chainCalls = new AtomicInteger(0);
+        FilterChain chain = (req, res) -> chainCalls.incrementAndGet();
+
+        rateLimitFilter.doFilter(request, response, chain);
+        rateLimitFilter.doFilter(request, response, chain);
+
+        assertThat(chainCalls.get()).isEqualTo(2);
+        assertThat(response.getStatus()).isEqualTo(200);
+    }
+
+    @Test
     void doFilter_shouldAllowFirstRequestWithinLimit() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/public/products");
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -87,6 +104,28 @@ class RateLimitFilterTest {
         assertThat(chainCalls.get()).isEqualTo(1);
         assertThat(secondResponse.getStatus()).isEqualTo(429);
         assertThat(secondResponse.getContentAsString()).contains("Too many requests");
+        verify(blockedCounter).increment();
+    }
+
+    @Test
+    void doFilter_shouldUseForwardedIpForRateLimitBucket() throws Exception {
+        when(meterRegistry.counter("rate_limit.blocked")).thenReturn(blockedCounter);
+
+        MockHttpServletRequest requestA = new MockHttpServletRequest("GET", "/api/public/products");
+        requestA.addHeader("X-Forwarded-For", "1.2.3.4");
+        MockHttpServletRequest requestB = new MockHttpServletRequest("GET", "/api/public/products");
+        requestB.addHeader("X-Forwarded-For", "1.2.3.4");
+
+        MockHttpServletResponse responseA = new MockHttpServletResponse();
+        MockHttpServletResponse responseB = new MockHttpServletResponse();
+        AtomicInteger chainCalls = new AtomicInteger(0);
+        FilterChain chain = (req, res) -> chainCalls.incrementAndGet();
+
+        rateLimitFilter.doFilter(requestA, responseA, chain);
+        rateLimitFilter.doFilter(requestB, responseB, chain);
+
+        assertThat(chainCalls.get()).isEqualTo(1);
+        assertThat(responseB.getStatus()).isEqualTo(429);
         verify(blockedCounter).increment();
     }
 }
