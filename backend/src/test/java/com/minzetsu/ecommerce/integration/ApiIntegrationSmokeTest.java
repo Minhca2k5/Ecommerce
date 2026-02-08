@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -32,5 +33,19 @@ class ApiIntegrationSmokeTest {
     void adminEndpoint_shouldRejectAnonymousAccess() throws Exception {
         mockMvc.perform(get("/api/admin/roles"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void adminEndpoint_shouldRejectUserRole() throws Exception {
+        mockMvc.perform(get("/api/admin/roles"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void adminEndpoint_shouldAllowAdminRole() throws Exception {
+        mockMvc.perform(get("/api/admin/roles"))
+                .andExpect(status().isOk());
     }
 }
