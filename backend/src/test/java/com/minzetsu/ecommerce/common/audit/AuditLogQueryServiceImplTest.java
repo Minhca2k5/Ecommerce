@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,13 +39,33 @@ class AuditLogQueryServiceImplTest {
     @Test
     void search_shouldUseDefaultPageableWhenInputIsNull() {
         AuditLog log = new AuditLog();
+        log.setId(1L);
+        log.setUserId(10L);
         log.setAction("LOGIN");
+        log.setEntityType("USER");
+        log.setEntityId(20L);
+        log.setSuccess(true);
+        log.setErrorMessage(null);
+        log.setIpAddress("127.0.0.1");
+        log.setUserAgent("JUnit");
+        log.setCreatedAt(LocalDateTime.of(2026, 2, 8, 21, 30));
+        log.setUpdatedAt(LocalDateTime.of(2026, 2, 8, 21, 31));
+
         when(auditLogRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(log)));
 
         Page<AuditLogResponse> result = service.search(new AuditLogFilter(), null);
 
         assertThat(result.getContent()).hasSize(1);
+        AuditLogResponse response = result.getContent().get(0);
+        assertThat(response.getId()).isEqualTo(1L);
+        assertThat(response.getUserId()).isEqualTo(10L);
+        assertThat(response.getAction()).isEqualTo("LOGIN");
+        assertThat(response.getEntityType()).isEqualTo("USER");
+        assertThat(response.getEntityId()).isEqualTo(20L);
+        assertThat(response.getSuccess()).isTrue();
+        assertThat(response.getIpAddress()).isEqualTo("127.0.0.1");
+        assertThat(response.getUserAgent()).isEqualTo("JUnit");
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(auditLogRepository).findAll(any(Specification.class), pageableCaptor.capture());

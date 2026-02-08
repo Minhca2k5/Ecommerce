@@ -9,6 +9,11 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.LocalDateTime;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -41,7 +46,7 @@ class AuditTelemetryPublisherTest {
 
         publisher.publish(log);
 
-        verify(redisTemplate).convertAndSend(org.mockito.ArgumentMatchers.eq("audit-log-events"), org.mockito.ArgumentMatchers.contains("action=A_B"));
+        verify(redisTemplate).convertAndSend(eq("audit-log-events"), contains("action=A_B"));
     }
 
     @Test
@@ -51,6 +56,23 @@ class AuditTelemetryPublisherTest {
 
         publisher.publish(log);
 
-        verify(redisTemplate, never()).convertAndSend(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString());
+        verify(redisTemplate, never()).convertAndSend(anyString(), anyString());
+    }
+
+    @Test
+    void publish_shouldNotThrowWhenRedisPublishFails() {
+        AuditLog log = new AuditLog();
+        log.setId(2L);
+        log.setAction("ORDER_UPDATED");
+        log.setEntityType("ORDER");
+        log.setEntityId(11L);
+        log.setSuccess(true);
+        log.setCreatedAt(LocalDateTime.of(2026, 2, 8, 21, 6));
+
+        doThrow(new RuntimeException("redis down"))
+                .when(redisTemplate)
+                .convertAndSend(eq("audit-log-events"), anyString());
+
+        assertThatCode(() -> publisher.publish(log)).doesNotThrowAnyException();
     }
 }
