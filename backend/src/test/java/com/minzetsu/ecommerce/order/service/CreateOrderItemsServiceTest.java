@@ -86,4 +86,40 @@ class CreateOrderItemsServiceTest {
         verify(cartItemService).deleteByCartItems(deletedCaptor.capture());
         assertThat(deletedCaptor.getValue()).isEmpty();
     }
+
+    @Test
+    void createOrderItems_shouldMapMultipleCartItemsIndependently() {
+        Order order = Order.builder().build();
+        order.setId(12L);
+
+        Product p1 = Product.builder().name("Phone A").build();
+        p1.setId(101L);
+        Product p2 = Product.builder().name("Phone B").build();
+        p2.setId(102L);
+
+        CartItem i1 = CartItem.builder()
+                .product(p1)
+                .quantity(1)
+                .unitPriceSnapshot(new BigDecimal("100000"))
+                .build();
+        CartItem i2 = CartItem.builder()
+                .product(p2)
+                .quantity(3)
+                .unitPriceSnapshot(new BigDecimal("50000"))
+                .build();
+
+        when(cartItemService.getCartItemsByCartId(22L)).thenReturn(List.of(i1, i2));
+        when(orderItemRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<OrderItem> result = service.createOrderItems(order, 22L);
+
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(OrderItem::getProductNameSnapshot).containsExactly("Phone A", "Phone B");
+        assertThat(result).extracting(OrderItem::getLineTotal)
+                .containsExactly(new BigDecimal("100000"), new BigDecimal("150000"));
+
+        ArgumentCaptor<List<CartItem>> deletedCaptor = ArgumentCaptor.forClass(List.class);
+        verify(cartItemService).deleteByCartItems(deletedCaptor.capture());
+        assertThat(deletedCaptor.getValue()).containsExactly(i1, i2);
+    }
 }
