@@ -64,4 +64,21 @@ class AuditLogServiceImplTest {
         verify(auditLogRepository).save(log);
         verify(telemetryPublisher).publish(log);
     }
+
+    @Test
+    void save_shouldPublishPersistedInstanceFromRepository() {
+        AuditLog request = new AuditLog();
+        request.setAction("ORDER_CREATED");
+
+        AuditLog persisted = new AuditLog();
+        persisted.setAction("ORDER_CREATED");
+        persisted.setId(99L);
+
+        when(auditLogRepository.save(request)).thenReturn(persisted);
+
+        service.save(request);
+
+        verify(telemetryPublisher).publish(persisted);
+        verify(telemetryPublisher, never()).publish(request);
+    }
 }

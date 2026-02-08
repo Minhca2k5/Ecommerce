@@ -19,4 +19,13 @@ class AuditTelemetryPropertiesTest {
         assertThat(properties.isEnabled()).isFalse();
         assertThat(properties.getChannel()).isEqualTo("audit-custom");
     }
+
+    @Test
+    void shouldAllowBlankChannelValueAsConfigured() {
+        AuditTelemetryProperties properties = new AuditTelemetryProperties();
+
+        properties.setChannel("   ");
+
+        assertThat(properties.getChannel()).isEqualTo("   ");
+    }
 }

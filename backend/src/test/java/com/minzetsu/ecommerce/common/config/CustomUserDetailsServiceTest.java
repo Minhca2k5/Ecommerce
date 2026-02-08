@@ -63,4 +63,23 @@ class CustomUserDetailsServiceTest {
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessageContaining("User not found with username: missing");
     }
+
+    @Test
+    void loadUserByUsername_shouldPreserveDisabledFlagAndEmptyAuthorities() {
+        User user = User.builder()
+                .username("locked")
+                .email("locked@test.com")
+                .password("secret")
+                .enabled(false)
+                .roles(List.of())
+                .build();
+        user.setId(11L);
+
+        when(userRepository.findByUsername("locked")).thenReturn(Optional.of(user));
+
+        UserDetails details = service.loadUserByUsername("locked");
+
+        assertThat(details.isEnabled()).isFalse();
+        assertThat(details.getAuthorities()).isEmpty();
+    }
 }
