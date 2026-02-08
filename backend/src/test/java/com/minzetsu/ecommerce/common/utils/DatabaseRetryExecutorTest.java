@@ -1,0 +1,53 @@
+package com.minzetsu.ecommerce.common.utils;
+
+import com.minzetsu.ecommerce.common.config.DbRetryProperties;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.dao.DeadlockLoserDataAccessException;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class DatabaseRetryExecutorTest {
+
+    private DatabaseRetryExecutor executor;
+
+    @BeforeEach
+    void setUp() {
+        DbRetryProperties properties = new DbRetryProperties();
+        properties.setMaxAttempts(3);
+        properties.setBackoffMs(0);
+        properties.setBackoffMultiplier(2.0);
+        properties.setMaxBackoffMs(1);
+
+        executor = new DatabaseRetryExecutor(properties);
+    }
+
+    @Test
+    void execute_shouldRetryTransientDeadlockAndSucceed() {
+        AtomicInteger attempts = new AtomicInteger(0);
+
+        String result = executor.execute("order-create", () -> {
+            int current = attempts.incrementAndGet();
+            if (current < 3) {
+                throw new DeadlockLoserDataAccessException("deadlock", new RuntimeException("mysql-1213"));
+            }
+            return "ok";
+        });
+
+        assertThat(result).isEqualTo("ok");
+        assertThat(attempts.get()).isEqualTo(3);
+    }
+
+    @Test
+    void execute_shouldThrowImmediatelyForNonRetryableRuntimeException() {
+        IllegalStateException ex = new IllegalStateException("boom");
+
+        assertThatThrownBy(() -> executor.execute("order-create", () -> {
+            throw ex;
+        }))
+                .isSameAs(ex);
+    }
+}
