@@ -25,4 +25,19 @@ class DbRetryPropertiesTest {
         assertThat(properties.getBackoffMultiplier()).isEqualTo(1.5);
         assertThat(properties.getMaxBackoffMs()).isEqualTo(900L);
     }
+
+    @Test
+    void shouldKeepBoundaryValuesAsAssigned() {
+        DbRetryProperties properties = new DbRetryProperties();
+
+        properties.setMaxAttempts(1);
+        properties.setBackoffMs(0L);
+        properties.setBackoffMultiplier(0.0);
+        properties.setMaxBackoffMs(-1L);
+
+        assertThat(properties.getMaxAttempts()).isEqualTo(1);
+        assertThat(properties.getBackoffMs()).isZero();
+        assertThat(properties.getBackoffMultiplier()).isZero();
+        assertThat(properties.getMaxBackoffMs()).isEqualTo(-1L);
+    }
 }
