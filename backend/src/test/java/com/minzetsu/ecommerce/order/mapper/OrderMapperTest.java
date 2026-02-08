@@ -88,4 +88,28 @@ class OrderMapperTest {
         assertThat(response.getItems()).isNull();
         assertThat(response.getItemCount()).isEqualTo(0);
     }
+
+    @Test
+    void toFullResponse_shouldKeepVoucherIdNullWhenOrderHasNoVoucher() {
+        User user = User.builder()
+                .username("user-c")
+                .email("user-c@test.com")
+                .password("pw")
+                .build();
+        user.setId(102L);
+
+        Order order = Order.builder()
+                .user(user)
+                .voucher(null)
+                .currency("VND")
+                .status(OrderStatus.CANCELLED)
+                .totalAmount(new BigDecimal("0"))
+                .build();
+
+        OrderResponse response = orderMapper.toFullResponse(order, List.of());
+
+        assertThat(response.getVoucherId()).isNull();
+        assertThat(response.getItemCount()).isEqualTo(0);
+        assertThat(response.getStatus()).isEqualTo("CANCELLED");
+    }
 }
