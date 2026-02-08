@@ -10,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 class RequestLoggingFilterTest {
 
@@ -50,5 +51,17 @@ class RequestLoggingFilterTest {
         filter.doFilter(request, response, chain);
 
         assertThat(response.getStatus()).isEqualTo(201);
+    }
+
+    @Test
+    void doFilter_shouldNotFailWhenValuesContainQuotes() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/\"quoted\"/path");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        MDC.put(RequestIdFilter.MDC_REQUEST_ID_KEY, "req-\"42\"");
+
+        FilterChain chain = (req, res) -> ((MockHttpServletResponse) res).setStatus(202);
+
+        assertThatCode(() -> filter.doFilter(request, response, chain)).doesNotThrowAnyException();
+        assertThat(response.getStatus()).isEqualTo(202);
     }
 }
