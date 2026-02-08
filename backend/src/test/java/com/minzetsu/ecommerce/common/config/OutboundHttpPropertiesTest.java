@@ -31,4 +31,23 @@ class OutboundHttpPropertiesTest {
         assertThat(properties.getBackoffMultiplier()).isEqualTo(1.3);
         assertThat(properties.getMaxBackoffMs()).isEqualTo(800L);
     }
+
+    @Test
+    void shouldKeepBoundaryValuesAsAssigned() {
+        OutboundHttpProperties properties = new OutboundHttpProperties();
+
+        properties.setConnectTimeoutMs(0);
+        properties.setReadTimeoutMs(-1);
+        properties.setMaxAttempts(1);
+        properties.setBackoffMs(0L);
+        properties.setBackoffMultiplier(0.0);
+        properties.setMaxBackoffMs(-10L);
+
+        assertThat(properties.getConnectTimeoutMs()).isZero();
+        assertThat(properties.getReadTimeoutMs()).isEqualTo(-1);
+        assertThat(properties.getMaxAttempts()).isEqualTo(1);
+        assertThat(properties.getBackoffMs()).isZero();
+        assertThat(properties.getBackoffMultiplier()).isZero();
+        assertThat(properties.getMaxBackoffMs()).isEqualTo(-10L);
+    }
 }
