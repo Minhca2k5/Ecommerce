@@ -81,4 +81,19 @@ class DatabaseRetryExecutorTest {
         }))
                 .isSameAs(ex);
     }
+
+    @Test
+    void execute_shouldWrapCheckedRetryableExceptionAfterMaxAttempts() {
+        AtomicInteger attempts = new AtomicInteger(0);
+
+        assertThatThrownBy(() -> executor.execute("order-sync", () -> {
+            attempts.incrementAndGet();
+            throw new SQLException("lock wait timeout", "40001", 1205);
+        }))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Database operation failed: order-sync")
+                .hasCauseInstanceOf(SQLException.class);
+
+        assertThat(attempts.get()).isEqualTo(3);
+    }
 }
