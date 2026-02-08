@@ -1,0 +1,51 @@
+package com.minzetsu.ecommerce.common.audit;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class AuditLogServiceImplTest {
+
+    @Mock
+    private AuditLogRepository auditLogRepository;
+
+    @Mock
+    private AuditTelemetryPublisher telemetryPublisher;
+
+    private AuditLogServiceImpl service;
+
+    @BeforeEach
+    void setUp() {
+        service = new AuditLogServiceImpl(auditLogRepository, telemetryPublisher);
+    }
+
+    @Test
+    void save_shouldPersistAndPublishTelemetry() {
+        AuditLog log = new AuditLog();
+        log.setAction("ORDER_CREATED");
+        when(auditLogRepository.save(log)).thenReturn(log);
+
+        service.save(log);
+
+        verify(auditLogRepository).save(log);
+        verify(telemetryPublisher).publish(log);
+    }
+
+    @Test
+    void save_shouldSwallowPersistenceExceptions() {
+        AuditLog log = new AuditLog();
+        when(auditLogRepository.save(log)).thenThrow(new RuntimeException("db down"));
+
+        service.save(log);
+
+        verify(auditLogRepository).save(log);
+        verify(telemetryPublisher, never()).publish(log);
+    }
+}
