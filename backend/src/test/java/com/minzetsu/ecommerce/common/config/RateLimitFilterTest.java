@@ -128,4 +128,26 @@ class RateLimitFilterTest {
         assertThat(responseB.getStatus()).isEqualTo(429);
         verify(blockedCounter).increment();
     }
+
+    @Test
+    void doFilter_shouldUseFirstTrimmedForwardedIpWhenMultiplePresent() throws Exception {
+        when(meterRegistry.counter("rate_limit.blocked")).thenReturn(blockedCounter);
+
+        MockHttpServletRequest requestA = new MockHttpServletRequest("GET", "/api/public/products");
+        requestA.addHeader("X-Forwarded-For", " 5.6.7.8 , 9.10.11.12 ");
+        MockHttpServletRequest requestB = new MockHttpServletRequest("GET", "/api/public/products");
+        requestB.addHeader("X-Forwarded-For", "5.6.7.8");
+
+        MockHttpServletResponse responseA = new MockHttpServletResponse();
+        MockHttpServletResponse responseB = new MockHttpServletResponse();
+        AtomicInteger chainCalls = new AtomicInteger(0);
+        FilterChain chain = (req, res) -> chainCalls.incrementAndGet();
+
+        rateLimitFilter.doFilter(requestA, responseA, chain);
+        rateLimitFilter.doFilter(requestB, responseB, chain);
+
+        assertThat(chainCalls.get()).isEqualTo(1);
+        assertThat(responseB.getStatus()).isEqualTo(429);
+        verify(blockedCounter).increment();
+    }
 }
