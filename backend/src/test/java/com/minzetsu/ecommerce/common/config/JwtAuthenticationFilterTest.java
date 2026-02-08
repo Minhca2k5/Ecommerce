@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -133,6 +134,27 @@ class JwtAuthenticationFilterTest {
 
         assertThat(chainCalls.get()).isEqualTo(1);
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        verify(userDetailsService, never()).loadUserByUsername(org.mockito.ArgumentMatchers.anyString());
+    }
+
+    @Test
+    void doFilter_shouldNotReloadUserWhenContextAlreadyAuthenticated() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/user/profile");
+        request.addHeader("Authorization", "Bearer token-123");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicInteger chainCalls = new AtomicInteger(0);
+        FilterChain chain = (req, res) -> chainCalls.incrementAndGet();
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("existing-user", "n/a", List.of())
+        );
+        when(jwtService.extractUsername("token-123")).thenReturn("alice");
+
+        filter.doFilter(request, response, chain);
+
+        assertThat(chainCalls.get()).isEqualTo(1);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
+        assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("existing-user");
         verify(userDetailsService, never()).loadUserByUsername(org.mockito.ArgumentMatchers.anyString());
     }
 }
