@@ -56,6 +56,12 @@ class ApiIntegrationSmokeTest {
     }
 
     @Test
+    void userOrdersEndpoint_shouldRejectAnonymousAccess() throws Exception {
+        mockMvc.perform(get("/api/users/me/orders"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void adminEndpoint_shouldRejectAnonymousAccess() throws Exception {
         mockMvc.perform(get("/api/admin/roles"))
                 .andExpect(status().isForbidden());
