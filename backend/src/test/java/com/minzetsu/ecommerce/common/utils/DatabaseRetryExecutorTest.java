@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 
+import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,6 +39,36 @@ class DatabaseRetryExecutorTest {
         });
 
         assertThat(result).isEqualTo("ok");
+        assertThat(attempts.get()).isEqualTo(3);
+    }
+
+    @Test
+    void execute_shouldRetryWhenCauseContainsRetryableSqlState() {
+        AtomicInteger attempts = new AtomicInteger(0);
+
+        String result = executor.execute("order-update", () -> {
+            int current = attempts.incrementAndGet();
+            if (current < 3) {
+                throw new RuntimeException(new SQLException("serialization failure", "40001", 1213));
+            }
+            return "done";
+        });
+
+        assertThat(result).isEqualTo("done");
+        assertThat(attempts.get()).isEqualTo(3);
+    }
+
+    @Test
+    void execute_shouldThrowAfterMaxAttemptsForRetryableError() {
+        AtomicInteger attempts = new AtomicInteger(0);
+
+        assertThatThrownBy(() -> executor.execute("order-create", () -> {
+            attempts.incrementAndGet();
+            throw new DeadlockLoserDataAccessException("deadlock", new RuntimeException("mysql-1213"));
+        }))
+                .isInstanceOf(DeadlockLoserDataAccessException.class)
+                .hasMessageContaining("deadlock");
+
         assertThat(attempts.get()).isEqualTo(3);
     }
 

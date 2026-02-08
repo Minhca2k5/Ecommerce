@@ -41,6 +41,20 @@ class OutboundRetryExecutorTest {
     }
 
     @Test
+    void execute_shouldThrowAfterMaxAttemptsForRetryableException() {
+        AtomicInteger attempts = new AtomicInteger(0);
+
+        assertThatThrownBy(() -> executor.execute(() -> {
+            attempts.incrementAndGet();
+            throw new ResourceAccessException("timeout");
+        }))
+                .isInstanceOf(ResourceAccessException.class)
+                .hasMessageContaining("timeout");
+
+        assertThat(attempts.get()).isEqualTo(3);
+    }
+
+    @Test
     void execute_shouldThrowOriginalRuntimeExceptionWhenNonRetryable() {
         IllegalArgumentException ex = new IllegalArgumentException("bad request");
 
