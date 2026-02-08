@@ -25,6 +25,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -117,6 +118,14 @@ class SecurityConfigRbacTest {
         when(roleService.getAllRoleResponses()).thenReturn(List.of(RoleResponse.builder().name("ADMIN").build()));
 
         mockMvc.perform(get("/api/admin/roles"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void adminEndpoint_preflightShouldPassWithoutAuthentication() throws Exception {
+        mockMvc.perform(options("/api/admin/roles")
+                        .header("Origin", "http://localhost:3000")
+                        .header("Access-Control-Request-Method", "GET"))
                 .andExpect(status().isOk());
     }
 }
