@@ -77,6 +77,23 @@ class AuditLogQueryServiceImplTest {
     }
 
     @Test
+    void search_shouldApplyDefaultSortWhenPageableIsUnsorted() {
+        Pageable unsorted = PageRequest.of(2, 7);
+        when(auditLogRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(Page.empty(unsorted));
+
+        service.search(new AuditLogFilter(), unsorted);
+
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(auditLogRepository).findAll(any(Specification.class), pageableCaptor.capture());
+        Pageable used = pageableCaptor.getValue();
+        assertThat(used.getPageNumber()).isEqualTo(2);
+        assertThat(used.getPageSize()).isEqualTo(7);
+        assertThat(used.getSort().getOrderFor("createdAt")).isNotNull();
+        assertThat(used.getSort().getOrderFor("createdAt").getDirection()).isEqualTo(Sort.Direction.DESC);
+    }
+
+    @Test
     void search_shouldPreserveSortedPageable() {
         Pageable sorted = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "action"));
         when(auditLogRepository.findAll(any(Specification.class), any(Pageable.class)))
