@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,6 +57,23 @@ class RateLimitFilterTest {
 
         assertThat(chainCalls.get()).isEqualTo(2);
         assertThat(response.getStatus()).isEqualTo(200);
+    }
+
+    @Test
+    void doFilter_shouldAlwaysPassThroughWhenDisabled() throws Exception {
+        properties.setEnabled(false);
+
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/public/products");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicInteger chainCalls = new AtomicInteger(0);
+        FilterChain chain = (req, res) -> chainCalls.incrementAndGet();
+
+        rateLimitFilter.doFilter(request, response, chain);
+        rateLimitFilter.doFilter(request, response, chain);
+
+        assertThat(chainCalls.get()).isEqualTo(2);
+        assertThat(response.getStatus()).isEqualTo(200);
+        verifyNoInteractions(meterRegistry);
     }
 
     @Test
