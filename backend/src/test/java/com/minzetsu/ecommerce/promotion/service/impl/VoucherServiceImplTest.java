@@ -23,6 +23,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -117,5 +118,20 @@ class VoucherServiceImplTest {
         assertThatThrownBy(() -> voucherService.getVoucherResponseById(21L, 100L))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Voucher not found");
+    }
+
+    @Test
+    void deleteVoucher_shouldDeleteAndPublishEventsWhenNotLinked() {
+        Voucher voucher = Voucher.builder().code("SALE2").name("Sale 2").build();
+        voucher.setId(30L);
+
+        when(voucherRepository.findById(30L)).thenReturn(Optional.of(voucher));
+        when(orderRepository.existsByVoucherId(30L)).thenReturn(false);
+
+        voucherService.deleteVoucher(30L);
+
+        verify(voucherRepository).delete(voucher);
+        verify(eventPublisher).publishEvent(any(WebhookEvent.class));
+        verify(domainEventPublisher).publish(eq(com.minzetsu.ecommerce.messaging.DomainEventType.VOUCHER_DELETED), eq(30L), eq(null), any());
     }
 }
