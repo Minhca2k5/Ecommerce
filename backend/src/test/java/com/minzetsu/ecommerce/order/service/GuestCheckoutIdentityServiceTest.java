@@ -80,4 +80,15 @@ class GuestCheckoutIdentityServiceTest {
         assertThat(request.getPassword()).isEqualTo("GuestCheckout@123");
         assertThat(request.getEnabled()).isTrue();
     }
+
+    @Test
+    void resolveGuestCheckoutUserId_shouldReturnNullWhenCreatedUserHasNoId() {
+        when(userRepository.findByUsername("guest_checkout")).thenReturn(Optional.empty());
+        when(userService.createUserResponse(org.mockito.ArgumentMatchers.any(UserCreateRequest.class)))
+                .thenReturn(UserResponse.builder().username("guest_checkout").build());
+
+        Long userId = identityService.resolveGuestCheckoutUserId();
+
+        assertThat(userId).isNull();
+    }
 }
