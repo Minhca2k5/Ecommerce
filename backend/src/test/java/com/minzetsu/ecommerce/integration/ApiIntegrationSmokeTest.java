@@ -276,4 +276,57 @@ class ApiIntegrationSmokeTest {
 
         assertThat(result.getResponse().getStatus()).isIn(200, 404);
     }
+    @Test
+    void authLoginEndpoint_shouldBePubliclyReachable() throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andReturn();
+
+        assertThat(result.getResponse().getStatus()).isNotEqualTo(403);
+    }
+
+    @Test
+    void authRefreshEndpoint_shouldBePubliclyReachable() throws Exception {
+        MvcResult result = mockMvc.perform(post("/api/auth/refresh-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andReturn();
+
+        assertThat(result.getResponse().getStatus()).isNotEqualTo(403);
+    }
+
+    @Test
+    void guestPaymentsEndpoint_shouldRejectMissingAccessToken() throws Exception {
+        mockMvc.perform(get("/api/public/guest/orders/1/payments"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void guestMomoCreateEndpoint_shouldRejectMissingAccessToken() throws Exception {
+        mockMvc.perform(post("/api/public/guest/orders/1/payments/momo/create"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void userChatbotEndpoint_shouldRejectAnonymousAccess() throws Exception {
+        mockMvc.perform(get("/api/users/me/chatbot/conversations"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void adminRealtimeEndpoint_shouldRejectUserRole() throws Exception {
+        mockMvc.perform(get("/api/admin/realtime/notifications"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void adminRealtimeEndpoint_shouldAllowAdminRole() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/admin/realtime/notifications"))
+                .andReturn();
+
+        assertThat(result.getResponse().getStatus()).isIn(200, 404);
+    }
 }
