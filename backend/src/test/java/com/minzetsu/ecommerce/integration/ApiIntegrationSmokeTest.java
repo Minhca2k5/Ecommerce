@@ -159,4 +159,31 @@ class ApiIntegrationSmokeTest {
         mockMvc.perform(get("/api/admin/roles"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void adminUsersEndpoint_shouldAllowAdminRole() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/admin/users/1"))
+                .andReturn();
+
+        assertThat(result.getResponse().getStatus()).isIn(200, 404);
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void adminOrdersEndpoint_shouldAllowAdminRole() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/admin/orders/1"))
+                .andReturn();
+
+        assertThat(result.getResponse().getStatus()).isIn(200, 404);
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void adminProductsEndpoint_shouldAllowAdminRole() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/admin/products/1"))
+                .andReturn();
+
+        assertThat(result.getResponse().getStatus()).isIn(200, 404);
+    }
 }
