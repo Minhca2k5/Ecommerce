@@ -58,6 +58,30 @@ class ApiIntegrationSmokeTest {
     }
 
     @Test
+    void publicTopRatingProducts_shouldBeAccessibleWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/api/public/products/top-rating"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void publicMostFavoriteProducts_shouldBeAccessibleWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/api/public/products/most-favorite"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void publicMostViewedProducts_shouldBeAccessibleWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/api/public/products/most-viewed"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void publicBestSellingProducts_shouldBeAccessibleWithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/api/public/products/best-selling"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void guestCartEndpoint_shouldAllowCartCreationWithoutAuthentication() throws Exception {
         mockMvc.perform(post("/api/public/carts/guest")
                         .contentType(MediaType.APPLICATION_JSON)
