@@ -82,6 +82,46 @@ class ApiIntegrationSmokeTest {
     }
 
     @Test
+    void publicProductById_shouldBeAccessibleWithoutAuthentication() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/public/products/1"))
+                .andReturn();
+
+        assertThat(result.getResponse().getStatus()).isIn(200, 404);
+    }
+
+    @Test
+    void publicProductBySlug_shouldBeAccessibleWithoutAuthentication() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/public/products/slug/non-existent-slug"))
+                .andReturn();
+
+        assertThat(result.getResponse().getStatus()).isIn(200, 404);
+    }
+
+    @Test
+    void publicProductReviews_shouldBeAccessibleWithoutAuthentication() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/public/products/1/reviews"))
+                .andReturn();
+
+        assertThat(result.getResponse().getStatus()).isIn(200, 404);
+    }
+
+    @Test
+    void publicCategoryById_shouldBeAccessibleWithoutAuthentication() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/public/categories/1"))
+                .andReturn();
+
+        assertThat(result.getResponse().getStatus()).isIn(200, 404);
+    }
+
+    @Test
+    void publicCategoryBySlug_shouldBeAccessibleWithoutAuthentication() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/public/categories/slug/non-existent-slug"))
+                .andReturn();
+
+        assertThat(result.getResponse().getStatus()).isIn(200, 404);
+    }
+
+    @Test
     void guestCartEndpoint_shouldAllowCartCreationWithoutAuthentication() throws Exception {
         mockMvc.perform(post("/api/public/carts/guest")
                         .contentType(MediaType.APPLICATION_JSON)
