@@ -1,9 +1,9 @@
 # E-commerce System (Phase 5)
 
 > **Branch:** `phase5`  
-> **Status:** Phase 5 In Progress (M0-M8 done, testing milestone pending)  
+> **Status:** Phase 5 Completed (M0-M9 done, full test suite passing)  
 > **Author:** Phan Dinh Minh (Minzetsu)  
-> **Last Updated:** February 5, 2026
+> **Last Updated:** February 9, 2026
 
 ## Overview
 This repository is an end-to-end E-commerce system:
@@ -78,3 +78,4 @@ This repository is an end-to-end E-commerce system:
 ## Notes (Current Scope)
 - Local mode currently prioritizes chatbot stability: file + voice workflows are enabled; image analysis path is disabled by default in this phase.
 - Group invites are designed as in-app first, email as best-effort notification channel.
+

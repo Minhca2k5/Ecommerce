@@ -1,6 +1,6 @@
 # Phase 5 Ops
 
-Status: Active (operations baseline completed for M1-M8; testing evidence to be finalized in Phase 5 test milestone)
+Status: Completed (operations baseline M1-M8 + Phase 5 testing evidence finalized)
 
 ## Objective
 Operate Phase 5 with production-readiness focus:
@@ -126,3 +126,4 @@ Operate Phase 5 with production-readiness focus:
 - Frontend integration verification baseline: `npm run -s build`.
 - DB reliability evidence: backup/restore parity checks + measured RTO.
 - CI evidence: security gates workflow artifacts and job logs.
+

@@ -151,7 +151,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Verify HTTP caching behavior (cache headers + 304 responses).
 
 ## Phase 5: Advanced Data & Quality
-**Status: In Progress (Feature Track Done, Testing Pending)**
+**Status: Completed (Feature Track + Testing Completed)**
 **Focus:** Deepen database capabilities + testing + reliability.
 
 *   [x] **Advanced Database**:
@@ -170,7 +170,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Guest secure re-open flow (access token + guest order page + guest MoMo path).
     *   Fraud/abuse detection (basic rules).
     *   Multi-currency + tax/shipping rules.
-*   [ ] **Testing Suite**:
+*   [x] **Testing Suite**:
     *   Unit tests (pricing/discounts, inventory reservation, order totals, RBAC).
     *   Integration tests (`MockMvc` + TestContainers for DB/Redis).
     *   E2E tests (Playwright/Cypress): register/login, browse/search, cart, checkout, admin flows.
@@ -191,7 +191,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [x] **Architecture Decision Records (ADR)**:
     *   Capture monolith-first decision, service boundaries, and criteria to split to microservices.
     *   Map decisions to current constraints (team size, ops overhead, delivery speed).
-*   [ ] **Phase 5 Review**:
+*   [x] **Phase 5 Review**:
     *   Data reliability report (backup/restore, replication checks).
     *   Test coverage summary.
     *   SLO/SLA and ADR documents approved and versioned.
@@ -227,6 +227,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [ ] **Cost & Capacity Observability**:
     *   Cost dashboards/alerts for Redis, Elasticsearch, broker, and outbound integrations.
     *   Capacity thresholds + autoscaling trigger runbooks.
+
 
 
 

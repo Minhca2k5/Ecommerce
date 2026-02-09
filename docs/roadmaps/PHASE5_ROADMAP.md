@@ -1,6 +1,6 @@
 # Phase 5 Roadmap: Advanced Data, Quality, and Reliability
 
-Status: In Progress (M0-M8 implemented, M9 testing pending)
+Status: Completed (M0-M9 implemented and verified)
 
 Goal: complete the remaining core capabilities for data safety, security quality, and operational reliability, then execute testing as the final milestone before Phase 6.
 
@@ -10,9 +10,9 @@ Guiding principles:
 - Every milestone must have rollout/rollback notes.
 - Prefer pragmatic scope over adding new technologies.
 
-Progress snapshot (2026-02-06):
+Progress snapshot (2026-02-09):
 - Completed: P5-M0 to P5-M8 implementation/docs track, including Mongo sink scope.
-- In progress: P5-M9 testing suite (kept as final milestone by plan).
+- Completed: P5-M9 testing suite final gate (unit/integration/e2e/contract/security scope executed; current suite passing).
 
 ---
 
