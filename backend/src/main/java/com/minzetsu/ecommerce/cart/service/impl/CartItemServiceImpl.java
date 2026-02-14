@@ -19,6 +19,8 @@ import com.minzetsu.ecommerce.common.exception.InvalidObjectException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +35,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CartItemServiceImpl implements CartItemService {
+
+    private static final Logger logger = LoggerFactory.getLogger(CartItemServiceImpl.class);
 
     private final CartItemRepository cartItemRepository;
     private final CartItemMapper cartItemMapper;
@@ -94,7 +98,7 @@ public class CartItemServiceImpl implements CartItemService {
     @Transactional
     @AuditAction(action = "CART_ITEMS_CLEARED", entityType = "CART_ITEM", idParamIndex = 0)
     public void deleteByCartId(Long cartId) {
-        System.out.println("Deleting CartItems for cartId: " + cartId);
+        logger.info("Deleting cart items for cartId={}", cartId);
         List<CartItem> cartItems = findOrThrow(() -> getCartItemsByCartId(cartId),
                 "No CartItems found for cartId: " + cartId);
         cartItems.forEach(this::deleteByCartItem);
@@ -272,3 +276,4 @@ public class CartItemServiceImpl implements CartItemService {
         );
     }
 }
+
