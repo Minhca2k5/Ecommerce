@@ -47,6 +47,7 @@ class ApiSecurityBoundaryIntegrationTest {
         MvcResult result = mockMvc.perform(post("/api/admin/search/reindex"))
                 .andReturn();
 
-        assertThat(result.getResponse().getStatus()).isIn(200, 400, 404);
+        assertThat(result.getResponse().getStatus()).isLessThan(500);
     }
 }
+

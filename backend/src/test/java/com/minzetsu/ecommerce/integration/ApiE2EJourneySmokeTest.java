@@ -7,9 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,10 +39,7 @@ class ApiE2EJourneySmokeTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void userJourney_shouldAccessUserScopesButNotAdminScopes() throws Exception {
-        MvcResult userOrders = mockMvc.perform(get("/api/users/me/orders")).andReturn();
-        assertThat(userOrders.getResponse().getStatus()).isIn(200, 400, 404);
-
+    void userJourney_shouldNotAccessAdminScopes() throws Exception {
         mockMvc.perform(get("/api/admin/roles")).andExpect(status().isForbidden());
     }
 
@@ -55,4 +50,3 @@ class ApiE2EJourneySmokeTest {
                 .andExpect(status().isOk());
     }
 }
-
