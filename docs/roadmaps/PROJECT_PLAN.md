@@ -158,6 +158,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Isolation levels, lock analysis, deadlock handling.
     *   Replication (read replica) + read/write split (optional).
     *   Backup/restore drill and data retention policy.
+    *   **Scope note:** This phase validates data-layer correctness/recoverability in engineering environments; full production DR operations are handled in Phase 7.
 *   [x] **Audit Log Hardening**:
     *   Retention policy (TTL/archive) + scheduled cleanup.
     *   Mask sensitive fields (PII/token/password) in logs.
@@ -188,6 +189,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [x] **Service Level Objectives & Reliability Policy**:
     *   Define production SLI/SLO/SLA per critical flow (auth, checkout, payment callback, order status).
     *   Error budget policy + on-call alert thresholds + escalation matrix.
+    *   **Scope note:** This phase defines policy/targets; implementing platform alert rules and paging integrations is part of Phase 7.
 *   [x] **Architecture Decision Records (ADR)**:
     *   Capture monolith-first decision, service boundaries, and criteria to split to microservices.
     *   Map decisions to current constraints (team size, ops overhead, delivery speed).
@@ -219,6 +221,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [ ] **Data Job Observability**:
     *   Add ETL-specific metrics: duration, processed events, dropped events, failure count.
     *   Add ETL-specific alert thresholds for repeated failures or stale data windows.
+    *   **Scope note:** Focus on data-pipeline telemetry quality for analytics workloads; global observability stack integration is finalized in Phase 7.
 *   [ ] **Data Pipeline Tests & Contracts**:
     *   Unit tests for aggregation and conversion logic.
     *   Integration tests for ETL happy path + rerun idempotency + analytics API contracts.
@@ -243,6 +246,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Centralized logging (ELK/Loki).
     *   Metrics monitoring (Prometheus + Grafana).
     *   Platform-level alerts on SLO burn, DB pool exhaustion, cache failures, and broker pressure.
+    *   **Scope note:** This phase operationalizes and centralizes signals already introduced earlier (Phase 3 app observability baseline + Phase 6 ETL telemetry).
 *   [ ] **Web Server & Reverse Proxy**:
     *   Nginx/Caddy for TLS termination + routing.
 *   [ ] **Scaling & Reliability**:
@@ -250,6 +254,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Rate limiting + backpressure validation under load.
     *   Disaster recovery drill (RTO/RPO targets), backup verification, rollback playbook.
     *   Incident runbook for cache outage, broker outage, payment webhook delay/failure, and DB failover.
+    *   **Scope note:** This is production-operations DR/readiness (runbooks, RTO/RPO execution), not a repeat of Phase 5 data validation drills.
 *   [ ] **Experimentation**:
     *   Feature flags + A/B testing rollout support.
 *   [ ] **Secrets & Environments**:
