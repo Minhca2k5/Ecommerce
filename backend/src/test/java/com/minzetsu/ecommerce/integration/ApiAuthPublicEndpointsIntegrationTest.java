@@ -6,9 +6,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,13 +41,14 @@ class ApiAuthPublicEndpointsIntegrationTest {
     }
 
     @Test
-    void register_shouldBePubliclyReachable() throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/auth/register")
+    void register_shouldBePublicAndReturnValidationErrorPayload() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andReturn();
-
-        assertThat(result.getResponse().getStatus()).isNotEqualTo(403);
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").isNotEmpty())
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test
@@ -63,3 +62,4 @@ class ApiAuthPublicEndpointsIntegrationTest {
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 }
+

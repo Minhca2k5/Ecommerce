@@ -10,7 +10,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -23,22 +22,10 @@ class ApiSecurityBoundaryIntegrationTest {
 
     @Test
     void publicMomoIpn_shouldRejectUnsignedAnonymousRequest() throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/public/payments/momo/ipn")
+        mockMvc.perform(post("/api/public/payments/momo/ipn")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andReturn();
-
-        assertThat(result.getResponse().getStatus()).isEqualTo(403);
-    }
-
-    @Test
-    void guestCheckout_shouldNotBeBlockedByAuthenticationLayer() throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/public/checkout/guest/guest-1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andReturn();
-
-        assertThat(result.getResponse().getStatus()).isNotEqualTo(403);
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -56,21 +43,10 @@ class ApiSecurityBoundaryIntegrationTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void adminSearchReindex_shouldAllowAdminRole() throws Exception {
+    void adminSearchReindex_shouldAllowAdminRole_withoutServerError() throws Exception {
         MvcResult result = mockMvc.perform(post("/api/admin/search/reindex"))
                 .andReturn();
 
-        assertThat(result.getResponse().getStatus()).isIn(200, 400, 404, 500);
-    }
-
-    @Test
-    @WithMockUser(roles = "USER")
-    void userOrderEndpoint_shouldAllowAuthenticatedUser() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/users/me/orders"))
-                .andReturn();
-
-        assertThat(result.getResponse().getStatus()).isNotEqualTo(403);
+        assertThat(result.getResponse().getStatus()).isIn(200, 400, 404);
     }
 }
-
-

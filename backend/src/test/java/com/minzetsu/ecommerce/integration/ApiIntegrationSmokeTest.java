@@ -277,23 +277,19 @@ class ApiIntegrationSmokeTest {
         assertThat(result.getResponse().getStatus()).isIn(200, 404);
     }
     @Test
-    void authLoginEndpoint_shouldBePubliclyReachable() throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/auth/login")
+    void authLoginEndpoint_shouldReturnValidationErrorForInvalidPayload() throws Exception {
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andReturn();
-
-        assertThat(result.getResponse().getStatus()).isNotEqualTo(403);
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void authRefreshEndpoint_shouldBePubliclyReachable() throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/auth/refresh-token")
+    void authRefreshEndpoint_shouldReturnValidationErrorForInvalidPayload() throws Exception {
+        mockMvc.perform(post("/api/auth/refresh-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andReturn();
-
-        assertThat(result.getResponse().getStatus()).isNotEqualTo(403);
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -330,3 +326,4 @@ class ApiIntegrationSmokeTest {
         assertThat(result.getResponse().getStatus()).isIn(200, 404);
     }
 }
+

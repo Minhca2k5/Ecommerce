@@ -43,7 +43,7 @@ class ApiE2EJourneySmokeTest {
     @WithMockUser(roles = "USER")
     void userJourney_shouldAccessUserScopesButNotAdminScopes() throws Exception {
         MvcResult userOrders = mockMvc.perform(get("/api/users/me/orders")).andReturn();
-        assertThat(userOrders.getResponse().getStatus()).isNotEqualTo(403);
+        assertThat(userOrders.getResponse().getStatus()).isIn(200, 400, 404);
 
         mockMvc.perform(get("/api/admin/roles")).andExpect(status().isForbidden());
     }
@@ -51,7 +51,8 @@ class ApiE2EJourneySmokeTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void adminJourney_shouldAccessAdminScopes() throws Exception {
-        MvcResult adminRoles = mockMvc.perform(get("/api/admin/roles")).andReturn();
-        assertThat(adminRoles.getResponse().getStatus()).isIn(200, 404, 500);
+        mockMvc.perform(get("/api/admin/roles"))
+                .andExpect(status().isOk());
     }
 }
+
