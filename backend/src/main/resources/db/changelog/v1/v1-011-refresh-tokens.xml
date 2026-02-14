@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        logicalFilePath="db/changelog/v1__schema.xml"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v1-011-refresh-tokens" author="minzetsu" xmlns="http://www.liquibase.org/xml/ns/dbchangelog"><createTable tableName="refresh_tokens"><column name="id" type="BIGINT" autoIncrement="true"><constraints primaryKey="true" nullable="false" /></column><column name="token" type="VARCHAR(255)"><constraints nullable="false" unique="true" /></column><column name="expiry_date" type="DATETIME"><constraints nullable="false" /></column><column name="user_id" type="BIGINT"><constraints nullable="true" /></column></createTable><addForeignKeyConstraint baseColumnNames="user_id" baseTableName="refresh_tokens" constraintName="fk_refresh_tokens_user_id" referencedColumnNames="id" referencedTableName="users" /><createIndex tableName="refresh_tokens" indexName="idx_refresh_tokens_user"><column name="user_id" /></createIndex></changeSet>
+
+</databaseChangeLog>

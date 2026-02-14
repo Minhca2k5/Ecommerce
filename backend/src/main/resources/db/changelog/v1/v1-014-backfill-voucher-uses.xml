@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        logicalFilePath="db/changelog/v1__schema.xml"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v1-014-backfill-voucher-uses" author="minh" xmlns="http://www.liquibase.org/xml/ns/dbchangelog"><preConditions onFail="MARK_RAN"><not><tableExists tableName="voucher_uses" /></not></preConditions><createTable tableName="voucher_uses"><column name="id" type="BIGINT" autoIncrement="true"><constraints primaryKey="true" /></column><column name="voucher_id" type="BIGINT"><constraints nullable="false" /></column><column name="user_id" type="BIGINT"><constraints nullable="false" /></column><column name="order_id" type="BIGINT"><constraints nullable="false" /></column><column name="discount_amount" type="DECIMAL(12,2)"><constraints nullable="false" /></column><column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false" /></column><column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" /></createTable><addForeignKeyConstraint baseTableName="voucher_uses" baseColumnNames="voucher_id" referencedTableName="vouchers" referencedColumnNames="id" onDelete="CASCADE" constraintName="fk_voucher_uses_voucher" /><addForeignKeyConstraint baseTableName="voucher_uses" baseColumnNames="user_id" referencedTableName="users" referencedColumnNames="id" onDelete="CASCADE" constraintName="fk_voucher_uses_user" /><addForeignKeyConstraint baseTableName="voucher_uses" baseColumnNames="order_id" referencedTableName="orders" referencedColumnNames="id" onDelete="CASCADE" constraintName="fk_voucher_uses_order" /></changeSet>
+
+</databaseChangeLog>

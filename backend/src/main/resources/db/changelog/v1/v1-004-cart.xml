@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        logicalFilePath="db/changelog/v1__schema.xml"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v1-004-cart" author="minh" xmlns="http://www.liquibase.org/xml/ns/dbchangelog"><createTable tableName="carts"><column name="id" type="BIGINT" autoIncrement="true"><constraints primaryKey="true" /></column><column name="user_id" type="BIGINT"><constraints nullable="false" unique="true" /></column><column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false" /></column><column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" /></createTable><addForeignKeyConstraint baseTableName="carts" baseColumnNames="user_id" referencedTableName="users" referencedColumnNames="id" onDelete="CASCADE" constraintName="fk_cart_user" /><createTable tableName="cart_items"><column name="id" type="BIGINT" autoIncrement="true"><constraints primaryKey="true" /></column><column name="cart_id" type="BIGINT"><constraints nullable="false" /></column><column name="product_id" type="BIGINT"><constraints nullable="false" /></column><column name="unit_price_snapshot" type="DECIMAL(12,2)"><constraints nullable="false" /></column><column name="quantity" type="INT" defaultValueNumeric="1" /><column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false" /></column><column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" /></createTable><addForeignKeyConstraint baseTableName="cart_items" baseColumnNames="cart_id" referencedTableName="carts" referencedColumnNames="id" onDelete="CASCADE" constraintName="fk_citem_cart" /><addForeignKeyConstraint baseTableName="cart_items" baseColumnNames="product_id" referencedTableName="products" referencedColumnNames="id" onDelete="RESTRICT" constraintName="fk_citem_prod" /><!-- SQL fallback for unsupported addCheckConstraint --><sql>
+            ALTER TABLE cart_items ADD CONSTRAINT ck_cart_items_qty_pos CHECK (quantity &gt;= 1);
+        </sql><modifySql dbms="mysql"><replace replace="`updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP" with="`updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" /></modifySql></changeSet>
+
+</databaseChangeLog>

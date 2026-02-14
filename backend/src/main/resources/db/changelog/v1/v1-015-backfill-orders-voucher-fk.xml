@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        logicalFilePath="db/changelog/v1__schema.xml"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v1-015-backfill-orders-voucher-fk" author="minh" xmlns="http://www.liquibase.org/xml/ns/dbchangelog"><preConditions onFail="MARK_RAN"><and><tableExists tableName="orders" /><tableExists tableName="vouchers" /><not><foreignKeyConstraintExists foreignKeyName="fk_orders_voucher" /></not></and></preConditions><addForeignKeyConstraint baseTableName="orders" baseColumnNames="voucher_id" referencedTableName="vouchers" referencedColumnNames="id" onDelete="SET NULL" constraintName="fk_orders_voucher" /></changeSet>
+
+</databaseChangeLog>

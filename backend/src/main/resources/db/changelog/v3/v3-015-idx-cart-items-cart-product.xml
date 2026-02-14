@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        logicalFilePath="db/changelog/v3__indexes.xml"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v3-015-idx-cart-items-cart-product" author="codex" xmlns="http://www.liquibase.org/xml/ns/dbchangelog"><preConditions onFail="MARK_RAN"><not><indexExists tableName="cart_items" indexName="idx_cart_items_cart_product" /></not></preConditions><createIndex tableName="cart_items" indexName="idx_cart_items_cart_product"><column name="cart_id" /><column name="product_id" /></createIndex></changeSet>
+
+</databaseChangeLog>

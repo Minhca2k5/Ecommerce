@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        logicalFilePath="db/changelog/v3__indexes.xml"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v3-018-idx-reviews-product-updated" author="codex" xmlns="http://www.liquibase.org/xml/ns/dbchangelog"><preConditions onFail="MARK_RAN"><not><indexExists tableName="reviews" indexName="idx_reviews_product_updated" /></not></preConditions><createIndex tableName="reviews" indexName="idx_reviews_product_updated"><column name="product_id" /><column name="updated_at" /></createIndex></changeSet>
+
+</databaseChangeLog>

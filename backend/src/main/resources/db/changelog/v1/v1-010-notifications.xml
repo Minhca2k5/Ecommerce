@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        logicalFilePath="db/changelog/v1__schema.xml"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v1-010-notifications" author="minh" xmlns="http://www.liquibase.org/xml/ns/dbchangelog"><createTable tableName="notifications"><column name="id" type="BIGINT" autoIncrement="true"><constraints primaryKey="true" /></column><column name="user_id" type="BIGINT"><constraints nullable="false" /></column><column name="title" type="VARCHAR(255)"><constraints nullable="false" /></column><column name="message" type="TEXT"><constraints nullable="false" /></column><column name="type" type="VARCHAR(50)" defaultValue="SYSTEM"><constraints nullable="false" /></column><column name="reference_id" type="BIGINT" /><column name="reference_type" type="VARCHAR(50)" /><column name="is_read" type="BOOLEAN" defaultValueBoolean="false" /><column name="is_hidden" type="BOOLEAN" defaultValueBoolean="false" /><column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"><constraints nullable="false" /></column><column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" /></createTable><addForeignKeyConstraint baseTableName="notifications" baseColumnNames="user_id" referencedTableName="users" referencedColumnNames="id" onDelete="CASCADE" constraintName="fk_notifications_user" /><!-- CHECK (type) --><sql>
+            ALTER TABLE notifications
+            ADD CONSTRAINT ck_notifications_type
+            CHECK (type IN ('ORDER','PAYMENT','VOUCHER','REVIEW','SYSTEM','PROMOTION'));
+        </sql><!-- Fix updated_at ON UPDATE CURRENT_TIMESTAMP cho MySQL --><modifySql dbms="mysql"><replace replace="`updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP" with="`updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" /></modifySql></changeSet>
+
+</databaseChangeLog>

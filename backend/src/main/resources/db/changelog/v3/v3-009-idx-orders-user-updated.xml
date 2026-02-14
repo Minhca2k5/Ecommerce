@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        logicalFilePath="db/changelog/v3__indexes.xml"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v3-009-idx-orders-user-updated" author="codex" xmlns="http://www.liquibase.org/xml/ns/dbchangelog"><preConditions onFail="MARK_RAN"><not><indexExists tableName="orders" indexName="idx_orders_user_updated" /></not></preConditions><createIndex tableName="orders" indexName="idx_orders_user_updated"><column name="user_id" /><column name="updated_at" /></createIndex></changeSet>
+
+</databaseChangeLog>
