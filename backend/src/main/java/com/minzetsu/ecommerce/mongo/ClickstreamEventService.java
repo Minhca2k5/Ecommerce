@@ -3,6 +3,8 @@ package com.minzetsu.ecommerce.mongo;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -12,6 +14,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @RequiredArgsConstructor
 public class ClickstreamEventService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ClickstreamEventService.class);
     private static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
     private static final String HEADER_USER_AGENT = "User-Agent";
 
@@ -63,7 +66,11 @@ public class ClickstreamEventService {
     private void safeSave(ClickstreamEventDocument doc) {
         try {
             repository.save(doc);
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            logger.warn("Failed to persist clickstream event type={} requestId={} reason={}",
+                    doc.getEventType(),
+                    doc.getRequestId(),
+                    ex.getMessage());
         }
     }
 }

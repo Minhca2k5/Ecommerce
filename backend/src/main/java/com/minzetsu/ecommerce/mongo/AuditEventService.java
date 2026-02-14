@@ -2,6 +2,8 @@ package com.minzetsu.ecommerce.mongo;
 
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuditEventService {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuditEventService.class);
     private final AuditEventRepository repository;
 
     public void archiveFromPayload(String payload) {
@@ -22,7 +25,10 @@ public class AuditEventService {
     private void safeSave(AuditEventDocument doc) {
         try {
             repository.save(doc);
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            logger.warn("Failed to persist audit event requestId={} reason={}",
+                    doc.getRequestId(),
+                    ex.getMessage());
         }
     }
 }

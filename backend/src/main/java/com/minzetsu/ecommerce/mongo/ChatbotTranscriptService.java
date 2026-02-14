@@ -2,6 +2,8 @@ package com.minzetsu.ecommerce.mongo;
 
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ChatbotTranscriptService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ChatbotTranscriptService.class);
     private final ChatbotTranscriptRepository repository;
 
     public void archiveMessage(Long conversationId, Long userId, String role, String content, String senderName, LocalDateTime createdAt) {
@@ -26,7 +29,11 @@ public class ChatbotTranscriptService {
     private void safeSave(ChatbotTranscriptDocument doc) {
         try {
             repository.save(doc);
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            logger.warn("Failed to persist chatbot transcript conversationId={} requestId={} reason={}",
+                    doc.getConversationId(),
+                    doc.getRequestId(),
+                    ex.getMessage());
         }
     }
 }
