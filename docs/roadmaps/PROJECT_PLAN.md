@@ -196,7 +196,37 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Test coverage summary.
     *   SLO/SLA and ADR documents approved and versioned.
 
-## Phase 6: DevOps, Observability & Scale
+## Phase 6: Data Reliability & Analytics Serving
+**Status: Pending**
+**Focus:** Add practical data engineering capabilities on top of backend flows, with measurable reliability and business value.
+
+*   [ ] **Event Contract Standardization**:
+    *   Standardize event taxonomy for core funnel: `VIEW_PRODUCT`, `ADD_TO_CART`, `PLACE_ORDER`, `PAYMENT_SUCCESS`.
+    *   Ensure required fields: `eventType`, `eventTime`, `requestId`, `userId/guestId`, `source`, `productId` (when applicable).
+    *   Add schema/version notes for backward-compatible event evolution.
+*   [ ] **Analytics Data Mart (MySQL)**:
+    *   Create `daily_product_metrics` (date, product, views, add-to-cart, orders, unique users, conversion rate).
+    *   Define indexing strategy and retention policy for analytics tables.
+*   [ ] **ETL Batch from Mongo Sink to MySQL**:
+    *   Scheduled daily aggregation from clickstream sink to analytics mart.
+    *   Idempotent rerun strategy (deterministic upsert/recompute) to avoid double counting.
+*   [ ] **Data Quality Controls**:
+    *   Add checks for null keys, duplicate metric keys, and missing date partitions.
+    *   Add fail-fast policy for critical quality violations and warning policy for non-critical issues.
+*   [ ] **Analytics Serving APIs**:
+    *   Admin endpoints for funnel and top products by conversion.
+    *   Add short-TTL cache for high-frequency analytics reads.
+*   [ ] **Data Job Observability**:
+    *   Add metrics for ETL duration, processed events, dropped events, failure count.
+    *   Add alert thresholds for repeated ETL failures or stale data windows.
+*   [ ] **Data Testing & Contracts**:
+    *   Unit tests for aggregation and conversion logic.
+    *   Integration tests for ETL happy path + rerun idempotency + analytics API contracts.
+*   [ ] **Phase 6 Review**:
+    *   Demo end-to-end flow: event emission -> Mongo sink -> ETL -> MySQL mart -> admin analytics API.
+    *   Publish data reliability summary (freshness, correctness, rerun safety).
+
+## Phase 7: DevOps, Observability & Scale
 **Status: Pending**
 **Focus:** Production readiness, deployment, and scaling.
 
@@ -227,7 +257,4 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [ ] **Cost & Capacity Observability**:
     *   Cost dashboards/alerts for Redis, Elasticsearch, broker, and outbound integrations.
     *   Capacity thresholds + autoscaling trigger runbooks.
-
-
-
 
