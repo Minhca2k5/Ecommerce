@@ -75,11 +75,11 @@ This document outlines the roadmap for the development of the E-commerce system,
 
 Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 
-*   [X] **Define SLOs + Benchmarks** (see `PHASE3_ROADMAP.md`):
+*   [x] **Define SLOs + Benchmarks** (see `PHASE3_ROADMAP.md`):
     *   Pick critical endpoints and capture baseline p95/error/throughput.
-*   [X] **Caching Strategy**:
+*   [x] **Caching Strategy**:
     *   Integrate Redis + Spring Cache, define key/TTL/invalidation table.
-*   [X] **Database Optimization**:
+*   [x] **Database Optimization**:
     *   Slow query report + index list + N+1 reductions.
     *   [x] Reduce redundant queries in user-mixed flow (cart/order creation, inventory updates).
     *   [x] Review list N+1 fixes (product/user fetch) + batch cleanup on user delete.
@@ -198,28 +198,28 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 
 ## Phase 6: Data Reliability & Analytics Serving
 **Status: Pending**
-**Focus:** Add practical data engineering capabilities on top of backend flows, with measurable reliability and business value.
+**Focus:** Build new analytics capabilities (data mart + ETL + analytics APIs) on top of existing Phase 5 foundations.
 
 *   [ ] **Event Contract Standardization**:
     *   Standardize event taxonomy for core funnel: `VIEW_PRODUCT`, `ADD_TO_CART`, `PLACE_ORDER`, `PAYMENT_SUCCESS`.
     *   Ensure required fields: `eventType`, `eventTime`, `requestId`, `userId/guestId`, `source`, `productId` (when applicable).
-    *   Add schema/version notes for backward-compatible event evolution.
+    *   Add schema/version notes for backward-compatible event evolution (analytics scope only).
 *   [ ] **Analytics Data Mart (MySQL)**:
     *   Create `daily_product_metrics` (date, product, views, add-to-cart, orders, unique users, conversion rate).
     *   Define indexing strategy and retention policy for analytics tables.
 *   [ ] **ETL Batch from Mongo Sink to MySQL**:
     *   Scheduled daily aggregation from clickstream sink to analytics mart.
     *   Idempotent rerun strategy (deterministic upsert/recompute) to avoid double counting.
-*   [ ] **Data Quality Controls**:
+*   [ ] **Analytics ETL Quality Controls**:
     *   Add checks for null keys, duplicate metric keys, and missing date partitions.
-    *   Add fail-fast policy for critical quality violations and warning policy for non-critical issues.
+    *   Add fail-fast policy for critical quality violations and warning policy for non-critical issues in ETL jobs.
 *   [ ] **Analytics Serving APIs**:
     *   Admin endpoints for funnel and top products by conversion.
     *   Add short-TTL cache for high-frequency analytics reads.
 *   [ ] **Data Job Observability**:
-    *   Add metrics for ETL duration, processed events, dropped events, failure count.
-    *   Add alert thresholds for repeated ETL failures or stale data windows.
-*   [ ] **Data Testing & Contracts**:
+    *   Add ETL-specific metrics: duration, processed events, dropped events, failure count.
+    *   Add ETL-specific alert thresholds for repeated failures or stale data windows.
+*   [ ] **Data Pipeline Tests & Contracts**:
     *   Unit tests for aggregation and conversion logic.
     *   Integration tests for ETL happy path + rerun idempotency + analytics API contracts.
 *   [ ] **Phase 6 Review**:
@@ -228,7 +228,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 
 ## Phase 7: DevOps, Observability & Scale
 **Status: Pending**
-**Focus:** Production readiness, deployment, and scaling.
+**Focus:** Production platform readiness for the full system (including the new Phase 6 analytics flows).
 
 *   [ ] **Containerization**:
     *   Dockerfile for Spring Boot.
@@ -242,7 +242,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [ ] **Observability Stack**:
     *   Centralized logging (ELK/Loki).
     *   Metrics monitoring (Prometheus + Grafana).
-    *   Alerts on SLO burn, DB pool exhaustion, cache failures.
+    *   Platform-level alerts on SLO burn, DB pool exhaustion, cache failures, and broker pressure.
 *   [ ] **Web Server & Reverse Proxy**:
     *   Nginx/Caddy for TLS termination + routing.
 *   [ ] **Scaling & Reliability**:
@@ -255,6 +255,5 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [ ] **Secrets & Environments**:
     *   Separate dev/staging/prod configs and secrets management.
 *   [ ] **Cost & Capacity Observability**:
-    *   Cost dashboards/alerts for Redis, Elasticsearch, broker, and outbound integrations.
+    *   Cost dashboards/alerts for Redis, Elasticsearch, broker, outbound integrations, and analytics workload growth.
     *   Capacity thresholds + autoscaling trigger runbooks.
-
