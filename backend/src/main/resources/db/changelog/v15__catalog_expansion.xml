@@ -15,12 +15,12 @@
 
         <sql>
             -- 1) Add extra active warehouses (10 new)
+            INSERT INTO warehouses (code, name, address, city, state, country, zipcode, phone, is_active, created_at, updated_at)
             WITH RECURSIVE seq AS (
                 SELECT 1 AS n
                 UNION ALL
                 SELECT n + 1 FROM seq WHERE n &lt; 10
             )
-            INSERT INTO warehouses (code, name, address, city, state, country, zipcode, phone, is_active, created_at, updated_at)
             SELECT
                 CONCAT('WHB', LPAD(n, 2, '0')),
                 CONCAT('Bulk Warehouse ', LPAD(n, 2, '0')),
@@ -42,6 +42,7 @@
             FROM seq;
 
             -- 2) Add 160 products, evenly rotated across category ids 4..15 (12 categories)
+            INSERT INTO products (category_id, name, slug, sku, description, price, currency, status, created_at, updated_at)
             WITH RECURSIVE seq AS (
                 SELECT 1 AS n
                 UNION ALL
@@ -61,7 +62,6 @@
                 UNION ALL SELECT 11, 14, 'skincare', 'Skincare', 'SKN'
                 UNION ALL SELECT 12, 15, 'fiction', 'Fiction', 'FIC'
             )
-            INSERT INTO products (category_id, name, slug, sku, description, price, currency, status, created_at, updated_at)
             SELECT
                 m.category_id,
                 CONCAT(m.cat_name, ' Bulk Item ', LPAD(s.n, 3, '0')),
@@ -109,15 +109,15 @@
             WHERE p.sku LIKE 'BULK-%';
 
             -- 5) Add 30 new vouchers for broader promo scenarios
-            WITH RECURSIVE seq AS (
-                SELECT 1 AS n
-                UNION ALL
-                SELECT n + 1 FROM seq WHERE n &lt; 30
-            )
             INSERT INTO vouchers (
                 code, name, description, discount_type, discount_value, max_discount_amount,
                 min_order_total, start_at, end_at, usage_limit_global, usage_limit_user,
                 status, created_at, updated_at
+            )
+            WITH RECURSIVE seq AS (
+                SELECT 1 AS n
+                UNION ALL
+                SELECT n + 1 FROM seq WHERE n &lt; 30
             )
             SELECT
                 CONCAT('BULKDEAL', LPAD(n, 3, '0')),
@@ -149,14 +149,14 @@
             FROM seq;
 
             -- 6) Add notifications to enrich user-facing datasets
+            INSERT INTO notifications (
+                user_id, title, message, type, reference_id, reference_type,
+                is_read, is_hidden, created_at, updated_at
+            )
             WITH RECURSIVE seq AS (
                 SELECT 1 AS n
                 UNION ALL
                 SELECT n + 1 FROM seq WHERE n &lt; 120
-            )
-            INSERT INTO notifications (
-                user_id, title, message, type, reference_id, reference_type,
-                is_read, is_hidden, created_at, updated_at
             )
             SELECT
                 2 + ((n - 1) % 24),

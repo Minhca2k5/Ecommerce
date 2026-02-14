@@ -21,3 +21,4 @@
 /frontend/dist/
 /frontend/.vite/
 /frontend/.cache/
+/backend/.env.properties
