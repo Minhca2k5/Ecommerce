@@ -21,5 +21,7 @@
     <include file="db/changelog/v12__chat_group_invites.xml"/>
     <include file="db/changelog/v13__email_otp.xml"/>
     <include file="db/changelog/v14__order_pricing_breakdown.xml"/>
+    <include file="db/changelog/v15__catalog_expansion.xml"/>
 
 </databaseChangeLog>
+

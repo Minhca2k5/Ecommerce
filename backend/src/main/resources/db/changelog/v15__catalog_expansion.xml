@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v15-001-catalog-expansion" author="codex">
+        <comment>
+            Expand catalog seed for richer demo/testing data:
+            +160 products distributed across child categories,
+            product images, inventory, extra warehouses, vouchers, notifications, and voucher uses.
+        </comment>
+
+        <sql>
+            -- 1) Add extra active warehouses (10 new)
+            WITH RECURSIVE seq AS (
+                SELECT 1 AS n
+                UNION ALL
+                SELECT n + 1 FROM seq WHERE n &lt; 10
+            )
+            INSERT INTO warehouses (code, name, address, city, state, country, zipcode, phone, is_active, created_at, updated_at)
+            SELECT
+                CONCAT('WHB', LPAD(n, 2, '0')),
+                CONCAT('Bulk Warehouse ', LPAD(n, 2, '0')),
+                CONCAT(n, ' Distribution Park'),
+                CASE (n % 5)
+                    WHEN 0 THEN 'Ha Noi'
+                    WHEN 1 THEN 'Ho Chi Minh'
+                    WHEN 2 THEN 'Da Nang'
+                    WHEN 3 THEN 'Can Tho'
+                    ELSE 'Hai Phong'
+                END,
+                NULL,
+                'Viet Nam',
+                CONCAT('7', LPAD(n, 4, '0')),
+                CONCAT('0900', LPAD(n, 6, '0')),
+                TRUE,
+                NOW(),
+                NOW()
+            FROM seq;
+
+            -- 2) Add 160 products, evenly rotated across category ids 4..15 (12 categories)
+            WITH RECURSIVE seq AS (
+                SELECT 1 AS n
+                UNION ALL
+                SELECT n + 1 FROM seq WHERE n &lt; 160
+            ),
+            cat_map AS (
+                SELECT 1 AS idx, 4 AS category_id, 'laptops' AS cat_slug, 'Laptops' AS cat_name, 'LAP' AS cat_code
+                UNION ALL SELECT 2, 5, 'smartphones', 'Smartphones', 'PHN'
+                UNION ALL SELECT 3, 6, 'men-clothing', 'Men Clothing', 'MEN'
+                UNION ALL SELECT 4, 7, 'women-clothing', 'Women Clothing', 'WMN'
+                UNION ALL SELECT 5, 8, 'programming-books', 'Programming Books', 'PRG'
+                UNION ALL SELECT 6, 9, 'tablets', 'Tablets', 'TAB'
+                UNION ALL SELECT 7, 10, 'audio', 'Audio', 'AUD'
+                UNION ALL SELECT 8, 11, 'cameras', 'Cameras', 'CAM'
+                UNION ALL SELECT 9, 12, 'accessories', 'Accessories', 'ACC'
+                UNION ALL SELECT 10, 13, 'shoes', 'Shoes', 'SHO'
+                UNION ALL SELECT 11, 14, 'skincare', 'Skincare', 'SKN'
+                UNION ALL SELECT 12, 15, 'fiction', 'Fiction', 'FIC'
+            )
+            INSERT INTO products (category_id, name, slug, sku, description, price, currency, status, created_at, updated_at)
+            SELECT
+                m.category_id,
+                CONCAT(m.cat_name, ' Bulk Item ', LPAD(s.n, 3, '0')),
+                CONCAT('bulk-', m.cat_slug, '-', LPAD(s.n, 3, '0')),
+                CONCAT('BULK-', m.cat_code, '-', LPAD(s.n, 4, '0')),
+                CONCAT('Bulk seeded catalog item #', s.n, ' for ', m.cat_name, '. Suitable for stress-testing search, filters, and pagination.'),
+                CAST((120000 + (m.idx * 45000) + (s.n * 1700)) AS DECIMAL(12,2)),
+                'VND',
+                'ACTIVE',
+                NOW(),
+                NOW()
+            FROM seq s
+            JOIN cat_map m ON m.idx = ((s.n - 1) % 12) + 1;
+
+            -- 3) Ensure each new product has at least one image (+ optional secondary image)
+            INSERT INTO product_images (product_id, url, is_primary, created_at, updated_at)
+            SELECT p.id,
+                   CONCAT('https://picsum.photos/seed/', p.slug, '/900/900'),
+                   TRUE,
+                   NOW(),
+                   NOW()
+            FROM products p
+            WHERE p.sku LIKE 'BULK-%';
+
+            INSERT INTO product_images (product_id, url, is_primary, created_at, updated_at)
+            SELECT p.id,
+                   CONCAT('https://picsum.photos/seed/', p.slug, '-alt/900/900'),
+                   FALSE,
+                   NOW(),
+                   NOW()
+            FROM products p
+            WHERE p.sku LIKE 'BULK-%'
+              AND CAST(SUBSTRING_INDEX(p.sku, '-', -1) AS UNSIGNED) % 2 = 0;
+
+            -- 4) Seed inventory rows for new products (one warehouse per product)
+            INSERT INTO inventory (product_id, warehouse_id, stock_qty, reserved_qty, created_at, updated_at)
+            SELECT
+                p.id,
+                1 + (p.id % 25),
+                40 + (p.id % 120),
+                p.id % 8,
+                NOW(),
+                NOW()
+            FROM products p
+            WHERE p.sku LIKE 'BULK-%';
+
+            -- 5) Add 30 new vouchers for broader promo scenarios
+            WITH RECURSIVE seq AS (
+                SELECT 1 AS n
+                UNION ALL
+                SELECT n + 1 FROM seq WHERE n &lt; 30
+            )
+            INSERT INTO vouchers (
+                code, name, description, discount_type, discount_value, max_discount_amount,
+                min_order_total, start_at, end_at, usage_limit_global, usage_limit_user,
+                status, created_at, updated_at
+            )
+            SELECT
+                CONCAT('BULKDEAL', LPAD(n, 3, '0')),
+                CONCAT('Bulk Deal ', LPAD(n, 3, '0')),
+                CONCAT('Auto seeded voucher #', n, ' for promotion stress tests.'),
+                CASE (n % 3)
+                    WHEN 0 THEN 'PERCENT'
+                    WHEN 1 THEN 'FIXED'
+                    ELSE 'FREESHIP'
+                END,
+                CASE (n % 3)
+                    WHEN 0 THEN 5 + (n % 16)
+                    WHEN 1 THEN 15000 + (n * 2000)
+                    ELSE NULL
+                END,
+                CASE (n % 3)
+                    WHEN 0 THEN 70000 + (n * 3000)
+                    WHEN 1 THEN NULL
+                    ELSE NULL
+                END,
+                150000 + (n * 10000),
+                DATE_SUB(NOW(), INTERVAL 2 DAY),
+                DATE_ADD(NOW(), INTERVAL 180 DAY),
+                500 + (n * 20),
+                2 + (n % 6),
+                'ACTIVE',
+                NOW(),
+                NOW()
+            FROM seq;
+
+            -- 6) Add notifications to enrich user-facing datasets
+            WITH RECURSIVE seq AS (
+                SELECT 1 AS n
+                UNION ALL
+                SELECT n + 1 FROM seq WHERE n &lt; 120
+            )
+            INSERT INTO notifications (
+                user_id, title, message, type, reference_id, reference_type,
+                is_read, is_hidden, created_at, updated_at
+            )
+            SELECT
+                2 + ((n - 1) % 24),
+                CONCAT('[Bulk Seed] Notification ', LPAD(n, 3, '0')),
+                CONCAT('Auto seeded notification #', n, ' to increase dataset variety for filters and unread states.'),
+                CASE (n % 6)
+                    WHEN 0 THEN 'ORDER'
+                    WHEN 1 THEN 'PAYMENT'
+                    WHEN 2 THEN 'VOUCHER'
+                    WHEN 3 THEN 'REVIEW'
+                    WHEN 4 THEN 'SYSTEM'
+                    ELSE 'PROMOTION'
+                END,
+                1 + (n % 25),
+                CASE (n % 2)
+                    WHEN 0 THEN 'ORDER'
+                    ELSE 'PRODUCT'
+                END,
+                (n % 3 = 0),
+                FALSE,
+                NOW(),
+                NOW()
+            FROM seq;
+
+            -- 7) Add voucher_uses linked to existing orders (for analytics/query richness)
+            INSERT INTO voucher_uses (voucher_id, user_id, order_id, discount_amount, created_at, updated_at)
+            SELECT
+                v.id,
+                o.user_id,
+                o.id,
+                CAST(10000 + (o.id * 2500) AS DECIMAL(12,2)),
+                NOW(),
+                NOW()
+            FROM orders o
+            JOIN vouchers v ON v.code LIKE 'BULKDEAL%'
+            WHERE o.id BETWEEN 1 AND 15
+            ORDER BY o.id, v.id
+            LIMIT 45;
+        </sql>
+
+        <rollback>
+            <sql>
+                DELETE FROM voucher_uses
+                WHERE voucher_id IN (SELECT id FROM vouchers WHERE code LIKE 'BULKDEAL%');
+
+                DELETE FROM notifications
+                WHERE title LIKE '[Bulk Seed]%';
+
+                DELETE FROM inventory
+                WHERE product_id IN (SELECT id FROM products WHERE sku LIKE 'BULK-%');
+
+                DELETE FROM product_images
+                WHERE product_id IN (SELECT id FROM products WHERE sku LIKE 'BULK-%');
+
+                DELETE FROM products
+                WHERE sku LIKE 'BULK-%';
+
+                DELETE FROM vouchers
+                WHERE code LIKE 'BULKDEAL%';
+
+                DELETE FROM warehouses
+                WHERE code LIKE 'WHB%';
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
