@@ -1,9 +1,9 @@
-# E-commerce System (Phase 5)
+﻿# E-commerce System (Phase 5 -> Phase 7 in Progress)
 
 > **Branch:** `phase5`  
-> **Status:** Phase 5 Completed (M0-M9 done, full test suite passing)  
+> **Status:** Phase 5 Completed, preparing/implementing Phase 6 (Data Platform) and Phase 7 (DevOps, Observability & Scale)  
 > **Author:** Phan Dinh Minh (Minzetsu)  
-> **Last Updated:** February 9, 2026
+> **Last Updated:** February 14, 2026
 
 ## Overview
 This repository is an end-to-end E-commerce system:
@@ -67,15 +67,23 @@ This repository is an end-to-end E-commerce system:
    - `npm run dev`
 3. Open: `http://localhost:5173`
 
+## Database Migration Notes
+- Liquibase changelog is managed from `backend/src/main/resources/db/changelog/db.changelog-master.xml`.
+- Early files `v1__schema.xml`, `v2__seed.xml`, `v3__indexes.xml` were refactored into modular wrappers with includes:
+  - `db/changelog/v1/*.xml`
+  - `db/changelog/v2/*.xml`
+  - `db/changelog/v3/*.xml`
+- Catalog/data expansion is added in `v15__catalog_expansion.xml` (products, product_images, inventory, warehouse allocations, vouchers, notifications, and related records).
+
 ## Roadmap
 - Phase 3 roadmap (performance/caching/reliability): `docs/roadmaps/PHASE3_ROADMAP.md`
 - Phase 4 roadmap (integrations/realtime/search/chatbot): `docs/roadmaps/PHASE4_ROADMAP.md`
 - Phase 5 roadmap (reliability/security/ops hardening): `docs/roadmaps/PHASE5_ROADMAP.md`
+- High-level project plan (including Phase 6/7): `docs/roadmaps/PROJECT_PLAN.md`
+- Data-engineer-aligned backend roadmap: `docs/roadmaps/DATA_ENGINEER_BACKEND_ROADMAP.md`
 - Phase 5 ops notes (runbooks + Mongo collections): `docs/ops/PHASE5_OPS.md`
 - Phase 3 report: `docs/perf/phase3_report.md`
-- High-level project plan: `docs/roadmaps/PROJECT_PLAN.md`
 
 ## Notes (Current Scope)
 - Local mode currently prioritizes chatbot stability: file + voice workflows are enabled; image analysis path is disabled by default in this phase.
 - Group invites are designed as in-app first, email as best-effort notification channel.
-
