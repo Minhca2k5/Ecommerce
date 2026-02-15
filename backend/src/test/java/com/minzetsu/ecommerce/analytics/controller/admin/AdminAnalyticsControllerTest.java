@@ -3,6 +3,7 @@ package com.minzetsu.ecommerce.analytics.controller.admin;
 import com.minzetsu.ecommerce.analytics.dto.response.AdminFunnelAnalyticsResponse;
 import com.minzetsu.ecommerce.analytics.dto.response.AdminTopProductAnalyticsResponse;
 import com.minzetsu.ecommerce.analytics.service.AdminAnalyticsService;
+import com.minzetsu.ecommerce.analytics.service.AnalyticsEtlService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +18,9 @@ import java.util.List;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,12 +28,14 @@ class AdminAnalyticsControllerTest {
 
     @Mock
     private AdminAnalyticsService adminAnalyticsService;
+    @Mock
+    private AnalyticsEtlService analyticsEtlService;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        AdminAnalyticsController controller = new AdminAnalyticsController(adminAnalyticsService);
+        AdminAnalyticsController controller = new AdminAnalyticsController(adminAnalyticsService, analyticsEtlService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
@@ -97,5 +102,13 @@ class AdminAnalyticsControllerTest {
                 .andExpect(jsonPath("$[0].productName").value("Phone X"))
                 .andExpect(jsonPath("$[0].conversionRate").value(0.1000))
                 .andExpect(jsonPath("$[1].productId").value(12));
+    }
+
+    @Test
+    void runEtlForDate_shouldReturnSuccessMessage() throws Exception {
+        mockMvc.perform(post("/api/admin/analytics/etl/run")
+                        .param("date", "2026-02-15"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Analytics ETL completed for date 2026-02-15"));
     }
 }

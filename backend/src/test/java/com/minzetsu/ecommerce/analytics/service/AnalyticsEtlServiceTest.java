@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,7 +57,7 @@ class AnalyticsEtlServiceTest {
         ClickstreamEventDocument add = event("ADD_TO_CART", t.plusMinutes(2), 101L, 1L, null);
         ClickstreamEventDocument order = event("PLACE_ORDER", t.plusMinutes(3), 101L, 1L, null);
 
-        when(clickstreamEventRepository.findByEventTimeGreaterThanEqualAndEventTimeLessThan(any(), any()))
+        when(clickstreamEventRepository.findByEventTimeInRange(any(), any()))
                 .thenReturn(List.of(view1, view2, add, order));
         when(dailyProductMetricRepository.deleteByMetricDate(targetDate)).thenReturn(0);
 
@@ -83,7 +84,7 @@ class AnalyticsEtlServiceTest {
         ClickstreamEventDocument view = event("VIEW_PRODUCT", t, 201L, 2L, null);
         ClickstreamEventDocument order = event("PLACE_ORDER", t.plusMinutes(1), 201L, 2L, null);
 
-        when(clickstreamEventRepository.findByEventTimeGreaterThanEqualAndEventTimeLessThan(any(), any()))
+        when(clickstreamEventRepository.findByEventTimeInRange(any(), any()))
                 .thenReturn(List.of(view, order));
         when(dailyProductMetricRepository.deleteByMetricDate(eq(targetDate))).thenReturn(1);
 
@@ -97,7 +98,7 @@ class AnalyticsEtlServiceTest {
     @Test
     void runDailyEtl_shouldReadLatestMetricDateForStaleWindowCheck() {
         LocalDate expectedTarget = LocalDate.now(java.time.ZoneOffset.UTC).minusDays(1);
-        when(clickstreamEventRepository.findByEventTimeGreaterThanEqualAndEventTimeLessThan(any(), any()))
+        when(clickstreamEventRepository.findByEventTimeInRange(any(), any()))
                 .thenReturn(List.of());
         when(dailyProductMetricRepository.deleteByMetricDate(expectedTarget)).thenReturn(0);
         when(dailyProductMetricRepository.findLatestMetricDate()).thenReturn(Optional.of(expectedTarget));
@@ -105,6 +106,32 @@ class AnalyticsEtlServiceTest {
         analyticsEtlService.runDailyEtl();
 
         verify(dailyProductMetricRepository).findLatestMetricDate();
+    }
+
+    @Test
+    void runEtlForDate_shouldNotFailWhenPlaceOrderMissingProductId() {
+        LocalDate targetDate = LocalDate.of(2026, 2, 15);
+        LocalDateTime t = targetDate.atTime(9, 0);
+        ClickstreamEventDocument view = event("VIEW_PRODUCT", t, 301L, 3L, null);
+        ClickstreamEventDocument add = event("ADD_TO_CART", t.plusMinutes(1), 301L, 3L, null);
+        ClickstreamEventDocument invalidPlaceOrder = event("PLACE_ORDER", t.plusMinutes(2), null, 3L, null);
+
+        when(clickstreamEventRepository.findByEventTimeInRange(any(), any()))
+                .thenReturn(List.of(view, add, invalidPlaceOrder));
+        when(dailyProductMetricRepository.deleteByMetricDate(targetDate)).thenReturn(0);
+
+        analyticsEtlService.runEtlForDate(targetDate);
+
+        ArgumentCaptor<List<DailyProductMetric>> rowsCaptor = ArgumentCaptor.forClass(List.class);
+        verify(dailyProductMetricRepository).saveAll(rowsCaptor.capture());
+        List<DailyProductMetric> rows = rowsCaptor.getValue();
+        assertThat(rows).hasSize(1);
+        DailyProductMetric row = rows.get(0);
+        assertThat(row.getId().getProductId()).isEqualTo(301L);
+        assertThat(row.getViews()).isEqualTo(1);
+        assertThat(row.getAddToCart()).isEqualTo(1);
+        assertThat(row.getOrders()).isEqualTo(0);
+        verify(dailyProductMetricRepository, never()).findLatestMetricDate();
     }
 
     private ClickstreamEventDocument event(String eventType, LocalDateTime eventTime, Long productId, Long userId, String guestId) {

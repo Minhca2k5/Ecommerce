@@ -79,7 +79,7 @@ public class AnalyticsEtlService {
         long startedAt = System.currentTimeMillis();
 
         List<ClickstreamEventDocument> events =
-                clickstreamEventRepository.findByEventTimeGreaterThanEqualAndEventTimeLessThan(from, to);
+                clickstreamEventRepository.findByEventTimeInRange(from, to);
         meterRegistry.counter("analytics.etl.events.processed.total").increment(events.size());
 
         QualityReport sourceQuality = validateSourceQuality(events, from, to);
@@ -190,6 +190,7 @@ public class AnalyticsEtlService {
         int missingEventType = 0;
         int missingEventTime = 0;
         int missingProductKey = 0;
+        int missingProductKeyPlaceOrder = 0;
         int outOfRangeEventTime = 0;
         int missingActor = 0;
         int unknownEventType = 0;
@@ -215,7 +216,11 @@ public class AnalyticsEtlService {
             }
 
             if (isProductScopedEvent(eventType) && event.getProductId() == null) {
-                missingProductKey++;
+                if (EVENT_PLACE_ORDER.equals(eventType)) {
+                    missingProductKeyPlaceOrder++;
+                } else {
+                    missingProductKey++;
+                }
             }
 
             if (!isTrackedEvent(eventType)) {
@@ -231,6 +236,9 @@ public class AnalyticsEtlService {
         }
         if (missingProductKey > 0) {
             report.criticalViolations.add("missing_product_key=" + missingProductKey);
+        }
+        if (missingProductKeyPlaceOrder > 0) {
+            report.warnings.add("missing_product_key_place_order=" + missingProductKeyPlaceOrder);
         }
         if (outOfRangeEventTime > 0) {
             report.criticalViolations.add("out_of_range_event_time=" + outOfRangeEventTime);
