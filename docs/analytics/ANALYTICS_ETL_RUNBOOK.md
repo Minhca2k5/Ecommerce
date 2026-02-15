@@ -6,6 +6,7 @@
 - Target date: previous UTC day (`today - 1`).
 - Source: Mongo `clickstream_events`.
 - Sink: MySQL `daily_product_metrics`.
+- Data quality gate is executed before write.
 
 ## Idempotent rerun strategy
 
@@ -14,6 +15,20 @@
   - recomputes metrics from Mongo for the same date window
   - inserts fresh rows
 - Result: rerun for the same date does not double-count.
+
+## ETL quality controls
+
+- Critical (fail-fast, stop write):
+  - missing `eventType`
+  - missing `eventTime`
+  - missing `productId` for product-scoped funnel events
+  - out-of-range `eventTime` in fetched batch
+  - duplicate metric keys (`metric_date`, `product_id`)
+  - null metric keys
+  - missing date partition output while source has product-scoped funnel events
+- Non-critical (warning, continue):
+  - missing actor (`userId` and `guestId` are both empty)
+  - unknown event types outside funnel scope
 
 ## Aggregation logic
 

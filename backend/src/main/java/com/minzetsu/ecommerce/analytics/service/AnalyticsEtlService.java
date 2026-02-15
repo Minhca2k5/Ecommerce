@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,8 +55,26 @@ public class AnalyticsEtlService {
 
         List<ClickstreamEventDocument> events =
                 clickstreamEventRepository.findByEventTimeGreaterThanEqualAndEventTimeLessThan(from, to);
+
+        QualityReport sourceQuality = validateSourceQuality(events, from, to);
+        if (!sourceQuality.warnings.isEmpty()) {
+            log.warn("Analytics ETL source quality warnings targetDate={} warnings={}", targetDate, sourceQuality.warnings);
+        }
+        if (!sourceQuality.criticalViolations.isEmpty()) {
+            throw new IllegalStateException("Analytics ETL source quality failed for " + targetDate
+                    + " violations=" + sourceQuality.criticalViolations);
+        }
+
         Map<Long, MutableMetricRow> metricsByProduct = aggregate(events);
         List<DailyProductMetric> rows = toRows(targetDate, metricsByProduct);
+        QualityReport martQuality = validateMartQuality(events, rows, targetDate);
+        if (!martQuality.warnings.isEmpty()) {
+            log.warn("Analytics ETL mart quality warnings targetDate={} warnings={}", targetDate, martQuality.warnings);
+        }
+        if (!martQuality.criticalViolations.isEmpty()) {
+            throw new IllegalStateException("Analytics ETL mart quality failed for " + targetDate
+                    + " violations=" + martQuality.criticalViolations);
+        }
 
         int deleted = dailyProductMetricRepository.deleteByMetricDate(targetDate);
         dailyProductMetricRepository.saveAll(rows);
@@ -128,5 +147,114 @@ public class AnalyticsEtlService {
         long addToCart;
         long orders;
         Set<String> uniqueActors = new HashSet<>();
+    }
+
+    private QualityReport validateSourceQuality(List<ClickstreamEventDocument> events, LocalDateTime from, LocalDateTime to) {
+        QualityReport report = new QualityReport();
+        int missingEventType = 0;
+        int missingEventTime = 0;
+        int missingProductKey = 0;
+        int outOfRangeEventTime = 0;
+        int missingActor = 0;
+        int unknownEventType = 0;
+
+        for (ClickstreamEventDocument event : events) {
+            String eventType = event.getEventType();
+            LocalDateTime eventTime = event.getEventTime();
+            if (eventType == null || eventType.isBlank()) {
+                missingEventType++;
+                continue;
+            }
+            if (eventTime == null) {
+                missingEventTime++;
+                continue;
+            }
+            if (eventTime.isBefore(from) || !eventTime.isBefore(to)) {
+                outOfRangeEventTime++;
+            }
+
+            if (isTrackedEvent(eventType) && event.getUserId() == null
+                    && (event.getGuestId() == null || event.getGuestId().isBlank())) {
+                missingActor++;
+            }
+
+            if (isProductScopedEvent(eventType) && event.getProductId() == null) {
+                missingProductKey++;
+            }
+
+            if (!isTrackedEvent(eventType)) {
+                unknownEventType++;
+            }
+        }
+
+        if (missingEventType > 0) {
+            report.criticalViolations.add("missing_event_type=" + missingEventType);
+        }
+        if (missingEventTime > 0) {
+            report.criticalViolations.add("missing_event_time=" + missingEventTime);
+        }
+        if (missingProductKey > 0) {
+            report.criticalViolations.add("missing_product_key=" + missingProductKey);
+        }
+        if (outOfRangeEventTime > 0) {
+            report.criticalViolations.add("out_of_range_event_time=" + outOfRangeEventTime);
+        }
+        if (missingActor > 0) {
+            report.warnings.add("missing_actor=" + missingActor);
+        }
+        if (unknownEventType > 0) {
+            report.warnings.add("unknown_event_type=" + unknownEventType);
+        }
+        return report;
+    }
+
+    private QualityReport validateMartQuality(List<ClickstreamEventDocument> events, List<DailyProductMetric> rows, LocalDate targetDate) {
+        QualityReport report = new QualityReport();
+
+        long trackedProductScopedEvents = events.stream()
+                .filter(e -> isProductScopedEvent(e.getEventType()))
+                .count();
+        if (trackedProductScopedEvents > 0 && rows.isEmpty()) {
+            report.criticalViolations.add("missing_date_partition_rows_for_" + targetDate);
+        }
+
+        Set<String> duplicateKeys = rows.stream()
+                .collect(Collectors.groupingBy(
+                        r -> r.getId().getMetricDate() + "|" + r.getId().getProductId(),
+                        Collectors.counting()
+                ))
+                .entrySet()
+                .stream()
+                .filter(e -> e.getValue() > 1)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+        if (!duplicateKeys.isEmpty()) {
+            report.criticalViolations.add("duplicate_metric_keys=" + duplicateKeys.size());
+        }
+
+        long nullMetricKeys = rows.stream()
+                .filter(r -> r.getId() == null || r.getId().getMetricDate() == null || r.getId().getProductId() == null)
+                .count();
+        if (nullMetricKeys > 0) {
+            report.criticalViolations.add("null_metric_keys=" + nullMetricKeys);
+        }
+        return report;
+    }
+
+    private boolean isTrackedEvent(String eventType) {
+        return EVENT_VIEW_PRODUCT.equals(eventType)
+                || EVENT_ADD_TO_CART.equals(eventType)
+                || EVENT_PLACE_ORDER.equals(eventType);
+    }
+
+    private boolean isProductScopedEvent(String eventType) {
+        return EVENT_VIEW_PRODUCT.equals(eventType)
+                || EVENT_ADD_TO_CART.equals(eventType)
+                || EVENT_PLACE_ORDER.equals(eventType);
+    }
+
+    private static class QualityReport {
+        private final List<String> criticalViolations = new ArrayList<>();
+        private final List<String> warnings = new ArrayList<>();
     }
 }
