@@ -9,6 +9,7 @@ import com.minzetsu.ecommerce.common.utils.PageableUtils;
 import com.minzetsu.ecommerce.common.idempotency.IdempotencyService;
 import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
 import com.minzetsu.ecommerce.messaging.DomainEventType;
+import com.minzetsu.ecommerce.mongo.ClickstreamEventService;
 import com.minzetsu.ecommerce.notification.dto.request.NotificationCreateRequest;
 import com.minzetsu.ecommerce.notification.service.NotificationService;
 import com.minzetsu.ecommerce.order.entity.Order;
@@ -54,6 +55,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final SseEmitterService sseEmitterService;
     private final DatabaseRetryExecutor databaseRetryExecutor;
     private final PlatformTransactionManager transactionManager;
+    private final ClickstreamEventService clickstreamEventService;
 
     private Payment getExistingPayment(Long id) {
         return paymentRepository.findById(id)
@@ -74,6 +76,10 @@ public class PaymentServiceImpl implements PaymentService {
         ));
         if (status == PaymentStatus.SUCCEEDED) {
             domainEventPublisher.publish(DomainEventType.PAYMENT_SUCCEEDED, id, null, Map.of("status", status.name()));
+            Long userId = payment.getOrder() != null && payment.getOrder().getUser() != null
+                    ? payment.getOrder().getUser().getId()
+                    : null;
+            clickstreamEventService.recordPaymentSuccess(userId);
         }
         notifyPaymentStatus(payment, status);
     }

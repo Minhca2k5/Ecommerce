@@ -8,6 +8,7 @@ import com.minzetsu.ecommerce.common.idempotency.IdempotencyService;
 import com.minzetsu.ecommerce.common.exception.AppException;
 import com.minzetsu.ecommerce.common.utils.DatabaseRetryExecutor;
 import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
+import com.minzetsu.ecommerce.mongo.ClickstreamEventService;
 import com.minzetsu.ecommerce.order.config.CheckoutPricingProperties;
 import com.minzetsu.ecommerce.order.config.GuestCheckoutProperties;
 import com.minzetsu.ecommerce.order.dto.request.OrderRequest;
@@ -76,6 +77,8 @@ class OrderServiceImplDiscountTest {
     @Mock
     private PlatformTransactionManager transactionManager;
     @Mock
+    private ClickstreamEventService clickstreamEventService;
+    @Mock
     private GuestCheckoutIdentityService guestCheckoutIdentityService;
     @Mock
     private GuestOrderAccessTokenService guestOrderAccessTokenService;
@@ -100,6 +103,7 @@ class OrderServiceImplDiscountTest {
                 sseEmitterService,
                 databaseRetryExecutor,
                 transactionManager,
+                clickstreamEventService,
                 guestCheckoutIdentityService,
                 guestOrderAccessTokenService,
                 new GuestCheckoutProperties(),

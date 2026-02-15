@@ -18,6 +18,9 @@ public class ClickstreamEventDocument {
     private String ip;
     private String userAgent;
     private String requestId;
+    private String source;
+    private String schemaVersion;
+    private LocalDateTime eventTime;
     private LocalDateTime createdAt;
 
     public String getId() {
@@ -90,6 +93,30 @@ public class ClickstreamEventDocument {
 
     public void setRequestId(String requestId) {
         this.requestId = requestId;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getSchemaVersion() {
+        return schemaVersion;
+    }
+
+    public void setSchemaVersion(String schemaVersion) {
+        this.schemaVersion = schemaVersion;
+    }
+
+    public LocalDateTime getEventTime() {
+        return eventTime;
+    }
+
+    public void setEventTime(LocalDateTime eventTime) {
+        this.eventTime = eventTime;
     }
 
     public LocalDateTime getCreatedAt() {

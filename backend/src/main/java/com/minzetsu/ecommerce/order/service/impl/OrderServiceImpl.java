@@ -14,6 +14,7 @@ import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
 import com.minzetsu.ecommerce.common.idempotency.IdempotencyService;
+import com.minzetsu.ecommerce.mongo.ClickstreamEventService;
 import com.minzetsu.ecommerce.order.dto.filter.OrderFilter;
 import com.minzetsu.ecommerce.order.dto.request.OrderRequest;
 import com.minzetsu.ecommerce.order.dto.response.OrderItemResponse;
@@ -75,6 +76,7 @@ public class OrderServiceImpl implements OrderService {
     private final SseEmitterService sseEmitterService;
     private final DatabaseRetryExecutor databaseRetryExecutor;
     private final PlatformTransactionManager transactionManager;
+    private final ClickstreamEventService clickstreamEventService;
     private final GuestCheckoutIdentityService guestCheckoutIdentityService;
     private final GuestOrderAccessTokenService guestOrderAccessTokenService;
     private final GuestCheckoutProperties guestCheckoutProperties;
@@ -315,6 +317,7 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItem> orderItems = createOrderItemsService.createOrderItems(savedOrder, request.getCartId());
         eventPublisher.publishEvent(new OrderCreatedEvent(savedOrder.getId(), userId));
         domainEventPublisher.publish(DomainEventType.ORDER_CREATED, savedOrder.getId(), userId, Map.of());
+        clickstreamEventService.recordPlaceOrder(userId, guestCheckout ? guestId : null);
         sseEmitterService.sendToUser(userId, "order-created", Map.of("orderId", savedOrder.getId()));
         sseEmitterService.sendToAdmins("order-created", Map.of("orderId", savedOrder.getId(), "userId", userId));
         List<OrderItemResponse> orderItemResponses = orderItemMapper.toResponseList(orderItems);

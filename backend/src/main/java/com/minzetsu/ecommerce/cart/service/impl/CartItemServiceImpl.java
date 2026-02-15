@@ -18,6 +18,7 @@ import com.minzetsu.ecommerce.common.exception.InsufficientNumberException;
 import com.minzetsu.ecommerce.common.exception.InvalidObjectException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
+import com.minzetsu.ecommerce.mongo.ClickstreamEventService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,7 @@ public class CartItemServiceImpl implements CartItemService {
     private final CartService cartService;
     private final InventoryService inventoryService;
     private final GetUrlForCartService getUrlForCartService;
+    private final ClickstreamEventService clickstreamEventService;
 
 
     private void validateCartAndProduct(Long cartId, Long productId) {
@@ -236,6 +238,7 @@ public class CartItemServiceImpl implements CartItemService {
         Integer quantity = request.getQuantity();
 
         validateCartAndProduct(cartId, productId);
+        Cart cart = cartService.getCartById(cartId);
         if (!isReturned) {
             validateStock(productId, quantity);
         }
@@ -243,6 +246,11 @@ public class CartItemServiceImpl implements CartItemService {
         CartItem cartItem = cartItemRepository.findByCartIdAndProductId(cartId, productId)
                 .map(existingItem -> updateExistingItem(existingItem, quantity, isReturned, productId))
                 .orElseGet(() -> createNewCartItem(request, cartId, productId, quantity));
+
+        if (!isReturned) {
+            Long userId = cart.getUser() != null ? cart.getUser().getId() : null;
+            clickstreamEventService.recordAddToCart(userId, cart.getGuestId(), productId);
+        }
 
         return getUrlForCartService.toResponseWithUrl(cartItem);
     }
