@@ -16,7 +16,7 @@ Scope: analytics funnel events stored in Mongo `clickstream_events`.
 - `requestId`
 - `source`
 - `userId` or `guestId` (at least one)
-- `productId` for product-scoped events (`VIEW_PRODUCT`, `ADD_TO_CART`)
+- `productId` for product-scoped events (`VIEW_PRODUCT`, `ADD_TO_CART`, `PLACE_ORDER`)
 
 ## Schema/version notes
 

@@ -48,8 +48,10 @@ public class ClickstreamEventService {
         persistIfValid(doc);
     }
 
-    public void recordPlaceOrder(Long userId, String guestId) {
-        persistIfValid(buildBaseEvent(EVENT_PLACE_ORDER, userId, guestId));
+    public void recordPlaceOrder(Long userId, String guestId, Long productId) {
+        ClickstreamEventDocument doc = buildBaseEvent(EVENT_PLACE_ORDER, userId, guestId);
+        doc.setProductId(productId);
+        persistIfValid(doc);
     }
 
     public void recordPaymentSuccess(Long userId) {
@@ -133,7 +135,9 @@ public class ClickstreamEventService {
         if (doc.getUserId() == null && (doc.getGuestId() == null || doc.getGuestId().isBlank())) {
             return "missing_actor";
         }
-        if ((EVENT_VIEW_PRODUCT.equals(doc.getEventType()) || EVENT_ADD_TO_CART.equals(doc.getEventType()))
+        if ((EVENT_VIEW_PRODUCT.equals(doc.getEventType())
+                || EVENT_ADD_TO_CART.equals(doc.getEventType())
+                || EVENT_PLACE_ORDER.equals(doc.getEventType()))
                 && doc.getProductId() == null) {
             return "missing_product_id";
         }

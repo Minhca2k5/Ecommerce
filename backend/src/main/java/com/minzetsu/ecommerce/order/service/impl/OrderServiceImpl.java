@@ -317,7 +317,16 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItem> orderItems = createOrderItemsService.createOrderItems(savedOrder, request.getCartId());
         eventPublisher.publishEvent(new OrderCreatedEvent(savedOrder.getId(), userId));
         domainEventPublisher.publish(DomainEventType.ORDER_CREATED, savedOrder.getId(), userId, Map.of());
-        clickstreamEventService.recordPlaceOrder(userId, guestCheckout ? guestId : null);
+        for (OrderItem orderItem : orderItems) {
+            if (orderItem.getProduct() == null || orderItem.getProduct().getId() == null) {
+                continue;
+            }
+            clickstreamEventService.recordPlaceOrder(
+                    userId,
+                    guestCheckout ? guestId : null,
+                    orderItem.getProduct().getId()
+            );
+        }
         sseEmitterService.sendToUser(userId, "order-created", Map.of("orderId", savedOrder.getId()));
         sseEmitterService.sendToAdmins("order-created", Map.of("orderId", savedOrder.getId(), "userId", userId));
         List<OrderItemResponse> orderItemResponses = orderItemMapper.toResponseList(orderItems);
