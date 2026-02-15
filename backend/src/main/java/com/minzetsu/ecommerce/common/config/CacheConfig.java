@@ -76,6 +76,7 @@ public class CacheConfig extends CachingConfigurerSupport {
         cacheConfigs.put("categoryTree", defaultConfig.entryTtl(Duration.ofMinutes(10)));
         cacheConfigs.put("bannerPublic", defaultConfig.entryTtl(Duration.ofMinutes(2)));
         cacheConfigs.put("voucherPublicV2", defaultConfig.entryTtl(Duration.ofMinutes(2)));
+        cacheConfigs.put("analyticsAdmin", defaultConfig.entryTtl(Duration.ofSeconds(30)));
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
