@@ -5,6 +5,7 @@ import com.minzetsu.ecommerce.analytics.entity.DailyProductMetricId;
 import com.minzetsu.ecommerce.analytics.repository.DailyProductMetricRepository;
 import com.minzetsu.ecommerce.mongo.ClickstreamEventDocument;
 import com.minzetsu.ecommerce.mongo.ClickstreamEventRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -14,6 +15,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,18 +36,40 @@ public class AnalyticsEtlService {
 
     private final ClickstreamEventRepository clickstreamEventRepository;
     private final DailyProductMetricRepository dailyProductMetricRepository;
+    private final MeterRegistry meterRegistry;
 
     @Value("${analytics.etl.enabled:true}")
     private boolean etlEnabled;
+    @Value("${analytics.etl.alert.failure-threshold:3}")
+    private int failureThreshold;
+    @Value("${analytics.etl.alert.stale-days-threshold:2}")
+    private int staleDaysThreshold;
+
+    private final AtomicInteger consecutiveFailures = new AtomicInteger(0);
+    private final AtomicLong staleDaysGauge = new AtomicLong(0);
 
     @Scheduled(cron = "${analytics.etl.daily-cron:0 15 1 * * *}")
     @Transactional
     public void runDailyEtl() {
+        meterRegistry.gauge("analytics.etl.consecutive_failures", consecutiveFailures);
+        meterRegistry.gauge("analytics.etl.stale_days", staleDaysGauge);
         if (!etlEnabled) {
             return;
         }
         LocalDate targetDate = LocalDate.now(ZoneOffset.UTC).minusDays(1);
-        runEtlForDate(targetDate);
+        try {
+            runEtlForDate(targetDate);
+            consecutiveFailures.set(0);
+            checkStaleDataWindow();
+        } catch (Exception ex) {
+            int failures = consecutiveFailures.incrementAndGet();
+            meterRegistry.counter("analytics.etl.failures.total").increment();
+            if (failures >= Math.max(1, failureThreshold)) {
+                log.warn("ALERT analytics.etl repeated failures failures={} threshold={} lastError={}",
+                        failures, failureThreshold, ex.getMessage());
+            }
+            throw ex;
+        }
     }
 
     @Transactional
@@ -55,8 +80,16 @@ public class AnalyticsEtlService {
 
         List<ClickstreamEventDocument> events =
                 clickstreamEventRepository.findByEventTimeGreaterThanEqualAndEventTimeLessThan(from, to);
+        meterRegistry.counter("analytics.etl.events.processed.total").increment(events.size());
 
         QualityReport sourceQuality = validateSourceQuality(events, from, to);
+        long droppedEvents = sourceQuality.criticalViolations.stream()
+                .filter(violation -> violation.startsWith("missing_") || violation.startsWith("out_of_range"))
+                .mapToLong(this::extractCountSuffix)
+                .sum();
+        if (droppedEvents > 0) {
+            meterRegistry.counter("analytics.etl.events.dropped.total").increment(droppedEvents);
+        }
         if (!sourceQuality.warnings.isEmpty()) {
             log.warn("Analytics ETL source quality warnings targetDate={} warnings={}", targetDate, sourceQuality.warnings);
         }
@@ -78,14 +111,17 @@ public class AnalyticsEtlService {
 
         int deleted = dailyProductMetricRepository.deleteByMetricDate(targetDate);
         dailyProductMetricRepository.saveAll(rows);
+        meterRegistry.counter("analytics.etl.rows.upserted.total").increment(rows.size());
 
+        long durationMs = (System.currentTimeMillis() - startedAt);
+        meterRegistry.timer("analytics.etl.duration").record(durationMs, java.util.concurrent.TimeUnit.MILLISECONDS);
         log.info(
                 "Analytics ETL finished targetDate={} eventsRead={} rowsUpserted={} rowsDeleted={} durationMs={}",
                 targetDate,
                 events.size(),
                 rows.size(),
                 deleted,
-                (System.currentTimeMillis() - startedAt)
+                durationMs
         );
     }
 
@@ -256,5 +292,31 @@ public class AnalyticsEtlService {
     private static class QualityReport {
         private final List<String> criticalViolations = new ArrayList<>();
         private final List<String> warnings = new ArrayList<>();
+    }
+
+    private long extractCountSuffix(String violation) {
+        int index = violation.lastIndexOf('=');
+        if (index < 0 || index >= violation.length() - 1) {
+            return 0;
+        }
+        try {
+            return Long.parseLong(violation.substring(index + 1));
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
+    }
+
+    private void checkStaleDataWindow() {
+        LocalDate latest = dailyProductMetricRepository.findLatestMetricDate().orElse(null);
+        if (latest == null) {
+            log.warn("ALERT analytics.etl stale data latestMetricDate missing");
+            return;
+        }
+        long staleDays = java.time.temporal.ChronoUnit.DAYS.between(latest, LocalDate.now(ZoneOffset.UTC));
+        staleDaysGauge.set(staleDays);
+        if (staleDays > Math.max(0, staleDaysThreshold)) {
+            log.warn("ALERT analytics.etl stale data staleDays={} threshold={} latestMetricDate={}",
+                    staleDays, staleDaysThreshold, latest);
+        }
     }
 }

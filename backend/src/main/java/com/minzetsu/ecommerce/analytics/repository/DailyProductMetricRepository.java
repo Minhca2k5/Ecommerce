@@ -6,6 +6,7 @@ import com.minzetsu.ecommerce.analytics.repository.projection.FunnelAggregateVie
 import com.minzetsu.ecommerce.analytics.repository.projection.TopProductAggregateView;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -43,4 +44,7 @@ public interface DailyProductMetricRepository extends JpaRepository<DailyProduct
             ORDER BY COALESCE(SUM(d.orders), 0) DESC, COALESCE(SUM(d.views), 0) DESC
             """)
     List<TopProductAggregateView> findTopProductsByRange(LocalDate fromDate, LocalDate toDate);
+
+    @Query("SELECT MAX(d.id.metricDate) FROM DailyProductMetric d")
+    Optional<LocalDate> findLatestMetricDate();
 }

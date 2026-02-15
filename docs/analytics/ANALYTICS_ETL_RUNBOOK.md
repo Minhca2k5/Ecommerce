@@ -30,6 +30,23 @@
   - missing actor (`userId` and `guestId` are both empty)
   - unknown event types outside funnel scope
 
+## ETL observability metrics
+
+- `analytics.etl.duration`: job duration timer
+- `analytics.etl.events.processed.total`: number of Mongo events read by ETL
+- `analytics.etl.events.dropped.total`: number of source events rejected by critical quality checks
+- `analytics.etl.rows.upserted.total`: number of mart rows written
+- `analytics.etl.failures.total`: total failed ETL runs
+- `analytics.etl.consecutive_failures`: current consecutive failure count
+- `analytics.etl.stale_days`: days since latest `metric_date` in mart
+
+## Alert thresholds
+
+- `analytics.etl.alert.failure-threshold` (default `3`)
+  - warn when consecutive failures reach threshold.
+- `analytics.etl.alert.stale-days-threshold` (default `2`)
+  - warn when mart freshness is older than threshold.
+
 ## Aggregation logic
 
 - Group key: (`metric_date`, `product_id`)
