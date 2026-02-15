@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v16-001-create-daily-product-metrics" author="codex">
+        <comment>
+            Phase 6 analytics mart table for daily product-level funnel metrics.
+        </comment>
+
+        <createTable tableName="daily_product_metrics">
+            <column name="metric_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="views" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="add_to_cart" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="orders" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unique_users" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="conversion_rate" type="decimal(10,4)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey
+                tableName="daily_product_metrics"
+                columnNames="metric_date, product_id"
+                constraintName="pk_daily_product_metrics"/>
+
+        <addForeignKeyConstraint
+                baseTableName="daily_product_metrics"
+                baseColumnNames="product_id"
+                referencedTableName="products"
+                referencedColumnNames="id"
+                constraintName="fk_daily_product_metrics_product"/>
+
+        <sql>
+            ALTER TABLE daily_product_metrics
+            ADD CONSTRAINT chk_daily_product_metrics_non_negative
+            CHECK (
+                views &gt;= 0
+                AND add_to_cart &gt;= 0
+                AND orders &gt;= 0
+                AND unique_users &gt;= 0
+                AND conversion_rate &gt;= 0
+            );
+        </sql>
+
+        <createIndex tableName="daily_product_metrics" indexName="idx_dpm_product_date">
+            <column name="product_id"/>
+            <column name="metric_date"/>
+        </createIndex>
+
+        <createIndex tableName="daily_product_metrics" indexName="idx_dpm_date_conversion">
+            <column name="metric_date"/>
+            <column name="conversion_rate"/>
+        </createIndex>
+
+        <createIndex tableName="daily_product_metrics" indexName="idx_dpm_date_orders">
+            <column name="metric_date"/>
+            <column name="orders"/>
+        </createIndex>
+
+        <createIndex tableName="daily_product_metrics" indexName="idx_dpm_updated_at">
+            <column name="updated_at"/>
+        </createIndex>
+
+        <rollback>
+            <dropTable tableName="daily_product_metrics"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

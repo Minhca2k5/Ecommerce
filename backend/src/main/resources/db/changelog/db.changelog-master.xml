@@ -22,6 +22,7 @@
     <include file="db/changelog/v13__email_otp.xml"/>
     <include file="db/changelog/v14__order_pricing_breakdown.xml"/>
     <include file="db/changelog/v15__catalog_expansion.xml"/>
+    <include file="db/changelog/v16__analytics_mart.xml"/>
 
 </databaseChangeLog>
 
