@@ -16,6 +16,7 @@ import {
   Bell,
   Star,
   ScrollText,
+  BarChart3,
 } from "lucide-react";
 
 export type AdminNavItem = {
@@ -40,6 +41,7 @@ export const adminNav: AdminNavItem[] = [
 
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag, group: "Sales" },
   { to: "/admin/payments", label: "Payments", icon: CreditCard, group: "Sales" },
+  { to: "/admin/analytics", label: "Analytics", icon: BarChart3, group: "Sales" },
 
   { to: "/admin/users", label: "Users", icon: Users, group: "Users" },
   { to: "/admin/roles", label: "Roles", icon: Shield, group: "Users" },

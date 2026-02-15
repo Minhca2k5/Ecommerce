@@ -199,33 +199,33 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   SLO/SLA and ADR documents approved and versioned.
 
 ## Phase 6: Data Reliability & Analytics Serving
-**Status: Pending**
+**Status: Completed**
 **Focus:** Build new analytics capabilities (data mart + ETL + analytics APIs) on top of existing Phase 5 foundations.
 
-*   [ ] **Event Contract Standardization**:
+*   [x] **Event Contract Standardization**:
     *   Standardize event taxonomy for core funnel: `VIEW_PRODUCT`, `ADD_TO_CART`, `PLACE_ORDER`, `PAYMENT_SUCCESS`.
     *   Ensure required fields: `eventType`, `eventTime`, `requestId`, `userId/guestId`, `source`, `productId` (when applicable).
     *   Add schema/version notes for backward-compatible event evolution (analytics scope only).
-*   [ ] **Analytics Data Mart (MySQL)**:
+*   [x] **Analytics Data Mart (MySQL)**:
     *   Create `daily_product_metrics` (date, product, views, add-to-cart, orders, unique users, conversion rate).
     *   Define indexing strategy and retention policy for analytics tables.
-*   [ ] **ETL Batch from Mongo Sink to MySQL**:
+*   [x] **ETL Batch from Mongo Sink to MySQL**:
     *   Scheduled daily aggregation from clickstream sink to analytics mart.
     *   Idempotent rerun strategy (deterministic upsert/recompute) to avoid double counting.
-*   [ ] **Analytics ETL Quality Controls**:
+*   [x] **Analytics ETL Quality Controls**:
     *   Add checks for null keys, duplicate metric keys, and missing date partitions.
     *   Add fail-fast policy for critical quality violations and warning policy for non-critical issues in ETL jobs.
-*   [ ] **Analytics Serving APIs**:
+*   [x] **Analytics Serving APIs**:
     *   Admin endpoints for funnel and top products by conversion.
     *   Add short-TTL cache for high-frequency analytics reads.
-*   [ ] **Data Job Observability**:
+*   [x] **Data Job Observability**:
     *   Add ETL-specific metrics: duration, processed events, dropped events, failure count.
     *   Add ETL-specific alert thresholds for repeated failures or stale data windows.
     *   **Scope note:** Focus on data-pipeline telemetry quality for analytics workloads; global observability stack integration is finalized in Phase 7.
-*   [ ] **Data Pipeline Tests & Contracts**:
+*   [x] **Data Pipeline Tests & Contracts**:
     *   Unit tests for aggregation and conversion logic.
     *   Integration tests for ETL happy path + rerun idempotency + analytics API contracts.
-*   [ ] **Phase 6 Review**:
+*   [x] **Phase 6 Review**:
     *   Demo end-to-end flow: event emission -> Mongo sink -> ETL -> MySQL mart -> admin analytics API.
     *   Publish data reliability summary (freshness, correctness, rerun safety).
 

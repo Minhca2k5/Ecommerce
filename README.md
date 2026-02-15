@@ -1,9 +1,9 @@
-﻿# E-commerce System (Phase 5 -> Phase 7 in Progress)
+# E-commerce System (Phase 6 Completed, Phase 7 In Progress)
 
-> **Branch:** `phase5`  
-> **Status:** Phase 5 Completed, preparing/implementing Phase 6 (Data Platform) and Phase 7 (DevOps, Observability & Scale)  
+> **Branch:** `phase6`  
+> **Status:** Phase 6 Completed (Data Reliability & Analytics Serving), moving to Phase 7 (DevOps, Observability & Scale)  
 > **Author:** Phan Dinh Minh (Minzetsu)  
-> **Last Updated:** February 14, 2026
+> **Last Updated:** February 15, 2026
 
 ## Overview
 This repository is an end-to-end E-commerce system:
@@ -15,6 +15,7 @@ This repository is an end-to-end E-commerce system:
 - **Guest Checkout (Phase 5):** secure guest order access token + guest order tracking + guest MoMo payment
 - **Chatbot:** LLM-backed assistant with project/DB context + conversation history
 - **MongoDB Analytics/Log Sink (Phase 5):** clickstream events, chatbot transcript archive, audit event archive (Mongo is sink-only; MySQL remains system of record)
+- **Analytics Serving (Phase 6):** standardized funnel contract + daily ETL (Mongo -> MySQL mart) + admin analytics APIs (`funnel`, `top-products`) + short-TTL cache
 - **Chatbot Collaboration (Phase 4):** personal/project/group scopes, group invites (accept/refuse), member list + sender display names in group chat
 - **Auth Hardening (Phase 4):** email OTP verification for registration
 - **Frontend (Phase 2+4):** React + TypeScript (see `frontend/`), integrating with backend APIs, SSE, MoMo
@@ -74,16 +75,21 @@ This repository is an end-to-end E-commerce system:
   - `db/changelog/v2/*.xml`
   - `db/changelog/v3/*.xml`
 - Catalog/data expansion is added in `v15__catalog_expansion.xml` (products, product_images, inventory, warehouse allocations, vouchers, notifications, and related records).
+- Analytics mart schema is added in `v16__analytics_mart.xml` (`daily_product_metrics` + indexes + constraints).
 
 ## Roadmap
 - Phase 3 roadmap (performance/caching/reliability): `docs/roadmaps/PHASE3_ROADMAP.md`
 - Phase 4 roadmap (integrations/realtime/search/chatbot): `docs/roadmaps/PHASE4_ROADMAP.md`
-- Phase 5 roadmap (reliability/security/ops hardening): `docs/roadmaps/PHASE5_ROADMAP.md`
+- Phase 5 roadmap (reliability/security/ops hardening): `docs/roadmaps/PHASE5_ROADMAP.md` 
+- Phase 6 roadmap (data reliability + analytics serving): `docs/roadmaps/PHASE6_ROADMAP.md`
 - High-level project plan (including Phase 6/7): `docs/roadmaps/PROJECT_PLAN.md`
 - Data-engineer-aligned backend roadmap: `docs/roadmaps/DATA_ENGINEER_BACKEND_ROADMAP.md`
-- Phase 5 ops notes (runbooks + Mongo collections): `docs/ops/PHASE5_OPS.md`
+- Phase 5 ops notes (runbooks + Mongo collections): `docs/ops/PHASE5_OPS.md` 
+- Phase 6 ops notes (ETL + serving + observability): `docs/ops/PHASE6_OPS.md`
 - Phase 3 report: `docs/perf/phase3_report.md`
 
 ## Notes (Current Scope)
 - Local mode currently prioritizes chatbot stability: file + voice workflows are enabled; image analysis path is disabled by default in this phase.
 - Group invites are designed as in-app first, email as best-effort notification channel.
+
+
