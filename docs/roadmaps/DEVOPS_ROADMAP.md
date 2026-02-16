@@ -1,6 +1,6 @@
 # Phase 7 Roadmap: DevOps, Observability & Scale
 
-Status: In Progress (M0 completed, M1 in progress)
+Status: In Progress (M0-M1 completed, M2 in progress)
 
 Goal: move the system from feature-complete to production-ready by establishing a repeatable deployment pipeline, operational visibility, reliability runbooks, and cost-aware scaling controls.
 
@@ -53,7 +53,7 @@ Checkpoint:
 - Define image tags and versioning strategy.
 
 Checkpoint:
-- `docker build` and `docker compose up` succeed in clean environment.
+- `docker build` and `docker compose up` succeed in clean environment. (Completed)
 
 ---
 
@@ -153,7 +153,7 @@ Checkpoint:
 - Incident runbooks + DR drill report.
 - Capacity/cost baseline with next-quarter forecast.
 - Ops baseline runbook:
-  - `docs/ops/PHASE7_OPS.md`
+  - `docs/ops/DEVOPS_OPS.md`
 
 Success criteria:
 - Team can release predictably, detect regressions fast, and recover from incidents with documented procedures.
