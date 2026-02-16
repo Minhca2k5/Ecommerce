@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -109,7 +110,7 @@ class AnalyticsEtlServiceTest {
     }
 
     @Test
-    void runEtlForDate_shouldNotFailWhenPlaceOrderMissingProductId() {
+    void runEtlForDate_shouldFailFastWhenPlaceOrderMissingProductId() {
         LocalDate targetDate = LocalDate.of(2026, 2, 15);
         LocalDateTime t = targetDate.atTime(9, 0);
         ClickstreamEventDocument view = event("VIEW_PRODUCT", t, 301L, 3L, null);
@@ -118,19 +119,13 @@ class AnalyticsEtlServiceTest {
 
         when(clickstreamEventRepository.findByEventTimeInRange(any(), any()))
                 .thenReturn(List.of(view, add, invalidPlaceOrder));
-        when(dailyProductMetricRepository.deleteByMetricDate(targetDate)).thenReturn(0);
 
-        analyticsEtlService.runEtlForDate(targetDate);
+        assertThatThrownBy(() -> analyticsEtlService.runEtlForDate(targetDate))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("missing_product_key=1");
 
-        ArgumentCaptor<List<DailyProductMetric>> rowsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(dailyProductMetricRepository).saveAll(rowsCaptor.capture());
-        List<DailyProductMetric> rows = rowsCaptor.getValue();
-        assertThat(rows).hasSize(1);
-        DailyProductMetric row = rows.get(0);
-        assertThat(row.getId().getProductId()).isEqualTo(301L);
-        assertThat(row.getViews()).isEqualTo(1);
-        assertThat(row.getAddToCart()).isEqualTo(1);
-        assertThat(row.getOrders()).isEqualTo(0);
+        verify(dailyProductMetricRepository, never()).saveAll(any());
+        verify(dailyProductMetricRepository, never()).deleteByMetricDate(any());
         verify(dailyProductMetricRepository, never()).findLatestMetricDate();
     }
 

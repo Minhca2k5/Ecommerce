@@ -21,12 +21,10 @@ public class RabbitConfig {
     public static final String DLX = "ecommerce.events.dlx";
     public static final String QUEUE_SEARCH = "ecommerce.search.queue";
     public static final String QUEUE_NOTIFICATION = "ecommerce.notification.queue";
-    public static final String QUEUE_ANALYTICS = "ecommerce.analytics.queue";
     public static final String QUEUE_CHATBOT_CACHE = "ecommerce.chatbot.cache.queue";
     public static final String ROUTING_ALL = "event.#";
     public static final String ROUTING_SEARCH = "event.search";
     public static final String ROUTING_NOTIFICATION = "event.notification";
-    public static final String ROUTING_ANALYTICS = "event.analytics";
     public static final String ROUTING_CHATBOT = "event.chatbot";
 
     @Bean
@@ -56,14 +54,6 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Queue analyticsQueue() {
-        return QueueBuilder.durable(QUEUE_ANALYTICS)
-                .withArgument("x-dead-letter-exchange", DLX)
-                .withArgument("x-dead-letter-routing-key", QUEUE_ANALYTICS + ".dlq")
-                .build();
-    }
-
-    @Bean
     public Queue chatbotCacheQueue() {
         return QueueBuilder.durable(QUEUE_CHATBOT_CACHE)
                 .withArgument("x-dead-letter-exchange", DLX)
@@ -82,11 +72,6 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Queue analyticsDlq() {
-        return QueueBuilder.durable(QUEUE_ANALYTICS + ".dlq").build();
-    }
-
-    @Bean
     public Queue chatbotCacheDlq() {
         return QueueBuilder.durable(QUEUE_CHATBOT_CACHE + ".dlq").build();
     }
@@ -99,11 +84,6 @@ public class RabbitConfig {
     @Bean
     public Binding bindNotificationQueue(TopicExchange eventsExchange, Queue notificationQueue) {
         return BindingBuilder.bind(notificationQueue).to(eventsExchange).with(ROUTING_NOTIFICATION);
-    }
-
-    @Bean
-    public Binding bindAnalyticsQueue(TopicExchange eventsExchange, Queue analyticsQueue) {
-        return BindingBuilder.bind(analyticsQueue).to(eventsExchange).with(ROUTING_ANALYTICS);
     }
 
     @Bean
@@ -124,11 +104,6 @@ public class RabbitConfig {
     @Bean
     public Binding bindNotificationDlq(DirectExchange dlxExchange, Queue notificationDlq) {
         return BindingBuilder.bind(notificationDlq).to(dlxExchange).with(QUEUE_NOTIFICATION + ".dlq");
-    }
-
-    @Bean
-    public Binding bindAnalyticsDlq(DirectExchange dlxExchange, Queue analyticsDlq) {
-        return BindingBuilder.bind(analyticsDlq).to(dlxExchange).with(QUEUE_ANALYTICS + ".dlq");
     }
 
     @Bean

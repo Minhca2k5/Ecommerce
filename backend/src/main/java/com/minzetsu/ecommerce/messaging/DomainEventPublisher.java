@@ -32,7 +32,6 @@ public class DomainEventPublisher {
         return switch (type) {
             case PRODUCT_CREATED, PRODUCT_UPDATED, PRODUCT_DELETED -> RabbitConfig.ROUTING_SEARCH;
             case ORDER_CREATED, ORDER_STATUS_UPDATED, PAYMENT_CREATED, PAYMENT_SUCCEEDED -> RabbitConfig.ROUTING_NOTIFICATION;
-            case INVENTORY_LOW -> RabbitConfig.ROUTING_ANALYTICS;
             case CATEGORY_CREATED, CATEGORY_UPDATED, CATEGORY_DELETED,
                  VOUCHER_CREATED, VOUCHER_UPDATED, VOUCHER_DELETED -> RabbitConfig.ROUTING_CHATBOT;
         };

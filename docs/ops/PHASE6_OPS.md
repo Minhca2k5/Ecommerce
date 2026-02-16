@@ -1,11 +1,12 @@
 # Phase 6 Ops
 
-Status: Completed (data pipeline baseline + serving APIs + telemetry)
+Status: Completed (hybrid realtime serving + ETL baseline + telemetry)
 
 ## Objective
 Operate Phase 6 analytics pipeline with reliability guarantees:
 - standard event contract
-- daily ETL from Mongo sink to MySQL mart
+- realtime counters in Redis for current-day funnel metrics
+- daily ETL from Mongo sink to MySQL mart for durable history/reconciliation
 - quality-gated writes
 - admin analytics serving endpoints with cache
 - ETL observability and threshold-based alerts
@@ -13,6 +14,7 @@ Operate Phase 6 analytics pipeline with reliability guarantees:
 ## Runtime Scope
 - Raw sink: MongoDB `clickstream_events`
 - Serving mart: MySQL `daily_product_metrics`
+- Realtime overlay: Redis (`analytics:realtime:*`)
 - API surface: `/api/admin/analytics/*`
 - Cache: Redis (`analyticsAdmin`)
 
@@ -64,6 +66,9 @@ Operational checks:
   - `GET /api/admin/analytics/funnel`
   - `GET /api/admin/analytics/top-products`
 - Auth: admin role only.
+- Read strategy:
+  - history (`from`..`to` before current UTC day) from MySQL mart
+  - current UTC day overlay from Redis realtime counters
 - Cache:
   - cache name `analyticsAdmin`
   - TTL 30s

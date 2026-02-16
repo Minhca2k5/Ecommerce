@@ -200,7 +200,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 
 ## Phase 6: Data Reliability & Analytics Serving
 **Status: Completed**
-**Focus:** Build new analytics capabilities (data mart + ETL + analytics APIs) on top of existing Phase 5 foundations.
+**Focus:** Build new analytics capabilities (data mart + ETL + hybrid realtime analytics APIs) on top of existing Phase 5 foundations.
 
 *   [x] **Event Contract Standardization**:
     *   Standardize event taxonomy for core funnel: `VIEW_PRODUCT`, `ADD_TO_CART`, `PLACE_ORDER`, `PAYMENT_SUCCESS`.
@@ -218,6 +218,10 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [x] **Analytics Serving APIs**:
     *   Admin endpoints for funnel and top products by conversion.
     *   Add short-TTL cache for high-frequency analytics reads.
+*   [x] **Realtime Analytics Overlay (Hybrid Serving)**:
+    *   Add Redis realtime counters for `VIEW_PRODUCT` / `ADD_TO_CART` / `PLACE_ORDER`.
+    *   Merge API reads as: historical range from MySQL mart + current UTC day from Redis counters.
+    *   Keep daily ETL as durable reconciliation and history path.
 *   [x] **Data Job Observability**:
     *   Add ETL-specific metrics: duration, processed events, dropped events, failure count.
     *   Add ETL-specific alert thresholds for repeated failures or stale data windows.
@@ -226,7 +230,7 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Unit tests for aggregation and conversion logic.
     *   Integration tests for ETL happy path + rerun idempotency + analytics API contracts.
 *   [x] **Phase 6 Review**:
-    *   Demo end-to-end flow: event emission -> Mongo sink -> ETL -> MySQL mart -> admin analytics API.
+    *   Demo end-to-end flow: event emission -> Mongo sink + Redis realtime counter -> ETL -> MySQL mart -> admin analytics API.
     *   Publish data reliability summary (freshness, correctness, rerun safety).
 
 ## Phase 7: DevOps, Observability & Scale

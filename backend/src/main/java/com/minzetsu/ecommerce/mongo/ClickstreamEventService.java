@@ -1,7 +1,9 @@
 package com.minzetsu.ecommerce.mongo;
 
+import com.minzetsu.ecommerce.analytics.service.AnalyticsRealtimeCounterService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ public class ClickstreamEventService {
 
     private final ClickstreamEventRepository repository;
     private final MeterRegistry meterRegistry;
+    private final AnalyticsRealtimeCounterService analyticsRealtimeCounterService;
 
     public void recordProductView(Long userId, Long productId) {
         recordProductView(userId, null, productId);
@@ -74,7 +77,7 @@ public class ClickstreamEventService {
     }
 
     private void fillRequestContext(ClickstreamEventDocument doc) {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         doc.setEventTime(now);
         doc.setCreatedAt(now);
         String requestId = MDC.get("requestId");
@@ -148,6 +151,13 @@ public class ClickstreamEventService {
         try {
             repository.save(doc);
             meterRegistry.counter("clickstream.events.saved", "eventType", doc.getEventType()).increment();
+            analyticsRealtimeCounterService.incrementEvent(
+                    doc.getEventType(),
+                    doc.getProductId(),
+                    doc.getUserId(),
+                    doc.getGuestId(),
+                    doc.getEventTime()
+            );
         } catch (Exception ex) {
             meterRegistry.counter("clickstream.events.failed", "eventType", doc.getEventType()).increment();
             logger.warn("Failed to persist clickstream event type={} requestId={} reason={}",

@@ -2,12 +2,12 @@
 
 Status: Completed (M0-M7 implemented and verified)
 
-Goal: deliver a reliable analytics pipeline from clickstream sink to MySQL mart, then serve admin analytics APIs with short-latency reads and operational visibility.
+Goal: deliver a reliable analytics pipeline from clickstream sink to MySQL mart, then serve admin analytics APIs with hybrid realtime reads (Redis + mart) and operational visibility.
 
 Guiding principles:
 - Reliability first: deterministic rerun and quality gates before write.
-- Keep MySQL as analytics serving source; Mongo remains raw sink.
-- Favor simple batch ETL over premature streaming complexity.
+- Keep MySQL as durable analytics source of truth; Mongo remains raw sink.
+- Use hybrid serving: realtime Redis overlay for "today" + ETL mart for history.
 - Treat observability and testability as first-class deliverables.
 
 ---
@@ -17,7 +17,7 @@ Guiding principles:
 - `daily_product_metrics` mart table exists with indexes and retention policy.
 - Daily ETL runs from Mongo to MySQL with idempotent rerun semantics.
 - ETL quality controls enforce fail-fast for critical violations and warnings for non-critical signals.
-- Admin analytics APIs (`funnel`, `top-products`) are available and cache-backed.
+- Admin analytics APIs (`funnel`, `top-products`) are available, cache-backed, and merge realtime counters with mart history.
 - ETL observability metrics and alert thresholds are in place.
 - Unit/API contract tests validate aggregation, conversion, and analytics responses.
 
@@ -97,9 +97,12 @@ Checkpoint:
 - Added short-TTL Redis cache for admin analytics reads:
   - cache name: `analyticsAdmin`
   - TTL: 30 seconds
+- Added Redis realtime counters for tracked funnel events and merged API reads:
+  - historical range from MySQL mart
+  - current UTC day from Redis counters
 
 Checkpoint:
-- Admin analytics reads are stable and low-latency under repeated access.
+- Admin analytics reads are stable, low-latency, and near-realtime for current-day data.
 
 ---
 
@@ -141,6 +144,6 @@ Checkpoint:
 - ETL runbook:
   - `docs/analytics/ANALYTICS_ETL_RUNBOOK.md`
 - End-to-end proof flow:
-  - event emission -> Mongo sink -> ETL -> MySQL mart -> admin analytics API
+  - event emission -> Mongo sink + Redis realtime counter -> ETL -> MySQL mart -> admin analytics API (mart + realtime merge)
 - Reliability summary:
   - freshness, correctness, rerun safety
