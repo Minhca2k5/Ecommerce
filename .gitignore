@@ -22,3 +22,5 @@
 /frontend/.vite/
 /frontend/.cache/
 /backend/.env.properties
+/.env
+/.env.staging
