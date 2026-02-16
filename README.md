@@ -82,6 +82,7 @@ This repository is an end-to-end E-commerce system:
 - Phase 4 roadmap (integrations/realtime/search/chatbot): `docs/roadmaps/PHASE4_ROADMAP.md`
 - Phase 5 roadmap (reliability/security/ops hardening): `docs/roadmaps/PHASE5_ROADMAP.md` 
 - Phase 6 roadmap (data reliability + analytics serving): `docs/roadmaps/PHASE6_ROADMAP.md`
+- Phase 7 roadmap (devops/observability/scale): `docs/roadmaps/PHASE7_ROADMAP.md`
 - High-level project plan (including Phase 6/7): `docs/roadmaps/PROJECT_PLAN.md`
 - Data-engineer-aligned backend roadmap: `docs/roadmaps/DATA_ENGINEER_BACKEND_ROADMAP.md`
 - Phase 5 ops notes (runbooks + Mongo collections): `docs/ops/PHASE5_OPS.md` 

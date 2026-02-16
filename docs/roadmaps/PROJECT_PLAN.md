@@ -239,9 +239,9 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Publish data reliability summary (freshness, correctness, rerun safety).
 
 ## Phase 7: DevOps, Observability & Scale
-**Status: Pending**
+**Status: In Progress (kickoff)**
 **Focus:** Production platform readiness for the full system (including the new Phase 6 analytics flows).
-
+Primary reference: `PHASE7_ROADMAP.md` (authoritative Phase 7 execution checklist).
 *   [ ] **Containerization**:
     *   Dockerfile for Spring Boot.
     *   docker-compose for full stack (App, MySQL, Redis, Elasticsearch, broker).
@@ -271,3 +271,4 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 *   [ ] **Cost & Capacity Observability**:
     *   Cost dashboards/alerts for Redis, Elasticsearch, broker, outbound integrations, and analytics workload growth.
     *   Capacity thresholds + autoscaling trigger runbooks.
+
