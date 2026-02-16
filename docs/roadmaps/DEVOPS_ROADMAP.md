@@ -70,6 +70,9 @@ Checkpoint:
   - migration safety check
   - API contract check
   - security scan check
+- Progress update:
+  - baseline CI added: `.github/workflows/platform-ci.yml`
+  - baseline staging deploy added: `.github/workflows/staging-deploy.yml` (AWS over SSH + smoke checks)
 
 Checkpoint:
 - One end-to-end pipeline run reaches staging with passing smoke tests.

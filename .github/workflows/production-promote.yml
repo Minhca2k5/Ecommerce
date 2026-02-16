@@ -1,0 +1,53 @@
+name: Production Promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_ref:
+        description: "Git ref to deploy to production (branch, tag, or SHA)"
+        required: true
+        default: "phase7"
+
+jobs:
+  deploy-production:
+    name: Deploy to AWS Production
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
+    env:
+      DEPLOY_REF: ${{ github.event.inputs.deploy_ref }}
+      PRODUCTION_APP_DIR: ${{ secrets.PRODUCTION_APP_DIR }}
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.PRODUCTION_SSH_HOST }}
+          username: ${{ secrets.PRODUCTION_SSH_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          port: ${{ secrets.PRODUCTION_SSH_PORT }}
+          script_stop: true
+          envs: DEPLOY_REF,PRODUCTION_APP_DIR
+          script: |
+            set -euo pipefail
+
+            APP_DIR="$PRODUCTION_APP_DIR"
+            if [ -z "$APP_DIR" ]; then
+              APP_DIR="/opt/ecommerce"
+            fi
+
+            cd "$APP_DIR"
+            git fetch --all --tags
+            git checkout "$DEPLOY_REF"
+            git pull --ff-only origin "$DEPLOY_REF"
+
+            if [ -f ".env.production" ]; then
+              cp .env.production .env
+            fi
+
+            docker compose up --build -d
+
+            docker compose ps
+            curl --fail --silent http://127.0.0.1:8080/actuator/health > /dev/null
+            curl --fail --silent http://127.0.0.1:5173 > /dev/null
