@@ -242,10 +242,10 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
 **Status: In Progress (kickoff)**
 **Focus:** Production platform readiness for the full system (including the new Phase 6 analytics flows).
 Primary reference: `DEVOPS_ROADMAP.md` (authoritative Phase 7 execution checklist).
-*   [ ] **Containerization**:
+*   [x] **Containerization**:
     *   Dockerfile for Spring Boot.
     *   docker-compose for full stack (App, MySQL, Redis, Elasticsearch, broker).
-*   [ ] **CI/CD Pipeline**:
+*   [x] **CI/CD Pipeline**:
     *   GitHub Actions or Jenkins for build/test.
     *   Staging deploy + smoke tests, then promote to production.
     *   Blue-green or canary strategy.
