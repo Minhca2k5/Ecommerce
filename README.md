@@ -103,6 +103,7 @@ This repository is an end-to-end E-commerce system:
 - Data-engineer-aligned backend roadmap: `docs/roadmaps/DATA_ENGINEER_BACKEND_ROADMAP.md`
 - Phase 5 ops notes (runbooks + Mongo collections): `docs/ops/PHASE5_OPS.md` 
 - Phase 6 ops notes (ETL + serving + observability): `docs/ops/PHASE6_OPS.md`
+- Phase 7 ops notes (deploy + smoke + incident baseline): `docs/ops/PHASE7_OPS.md`
 - Phase 3 report: `docs/perf/phase3_report.md`
 
 ## Notes (Current Scope)
