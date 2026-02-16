@@ -222,6 +222,11 @@ Primary reference: `PHASE3_ROADMAP.md` (authoritative checklist and milestones).
     *   Add Redis realtime counters for `VIEW_PRODUCT` / `ADD_TO_CART` / `PLACE_ORDER`.
     *   Merge API reads as: historical range from MySQL mart + current UTC day from Redis counters.
     *   Keep daily ETL as durable reconciliation and history path.
+*   [x] **Analytics Funnel Enrichment (Admin Decision Support)**:
+    *   Include `PAYMENT_SUCCESS` and `orderToPaymentRate` in funnel responses.
+    *   Add previous-period baseline (`previousFrom`/`previousTo`) and change-rate metrics for trend analysis.
+    *   Add current-day snapshot fields (`todayViews`, `todayAddToCart`, `todayOrders`, `todayPaymentSuccess`) for near-realtime visibility.
+    *   Source `PAYMENT_SUCCESS` counts from clickstream sink query for selected range while keeping mart as durable history source.
 *   [x] **Data Job Observability**:
     *   Add ETL-specific metrics: duration, processed events, dropped events, failure count.
     *   Add ETL-specific alert thresholds for repeated failures or stale data windows.

@@ -9,4 +9,11 @@ import org.springframework.data.repository.query.Param;
 public interface ClickstreamEventRepository extends MongoRepository<ClickstreamEventDocument, String> {
     @Query("{ 'eventTime': { $gte: ?0, $lt: ?1 } }")
     List<ClickstreamEventDocument> findByEventTimeInRange(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query(value = "{ 'eventType': ?0, 'eventTime': { $gte: ?1, $lt: ?2 } }", count = true)
+    long countByEventTypeAndEventTimeRange(
+            String eventType,
+            LocalDateTime from,
+            LocalDateTime to
+    );
 }

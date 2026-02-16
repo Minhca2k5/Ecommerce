@@ -17,7 +17,24 @@ public class AdminFunnelAnalyticsResponse {
     private long views;
     private long addToCart;
     private long orders;
+    private long paymentSuccess;
     private BigDecimal viewToCartRate;
     private BigDecimal cartToOrderRate;
+    private BigDecimal orderToPaymentRate;
     private BigDecimal viewToOrderRate;
+    private LocalDate previousFrom;
+    private LocalDate previousTo;
+    private long previousViews;
+    private long previousAddToCart;
+    private long previousOrders;
+    private long previousPaymentSuccess;
+    private BigDecimal previousViewToOrderRate;
+    private BigDecimal viewsChangeRate;
+    private BigDecimal addToCartChangeRate;
+    private BigDecimal ordersChangeRate;
+    private BigDecimal viewToOrderRateChange;
+    private long todayViews;
+    private long todayAddToCart;
+    private long todayOrders;
+    private long todayPaymentSuccess;
 }

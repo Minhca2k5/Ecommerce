@@ -15,7 +15,7 @@ This repository is an end-to-end E-commerce system:
 - **Guest Checkout (Phase 5):** secure guest order access token + guest order tracking + guest MoMo payment
 - **Chatbot:** LLM-backed assistant with project/DB context + conversation history
 - **MongoDB Analytics/Log Sink (Phase 5):** clickstream events, chatbot transcript archive, audit event archive (Mongo is sink-only; MySQL remains system of record)
-- **Analytics Serving (Phase 6):** standardized funnel contract + hybrid serving (Redis realtime counters + daily ETL Mongo -> MySQL mart) + admin analytics APIs (`funnel`, `top-products`) + short-TTL cache
+- **Analytics Serving (Phase 6):** standardized funnel contract + hybrid serving (Redis realtime counters + daily ETL Mongo -> MySQL mart) + admin analytics APIs (`funnel`, `top-products`) + short-TTL cache + payment-success funnel metric + previous-period comparisons + today snapshot cards + `N/A` trend fallback when previous baseline is zero + attribution warning (`orders > views`)
 - **Chatbot Collaboration (Phase 4):** personal/project/group scopes, group invites (accept/refuse), member list + sender display names in group chat
 - **Auth Hardening (Phase 4):** email OTP verification for registration
 - **Frontend (Phase 2+4):** React + TypeScript (see `frontend/`), integrating with backend APIs, SSE, MoMo

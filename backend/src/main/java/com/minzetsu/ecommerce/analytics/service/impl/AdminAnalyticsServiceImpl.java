@@ -8,12 +8,16 @@ import com.minzetsu.ecommerce.analytics.repository.projection.TopProductAggregat
 import com.minzetsu.ecommerce.analytics.service.AdminAnalyticsService;
 import com.minzetsu.ecommerce.analytics.service.AnalyticsRealtimeCounterService;
 import com.minzetsu.ecommerce.common.exception.InvalidObjectException;
+import com.minzetsu.ecommerce.mongo.ClickstreamEventRepository;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,45 +30,52 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AdminAnalyticsServiceImpl implements AdminAnalyticsService {
 
+    private static final String EVENT_PAYMENT_SUCCESS = "PAYMENT_SUCCESS";
     private final DailyProductMetricRepository dailyProductMetricRepository;
     private final AnalyticsRealtimeCounterService analyticsRealtimeCounterService;
     private final ProductRepository productRepository;
+    private final ClickstreamEventRepository clickstreamEventRepository;
 
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = "analyticsAdmin", key = "'funnel:' + #from + ':' + #to", sync = true)
     public AdminFunnelAnalyticsResponse getFunnel(LocalDate from, LocalDate to) {
         validateRange(from, to);
-        DateRangeSplit split = splitRange(from, to);
-        long views = 0L;
-        long addToCart = 0L;
-        long orders = 0L;
+        FunnelSnapshot current = loadFunnelSnapshot(from, to);
+        LocalDate previousTo = from.minusDays(1);
+        long days = ChronoUnit.DAYS.between(from, to) + 1;
+        LocalDate previousFrom = previousTo.minusDays(days - 1);
+        FunnelSnapshot previous = loadFunnelSnapshot(previousFrom, previousTo);
 
-        if (split.hasHistoricalRange()) {
-            FunnelAggregateView aggregate =
-                    dailyProductMetricRepository.aggregateFunnel(split.historicalFrom(), split.historicalTo());
-            views += valueOrZero(aggregate.getViews());
-            addToCart += valueOrZero(aggregate.getAddToCart());
-            orders += valueOrZero(aggregate.getOrders());
-        }
-
-        if (split.includesToday()) {
-            AnalyticsRealtimeCounterService.RealtimeFunnel realtime =
-                    analyticsRealtimeCounterService.readFunnel(split.today());
-            views += realtime.views();
-            addToCart += realtime.addToCart();
-            orders += realtime.orders();
-        }
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        FunnelSnapshot todaySnapshot = loadFunnelSnapshot(today, today);
 
         return AdminFunnelAnalyticsResponse.builder()
                 .from(from)
                 .to(to)
-                .views(views)
-                .addToCart(addToCart)
-                .orders(orders)
-                .viewToCartRate(ratio(addToCart, views))
-                .cartToOrderRate(ratio(orders, addToCart))
-                .viewToOrderRate(ratio(orders, views))
+                .views(current.views())
+                .addToCart(current.addToCart())
+                .orders(current.orders())
+                .paymentSuccess(current.paymentSuccess())
+                .viewToCartRate(ratio(current.addToCart(), current.views()))
+                .cartToOrderRate(ratio(current.orders(), current.addToCart()))
+                .orderToPaymentRate(ratio(current.paymentSuccess(), current.orders()))
+                .viewToOrderRate(ratio(current.orders(), current.views()))
+                .previousFrom(previousFrom)
+                .previousTo(previousTo)
+                .previousViews(previous.views())
+                .previousAddToCart(previous.addToCart())
+                .previousOrders(previous.orders())
+                .previousPaymentSuccess(previous.paymentSuccess())
+                .previousViewToOrderRate(ratio(previous.orders(), previous.views()))
+                .viewsChangeRate(changeRate(current.views(), previous.views()))
+                .addToCartChangeRate(changeRate(current.addToCart(), previous.addToCart()))
+                .ordersChangeRate(changeRate(current.orders(), previous.orders()))
+                .viewToOrderRateChange(changeRate(ratio(current.orders(), current.views()), ratio(previous.orders(), previous.views())))
+                .todayViews(todaySnapshot.views())
+                .todayAddToCart(todaySnapshot.addToCart())
+                .todayOrders(todaySnapshot.orders())
+                .todayPaymentSuccess(todaySnapshot.paymentSuccess())
                 .build();
     }
 
@@ -126,7 +137,11 @@ public class AdminAnalyticsServiceImpl implements AdminAnalyticsService {
                             .conversionRate(ratio(row.orders, row.views))
                             .build();
                 })
-                .sorted((a, b) -> b.getConversionRate().compareTo(a.getConversionRate()))
+                .sorted(
+                        Comparator.comparing(AdminTopProductAnalyticsResponse::getConversionRate).reversed()
+                                .thenComparing(AdminTopProductAnalyticsResponse::getOrders, Comparator.reverseOrder())
+                                .thenComparing(AdminTopProductAnalyticsResponse::getViews, Comparator.reverseOrder())
+                )
                 .limit(boundedLimit)
                 .toList();
     }
@@ -141,6 +156,22 @@ public class AdminAnalyticsServiceImpl implements AdminAnalyticsService {
         }
         return BigDecimal.valueOf(numerator)
                 .divide(BigDecimal.valueOf(denominator), 4, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal changeRate(long current, long previous) {
+        if (previous <= 0) {
+            return BigDecimal.ZERO.setScale(4, RoundingMode.HALF_UP);
+        }
+        return BigDecimal.valueOf(current - previous)
+                .divide(BigDecimal.valueOf(previous), 4, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal changeRate(BigDecimal current, BigDecimal previous) {
+        if (previous == null || previous.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO.setScale(4, RoundingMode.HALF_UP);
+        }
+        return current.subtract(previous)
+                .divide(previous, 4, RoundingMode.HALF_UP);
     }
 
     private void validateRange(LocalDate from, LocalDate to) {
@@ -172,6 +203,42 @@ public class AdminAnalyticsServiceImpl implements AdminAnalyticsService {
         return names;
     }
 
+    private FunnelSnapshot loadFunnelSnapshot(LocalDate from, LocalDate to) {
+        if (from == null || to == null || from.isAfter(to)) {
+            return FunnelSnapshot.empty();
+        }
+        DateRangeSplit split = splitRange(from, to);
+        long views = 0L;
+        long addToCart = 0L;
+        long orders = 0L;
+        if (split.hasHistoricalRange()) {
+            FunnelAggregateView aggregate =
+                    dailyProductMetricRepository.aggregateFunnel(split.historicalFrom(), split.historicalTo());
+            views += valueOrZero(aggregate.getViews());
+            addToCart += valueOrZero(aggregate.getAddToCart());
+            orders += valueOrZero(aggregate.getOrders());
+        }
+        if (split.includesToday()) {
+            AnalyticsRealtimeCounterService.RealtimeFunnel realtime =
+                    analyticsRealtimeCounterService.readFunnel(split.today());
+            views += realtime.views();
+            addToCart += realtime.addToCart();
+            orders += realtime.orders();
+        }
+        long paymentSuccess = loadPaymentSuccessCount(from, to);
+        return new FunnelSnapshot(views, addToCart, orders, paymentSuccess);
+    }
+
+    private long loadPaymentSuccessCount(LocalDate from, LocalDate to) {
+        LocalDateTime start = from.atStartOfDay();
+        LocalDateTime end = to.plusDays(1).atStartOfDay();
+        return clickstreamEventRepository.countByEventTypeAndEventTimeRange(
+                EVENT_PAYMENT_SUCCESS,
+                start,
+                end
+        );
+    }
+
     private record DateRangeSplit(
             LocalDate historicalFrom,
             LocalDate historicalTo,
@@ -179,6 +246,12 @@ public class AdminAnalyticsServiceImpl implements AdminAnalyticsService {
             boolean includesToday,
             LocalDate today
     ) {}
+
+    private record FunnelSnapshot(long views, long addToCart, long orders, long paymentSuccess) {
+        private static FunnelSnapshot empty() {
+            return new FunnelSnapshot(0L, 0L, 0L, 0L);
+        }
+    }
 
     private static class MutableTopProduct {
         private String productName;

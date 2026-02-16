@@ -69,9 +69,17 @@ Operational checks:
 - Read strategy:
   - history (`from`..`to` before current UTC day) from MySQL mart
   - current UTC day overlay from Redis realtime counters
+  - `PAYMENT_SUCCESS` count from Mongo clickstream query for selected range
 - Cache:
   - cache name `analyticsAdmin`
   - TTL 30s
+
+Funnel response includes:
+- conversion rates: `viewToCartRate`, `cartToOrderRate`, `viewToOrderRate`, `orderToPaymentRate`
+- previous window: `previousFrom`, `previousTo`, and change-rate metrics vs current window
+- current-day snapshot: `todayViews`, `todayAddToCart`, `todayOrders`, `todayPaymentSuccess`
+- UI rule: if previous baseline is `0`, `vs previous` metrics are shown as `N/A` (not `0.00%`) to avoid misleading trend interpretation.
+- UI guardrail: top-products row shows attribution warning when `orders > views`.
 
 Operational checks:
 - validate response freshness against latest ETL partition.

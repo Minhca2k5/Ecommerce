@@ -1,6 +1,6 @@
 # Phase 6 Roadmap: Data Reliability & Analytics Serving
 
-Status: Completed (M0-M7 implemented and verified)
+Status: Completed (M0-M7 implemented and verified, serving enhancements applied)
 
 Goal: deliver a reliable analytics pipeline from clickstream sink to MySQL mart, then serve admin analytics APIs with hybrid realtime reads (Redis + mart) and operational visibility.
 
@@ -18,6 +18,7 @@ Guiding principles:
 - Daily ETL runs from Mongo to MySQL with idempotent rerun semantics.
 - ETL quality controls enforce fail-fast for critical violations and warnings for non-critical signals.
 - Admin analytics APIs (`funnel`, `top-products`) are available, cache-backed, and merge realtime counters with mart history.
+- Funnel API includes `PAYMENT_SUCCESS`, previous-period comparison metrics, and current-day snapshot fields for realtime admin monitoring.
 - ETL observability metrics and alert thresholds are in place.
 - Unit/API contract tests validate aggregation, conversion, and analytics responses.
 
@@ -100,6 +101,12 @@ Checkpoint:
 - Added Redis realtime counters for tracked funnel events and merged API reads:
   - historical range from MySQL mart
   - current UTC day from Redis counters
+- Funnel response contract expanded for admin decision-making:
+  - `paymentSuccess` and `orderToPaymentRate`
+  - previous window (`previousFrom`, `previousTo`) and change rates vs previous window
+  - current-day snapshot (`todayViews`, `todayAddToCart`, `todayOrders`, `todayPaymentSuccess`)
+- `PAYMENT_SUCCESS` is queried directly from clickstream sink for selected range to keep payment completion metrics accurate while mart remains daily aggregate store.
+- Mongo range-count query for `PAYMENT_SUCCESS` uses explicit `@Query` (`eventTime: { $gte, $lt }`) to avoid duplicate-field criteria issues in derived query generation.
 
 Checkpoint:
 - Admin analytics reads are stable, low-latency, and near-realtime for current-day data.
@@ -144,6 +151,6 @@ Checkpoint:
 - ETL runbook:
   - `docs/analytics/ANALYTICS_ETL_RUNBOOK.md`
 - End-to-end proof flow:
-  - event emission -> Mongo sink + Redis realtime counter -> ETL -> MySQL mart -> admin analytics API (mart + realtime merge)
+  - event emission -> Mongo sink + Redis realtime counter -> ETL -> MySQL mart -> admin analytics API (mart + realtime merge + payment success + previous/today comparisons)
 - Reliability summary:
   - freshness, correctness, rerun safety

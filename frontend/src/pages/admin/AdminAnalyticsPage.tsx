@@ -13,9 +13,26 @@ type FunnelResponse = {
   views: number;
   addToCart: number;
   orders: number;
+  paymentSuccess: number;
   viewToCartRate: number;
   cartToOrderRate: number;
+  orderToPaymentRate: number;
   viewToOrderRate: number;
+  previousFrom: string | [number, number, number];
+  previousTo: string | [number, number, number];
+  previousViews: number;
+  previousAddToCart: number;
+  previousOrders: number;
+  previousPaymentSuccess: number;
+  previousViewToOrderRate: number;
+  viewsChangeRate: number;
+  addToCartChangeRate: number;
+  ordersChangeRate: number;
+  viewToOrderRateChange: number;
+  todayViews: number;
+  todayAddToCart: number;
+  todayOrders: number;
+  todayPaymentSuccess: number;
 };
 
 type TopProductResponse = {
@@ -40,6 +57,19 @@ function asPercent(v: number | undefined) {
   return `${(n * 100).toFixed(2)}%`;
 }
 
+function trendTextClass(v: number | undefined, hasBaseline = true) {
+  if (!hasBaseline) return "text-muted-foreground";
+  const n = Number(v ?? 0);
+  if (n > 0) return "text-emerald-600";
+  if (n < 0) return "text-rose-600";
+  return "text-muted-foreground";
+}
+
+function asChangePercent(v: number | undefined, hasBaseline: boolean) {
+  if (!hasBaseline) return "N/A";
+  return asPercent(v);
+}
+
 function ymd(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
@@ -59,6 +89,10 @@ export default function AdminAnalyticsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [funnel, setFunnel] = useState<FunnelResponse | null>(null);
   const [topProducts, setTopProducts] = useState<TopProductResponse[]>([]);
+  const hasViewsBaseline = Number(funnel?.previousViews ?? 0) > 0;
+  const hasAddToCartBaseline = Number(funnel?.previousAddToCart ?? 0) > 0;
+  const hasOrdersBaseline = Number(funnel?.previousOrders ?? 0) > 0;
+  const hasViewToOrderBaseline = Number(funnel?.previousViewToOrderRate ?? 0) > 0;
 
   async function load() {
     setIsLoading(true);
@@ -88,7 +122,7 @@ export default function AdminAnalyticsPage() {
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle>Analytics</CardTitle>
-            <div className="mt-1 text-sm text-muted-foreground">Funnel and top products by conversion from Phase 6 analytics mart.</div>
+            <div className="mt-1 text-sm text-muted-foreground">Funnel and top products by conversion (hybrid realtime + mart history).</div>
           </div>
           <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
             {isLoading ? "Loading..." : "Load"}
@@ -104,7 +138,7 @@ export default function AdminAnalyticsPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <Card className="border bg-background/75 shadow-sm backdrop-blur">
           <CardHeader><CardTitle className="text-base">Views</CardTitle></CardHeader>
           <CardContent className="text-3xl font-semibold">{(funnel?.views ?? 0).toLocaleString()}</CardContent>
@@ -118,14 +152,24 @@ export default function AdminAnalyticsPage() {
           <CardContent className="text-3xl font-semibold">{(funnel?.orders ?? 0).toLocaleString()}</CardContent>
         </Card>
         <Card className="border bg-background/75 shadow-sm backdrop-blur">
+          <CardHeader><CardTitle className="text-base">Payment Success</CardTitle></CardHeader>
+          <CardContent className="text-3xl font-semibold">{(funnel?.paymentSuccess ?? 0).toLocaleString()}</CardContent>
+        </Card>
+        <Card className="border bg-background/75 shadow-sm backdrop-blur">
           <CardHeader><CardTitle className="text-base">Range</CardTitle></CardHeader>
           <CardContent className="text-sm text-muted-foreground">
             {toIsoDate(funnel?.from)} to {toIsoDate(funnel?.to)}
           </CardContent>
         </Card>
+        <Card className="border bg-background/75 shadow-sm backdrop-blur">
+          <CardHeader><CardTitle className="text-base">Previous Range</CardTitle></CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            {toIsoDate(funnel?.previousFrom)} to {toIsoDate(funnel?.previousTo)}
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card className="border bg-background/75 shadow-sm backdrop-blur">
           <CardHeader><CardTitle className="text-base">View to Cart</CardTitle></CardHeader>
           <CardContent className="text-2xl font-semibold">{asPercent(funnel?.viewToCartRate)}</CardContent>
@@ -137,6 +181,56 @@ export default function AdminAnalyticsPage() {
         <Card className="border bg-background/75 shadow-sm backdrop-blur">
           <CardHeader><CardTitle className="text-base">View to Order</CardTitle></CardHeader>
           <CardContent className="text-2xl font-semibold">{asPercent(funnel?.viewToOrderRate)}</CardContent>
+        </Card>
+        <Card className="border bg-background/75 shadow-sm backdrop-blur">
+          <CardHeader><CardTitle className="text-base">Order to Payment</CardTitle></CardHeader>
+          <CardContent className="text-2xl font-semibold">{asPercent(funnel?.orderToPaymentRate)}</CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="border bg-background/75 shadow-sm backdrop-blur">
+          <CardHeader><CardTitle className="text-base">Today Views</CardTitle></CardHeader>
+          <CardContent className="text-2xl font-semibold">{Number(funnel?.todayViews ?? 0).toLocaleString()}</CardContent>
+        </Card>
+        <Card className="border bg-background/75 shadow-sm backdrop-blur">
+          <CardHeader><CardTitle className="text-base">Today Add to Cart</CardTitle></CardHeader>
+          <CardContent className="text-2xl font-semibold">{Number(funnel?.todayAddToCart ?? 0).toLocaleString()}</CardContent>
+        </Card>
+        <Card className="border bg-background/75 shadow-sm backdrop-blur">
+          <CardHeader><CardTitle className="text-base">Today Orders</CardTitle></CardHeader>
+          <CardContent className="text-2xl font-semibold">{Number(funnel?.todayOrders ?? 0).toLocaleString()}</CardContent>
+        </Card>
+        <Card className="border bg-background/75 shadow-sm backdrop-blur">
+          <CardHeader><CardTitle className="text-base">Today Payment Success</CardTitle></CardHeader>
+          <CardContent className="text-2xl font-semibold">{Number(funnel?.todayPaymentSuccess ?? 0).toLocaleString()}</CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="border bg-background/75 shadow-sm backdrop-blur">
+          <CardHeader><CardTitle className="text-base">Views vs Previous</CardTitle></CardHeader>
+          <CardContent className={`text-2xl font-semibold ${trendTextClass(funnel?.viewsChangeRate, hasViewsBaseline)}`}>
+            {asChangePercent(funnel?.viewsChangeRate, hasViewsBaseline)}
+          </CardContent>
+        </Card>
+        <Card className="border bg-background/75 shadow-sm backdrop-blur">
+          <CardHeader><CardTitle className="text-base">Add to Cart vs Previous</CardTitle></CardHeader>
+          <CardContent className={`text-2xl font-semibold ${trendTextClass(funnel?.addToCartChangeRate, hasAddToCartBaseline)}`}>
+            {asChangePercent(funnel?.addToCartChangeRate, hasAddToCartBaseline)}
+          </CardContent>
+        </Card>
+        <Card className="border bg-background/75 shadow-sm backdrop-blur">
+          <CardHeader><CardTitle className="text-base">Orders vs Previous</CardTitle></CardHeader>
+          <CardContent className={`text-2xl font-semibold ${trendTextClass(funnel?.ordersChangeRate, hasOrdersBaseline)}`}>
+            {asChangePercent(funnel?.ordersChangeRate, hasOrdersBaseline)}
+          </CardContent>
+        </Card>
+        <Card className="border bg-background/75 shadow-sm backdrop-blur">
+          <CardHeader><CardTitle className="text-base">View to Order vs Previous</CardTitle></CardHeader>
+          <CardContent className={`text-2xl font-semibold ${trendTextClass(funnel?.viewToOrderRateChange, hasViewToOrderBaseline)}`}>
+            {asChangePercent(funnel?.viewToOrderRateChange, hasViewToOrderBaseline)}
+          </CardContent>
         </Card>
       </div>
 
@@ -170,6 +264,9 @@ export default function AdminAnalyticsPage() {
                       <td className="px-4 py-3">
                         <div className="font-medium">{p.productName || `Product #${p.productId}`}</div>
                         <div className="text-xs text-muted-foreground">ID: {p.productId}</div>
+                        {Number(p.orders ?? 0) > Number(p.views ?? 0) ? (
+                          <div className="mt-1 text-xs text-amber-600">Attribution mismatch: orders {">"} views</div>
+                        ) : null}
                       </td>
                       <td className="px-4 py-3 text-right">{Number(p.views ?? 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-right">{Number(p.addToCart ?? 0).toLocaleString()}</td>

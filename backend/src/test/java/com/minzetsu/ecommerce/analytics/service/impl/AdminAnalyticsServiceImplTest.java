@@ -6,6 +6,7 @@ import com.minzetsu.ecommerce.analytics.repository.DailyProductMetricRepository;
 import com.minzetsu.ecommerce.analytics.repository.projection.FunnelAggregateView;
 import com.minzetsu.ecommerce.analytics.repository.projection.TopProductAggregateView;
 import com.minzetsu.ecommerce.analytics.service.AnalyticsRealtimeCounterService;
+import com.minzetsu.ecommerce.mongo.ClickstreamEventRepository;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.repository.ProductRepository;
 import java.time.LocalDate;
@@ -32,13 +33,16 @@ class AdminAnalyticsServiceImplTest {
     private AnalyticsRealtimeCounterService analyticsRealtimeCounterService;
     @Mock
     private ProductRepository productRepository;
+    @Mock
+    private ClickstreamEventRepository clickstreamEventRepository;
 
     @Test
     void getFunnel_shouldMergeHistoricalWithRealtimeToday() {
         AdminAnalyticsServiceImpl service = new AdminAnalyticsServiceImpl(
                 dailyProductMetricRepository,
                 analyticsRealtimeCounterService,
-                productRepository
+                productRepository,
+                clickstreamEventRepository
         );
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
         LocalDate from = today.minusDays(2);
@@ -50,15 +54,23 @@ class AdminAnalyticsServiceImplTest {
         when(historical.getOrders()).thenReturn(5L);
         when(dailyProductMetricRepository.aggregateFunnel(eq(from), eq(today.minusDays(1))))
                 .thenReturn(historical);
+        when(dailyProductMetricRepository.aggregateFunnel(eq(today.minusDays(5)), eq(today.minusDays(3))))
+                .thenReturn(historical);
         when(analyticsRealtimeCounterService.readFunnel(today))
                 .thenReturn(new AnalyticsRealtimeCounterService.RealtimeFunnel(10L, 4L, 2L));
+        when(clickstreamEventRepository.countByEventTypeAndEventTimeRange(eq("PAYMENT_SUCCESS"), any(), any()))
+                .thenReturn(6L, 5L, 2L);
 
         AdminFunnelAnalyticsResponse response = service.getFunnel(from, to);
 
         assertThat(response.getViews()).isEqualTo(110L);
         assertThat(response.getAddToCart()).isEqualTo(24L);
         assertThat(response.getOrders()).isEqualTo(7L);
+        assertThat(response.getPaymentSuccess()).isEqualTo(6L);
         assertThat(response.getViewToOrderRate()).isEqualByComparingTo("0.0636");
+        assertThat(response.getPreviousViews()).isEqualTo(100L);
+        assertThat(response.getTodayViews()).isEqualTo(10L);
+        assertThat(response.getTodayPaymentSuccess()).isEqualTo(2L);
     }
 
     @Test
@@ -66,7 +78,8 @@ class AdminAnalyticsServiceImplTest {
         AdminAnalyticsServiceImpl service = new AdminAnalyticsServiceImpl(
                 dailyProductMetricRepository,
                 analyticsRealtimeCounterService,
-                productRepository
+                productRepository,
+                clickstreamEventRepository
         );
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
         LocalDate from = today.minusDays(1);
