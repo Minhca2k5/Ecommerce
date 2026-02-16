@@ -1,0 +1,62 @@
+name: Staging Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_ref:
+        description: "Git ref to deploy (branch, tag, or SHA)"
+        required: true
+        default: "phase7"
+  push:
+    branches:
+      - phase7
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "docker-compose.yml"
+      - ".github/workflows/platform-ci.yml"
+      - ".github/workflows/staging-deploy.yml"
+
+jobs:
+  deploy-staging:
+    name: Deploy to AWS Staging
+    runs-on: ubuntu-latest
+    environment: staging
+    concurrency:
+      group: staging-deploy
+      cancel-in-progress: true
+    env:
+      DEPLOY_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_ref || github.ref_name }}
+      STAGING_APP_DIR: ${{ secrets.STAGING_APP_DIR }}
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.STAGING_SSH_HOST }}
+          username: ${{ secrets.STAGING_SSH_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          port: ${{ secrets.STAGING_SSH_PORT }}
+          script_stop: true
+          envs: DEPLOY_REF,STAGING_APP_DIR
+          script: |
+            set -euo pipefail
+
+            APP_DIR="$STAGING_APP_DIR"
+            if [ -z "$APP_DIR" ]; then
+              APP_DIR="/opt/ecommerce"
+            fi
+
+            cd "$APP_DIR"
+            git fetch --all --tags
+            git checkout "$DEPLOY_REF"
+            git pull --ff-only origin "$DEPLOY_REF"
+
+            if [ -f ".env.staging" ]; then
+              cp .env.staging .env
+            fi
+
+            docker compose up --build -d
+
+            docker compose ps
+            curl --fail --silent http://127.0.0.1:8080/actuator/health > /dev/null
+            curl --fail --silent http://127.0.0.1:5173 > /dev/null
