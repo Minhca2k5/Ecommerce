@@ -1,0 +1,9 @@
+target
+.git
+.gitignore
+.idea
+.vscode
+.env.properties
+.env.properties.example
+Dockerfile
+README.md
