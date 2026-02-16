@@ -68,6 +68,22 @@ This repository is an end-to-end E-commerce system:
    - `npm run dev`
 3. Open: `http://localhost:5173`
 
+### Docker Compose (Phase 7 Kickoff)
+1. Create runtime env file at project root:
+   - `Copy-Item .env.deploy.example .env` (PowerShell)
+2. Fill required secrets in `.env`:
+   - `JWT_SECRET_KEY`
+   - `MOMO_*`
+   - `MAIL_*`
+   - `GUEST_CHECKOUT_*`
+3. Build and run full stack:
+   - `docker compose up --build -d`
+4. Access services:
+   - Frontend: `http://localhost:5173`
+   - Backend Swagger: `http://localhost:8080/docs`
+5. Stop stack:
+   - `docker compose down`
+
 ## Database Migration Notes
 - Liquibase changelog is managed from `backend/src/main/resources/db/changelog/db.changelog-master.xml`.
 - Early files `v1__schema.xml`, `v2__seed.xml`, `v3__indexes.xml` were refactored into modular wrappers with includes:
