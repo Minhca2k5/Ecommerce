@@ -84,6 +84,22 @@ This repository is an end-to-end E-commerce system:
 5. Stop stack:
    - `docker compose down`
 
+### Staging Deploy (AWS via GitHub Actions)
+- Workflow: `.github/workflows/staging-deploy.yml`
+- Trigger:
+  - Push to `phase7` (backend/frontend/compose/workflow changes)
+  - Manual run via `workflow_dispatch` with `deploy_ref`
+- Required GitHub Environment (`staging`) secrets:
+  - `STAGING_SSH_HOST`
+  - `STAGING_SSH_USER`
+  - `STAGING_SSH_KEY`
+  - `STAGING_SSH_PORT`
+  - `STAGING_APP_DIR` (optional, defaults to `/opt/ecommerce`)
+- Server prerequisites:
+  - Docker + Docker Compose installed
+  - Repo cloned at `STAGING_APP_DIR`
+  - `.env.staging` present on server (copied to `.env` during deploy)
+
 ## Database Migration Notes
 - Liquibase changelog is managed from `backend/src/main/resources/db/changelog/db.changelog-master.xml`.
 - Early files `v1__schema.xml`, `v2__seed.xml`, `v3__indexes.xml` were refactored into modular wrappers with includes:
