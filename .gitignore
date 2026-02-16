@@ -21,6 +21,8 @@
 /frontend/dist/
 /frontend/.vite/
 /frontend/.cache/
+/backend/.env.local
 /backend/.env.properties
 /.env
 /.env.staging
+/.env.production
