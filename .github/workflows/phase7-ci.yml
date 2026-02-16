@@ -1,0 +1,81 @@
+name: Phase 7 CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - phase7
+
+jobs:
+  backend-test:
+    name: Backend Test (Maven)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Run tests
+        run: ./mvnw -B test
+
+  frontend-build:
+    name: Frontend Build (Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: http://localhost:8080
+
+  docker-build:
+    name: Docker Build Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build backend image
+        run: docker build -f backend/Dockerfile -t ecommerce-backend:ci backend
+      - name: Build frontend image
+        run: docker build -f frontend/Dockerfile --build-arg VITE_API_BASE_URL=http://localhost:8080 -t ecommerce-frontend:ci frontend
+      - name: Validate docker compose
+        run: |
+          cat > .env <<'EOF'
+          JWT_SECRET_KEY=ci_jwt_secret
+          MOMO_PARTNER_CODE=demo
+          MOMO_ACCESS_KEY=demo
+          MOMO_SECRET_KEY=demo
+          MOMO_ENDPOINT=https://test-payment.momo.vn/v2/gateway/api/create
+          MOMO_REDIRECT_URL=https://example.com/orders
+          MOMO_IPN_URL=https://example.com/api/public/payments/momo/ipn
+          MAIL_USERNAME=demo@example.com
+          MAIL_PASSWORD=demo
+          CHATBOT_BASE_URL=https://example.com
+          CHATBOT_API_KEY=demo
+          CHATBOT_MODEL=demo
+          GUEST_CHECKOUT_USERNAME=guest.checkout
+          GUEST_CHECKOUT_EMAIL=guest.checkout@example.com
+          GUEST_CHECKOUT_PASSWORD=guest_password
+          GUEST_CHECKOUT_ACCESS_TOKEN_SECRET=guest_secret
+          VITE_API_BASE_URL=http://localhost:8080
+          EOF
+          docker compose config > /tmp/compose-resolved.yml
