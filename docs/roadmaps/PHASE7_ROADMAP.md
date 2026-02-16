@@ -1,6 +1,6 @@
 # Phase 7 Roadmap: DevOps, Observability & Scale
 
-Status: In Progress (kickoff)
+Status: In Progress (M0 completed, M1 in progress)
 
 Goal: move the system from feature-complete to production-ready by establishing a repeatable deployment pipeline, operational visibility, reliability runbooks, and cost-aware scaling controls.
 
@@ -29,6 +29,12 @@ Guiding principles:
 - Choose deployment topology (single VM, managed container platform, or Kubernetes-lite).
 - Lock environment model: `dev`, `staging`, `prod`.
 
+Decision (locked):
+- Target cloud: AWS.
+- Initial production topology: EC2 + Docker Compose (single-host baseline).
+- Environment model: `dev`, `staging`, `prod`.
+- Ownership: personal project (single owner for deploy, CI/CD, and ops).
+
 ### 0.2 Production baseline checklist
 - Define critical user journeys for smoke tests:
   - auth/login
@@ -36,7 +42,7 @@ Guiding principles:
   - admin analytics read paths
 
 Checkpoint:
-- Phase 7 acceptance criteria and ownership matrix are agreed.
+- Phase 7 acceptance criteria and ownership matrix are agreed. (Completed)
 
 ---
 
