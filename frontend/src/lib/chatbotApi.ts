@@ -145,20 +145,23 @@ export async function streamChatMessageToConversation(
     const { value, done } = await reader.read();
     if (done) break;
     buffer += decoder.decode(value, { stream: true });
+    buffer = buffer.replace(/\r\n/g, "\n");
     let splitIndex = buffer.indexOf("\n\n");
     while (splitIndex !== -1) {
       const raw = buffer.slice(0, splitIndex);
       buffer = buffer.slice(splitIndex + 2);
       const lines = raw.split("\n");
       let event = "message";
-      let data = "";
+      const dataLines: string[] = [];
       for (const line of lines) {
         if (line.startsWith("event:")) {
           event = line.slice(6).trim();
         } else if (line.startsWith("data:")) {
-          data += line.slice(5).trim();
+          const part = line.slice(5);
+          dataLines.push(part.startsWith(" ") ? part.slice(1) : part);
         }
       }
+      const data = dataLines.join("\n");
       if (event === "chunk" && data) {
         onChunk(data);
       }

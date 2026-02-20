@@ -53,11 +53,11 @@ This repository is an end-to-end E-commerce system:
   - `ELASTICSEARCH_URIS`
   - `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, `MOMO_IPN_URL`, `MOMO_REDIRECT_URL`
   - `MAIL_USERNAME`, `MAIL_PASSWORD`
-  - `CHATBOT_BASE_URL`, `CHATBOT_API_KEY`, `CHATBOT_MODEL`
+  - `CHATBOT_PROVIDER`, `CHATBOT_BASE_URL`, `CHATBOT_API_KEY`, `CHATBOT_MODEL`
 - Use production profile on cloud:
   - `SPRING_PROFILES_ACTIVE=prod`
 - If cloud runtime has no local Ollama service, set:
-  - `CHATBOT_ENABLED=false` (or point `CHATBOT_BASE_URL` to your AI provider gateway).
+  - `CHATBOT_ENABLED=false` (or set `CHATBOT_PROVIDER=openai-compatible` and point `CHATBOT_BASE_URL` to your cloud AI endpoint).
 
 ### Frontend
 1. Configure API base URL:
@@ -125,5 +125,3 @@ This repository is an end-to-end E-commerce system:
 ## Notes (Current Scope)
 - Local mode currently prioritizes chatbot stability: file + voice workflows are enabled; image analysis path is disabled by default in this phase.
 - Group invites are designed as in-app first, email as best-effort notification channel.
-
-

@@ -36,9 +36,22 @@ import { useToast } from "@/app/ToastProvider";
 import { getErrorMessage } from "@/lib/errors";
 import { createAuthedEventSource } from "@/lib/sse";
 
+
 type ChatItem = { id?: string; role: "user" | "assistant"; content: string; userId?: number; senderName?: string; createdAt?: string };
 type Scope = "personal" | "project" | "group";
 type ChatConversationView = ChatConversation & { scopeLabel?: "PERSONAL" | "PROJECT" | "GROUP" };
+
+function normalizeDisplayText(input: string): string {
+  if (!input) return "";
+  return input
+    .normalize("NFC")
+    .replace(/\u00A0/g, " ")
+    .replace(/\r?\n/g, "\n")
+    .replace(/[ \t]*\n[ \t]*/g, "\n")
+    .replace(/([,.;:!?])(?=\S)/g, "$1 ")
+    .replace(/cho(?=b\u1ea1n\b)/gi, "cho ")
+    .replace(/[ \t]{2,}/g, " ");
+}
 
 export default function ChatbotWidget() {
   const auth = useAuth();
@@ -293,7 +306,7 @@ export default function ChatbotWidget() {
 
   async function onRemoveMember() {
     if (!activeGroupId) return;
-    const targetName = window.prompt("Nhập username hoặc full name thành viên cần xóa");
+    const targetName = window.prompt("Enter username or full name to remove");
     if (!targetName?.trim()) return;
     const normalized = targetName.trim().toLowerCase();
     const target = groupMembers.find(
@@ -302,7 +315,7 @@ export default function ChatbotWidget() {
         (m.username?.toLowerCase() === normalized || m.fullName?.trim().toLowerCase() === normalized),
     );
     if (!target) {
-      toast.push({ variant: "error", title: "Remove failed", message: "Không tìm thấy thành viên theo tên." });
+      toast.push({ variant: "error", title: "Remove failed", message: "Member not found by name." });
       return;
     }
     try {
@@ -329,7 +342,7 @@ export default function ChatbotWidget() {
   async function onAcceptInvite(inviteId: number) {
     try {
       await acceptGroupInvite(inviteId);
-      toast.push({ variant: "success", title: "Invite accepted", message: "Bạn đã chấp nhận lời mời vào nhóm." });
+      toast.push({ variant: "success", title: "Invite accepted", message: "You accepted the group invite." });
       await refreshMeta();
       await loadConversations();
     } catch (e) {
@@ -597,12 +610,12 @@ export default function ChatbotWidget() {
                       {items.map((item, idx) => (
                         <div key={`${item.role}-${idx}`} className={`rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap ${item.role === "user" ? "ml-auto max-w-[80%] bg-primary text-primary-foreground" : "mr-auto max-w-[80%] bg-muted"}`}>
                           {scope === "group" && item.role === "user" && item.senderName ? <div className="mb-1 text-[11px] opacity-80">{item.senderName}</div> : null}
-                          {item.content}
+                          {normalizeDisplayText(item.content)}
                         </div>
                       ))}
                       {isSending ? (
                         <div className="mr-auto max-w-[80%] rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground">
-                          <span>Đang suy nghĩ</span>
+                          <span>Thinking</span>
                           <span className="ml-2 inline-flex items-center gap-1">
                             <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
                             <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "120ms" }} />
@@ -616,7 +629,7 @@ export default function ChatbotWidget() {
                       <div className="text-sm text-muted-foreground">Ask something...</div>
                       {isSending ? (
                         <div className="mr-auto max-w-[80%] rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground">
-                          <span>Đang suy nghĩ</span>
+                          <span>Thinking</span>
                           <span className="ml-2 inline-flex items-center gap-1">
                             <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
                             <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "120ms" }} />
@@ -648,3 +661,4 @@ export default function ChatbotWidget() {
     </>
   );
 }
+

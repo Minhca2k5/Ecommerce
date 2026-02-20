@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "chatbot")
 public class ChatbotProperties {
     private boolean enabled;
+    private String provider = "openai-compatible";
     private String baseUrl;
     private String apiKey;
     private String model;
@@ -33,6 +34,14 @@ public class ChatbotProperties {
 
     public String getBaseUrl() {
         return baseUrl;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
     }
 
     public void setBaseUrl(String baseUrl) {

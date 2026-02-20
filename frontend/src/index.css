@@ -64,6 +64,8 @@
   }
   body {
     @apply bg-background text-foreground antialiased transition-colors duration-300;
+    font-family: "Be Vietnam Pro", "Segoe UI", "Noto Sans", "Inter", Roboto, Arial, sans-serif;
+    text-rendering: optimizeLegibility;
   }
 }
 

@@ -49,6 +49,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.Loader;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.time.LocalDateTime;
 import java.text.Normalizer;
@@ -1036,8 +1037,20 @@ public class ChatbotService {
         try {
             String baseUrl = properties.getBaseUrl();
             String apiKey = properties.getApiKey();
-            String model = properties.getModel() == null ? "gpt-3.5-turbo" : properties.getModel();
-            int numPredict = Math.max(16, properties.getNumPredict());
+            String model = properties.getModel() == null ? "gpt-4o-mini" : properties.getModel();
+            String provider = properties.getProvider() == null
+                    ? "openai-compatible"
+                    : properties.getProvider().trim().toLowerCase(Locale.ROOT);
+            int maxTokens = Math.max(16, properties.getMaxTokens());
+
+            if (baseUrl == null || baseUrl.isBlank()) {
+                log.warn("Chatbot: base URL is empty, skip LLM call");
+                return null;
+            }
+            if (!"openai-compatible".equals(provider)) {
+                log.warn("Chatbot: unsupported provider '{}', expected openai-compatible", provider);
+                return null;
+            }
 
             List<Map<String, Object>> messages = new java.util.ArrayList<>();
             messages.add(Map.of("role", "system", "content",
@@ -1058,8 +1071,8 @@ public class ChatbotService {
                     "model", model,
                     "messages", messages,
                     "temperature", properties.getTemperature(),
-                    "stream", false,
-                    "options", Map.of("num_predict", numPredict)
+                    "max_tokens", maxTokens,
+                    "stream", false
             );
 
             HttpHeaders headers = new HttpHeaders();
@@ -1068,18 +1081,24 @@ public class ChatbotService {
                 headers.setBearerAuth(apiKey);
             }
 
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+            String normalizedBaseUrl = baseUrl.endsWith("/")
+                    ? baseUrl.substring(0, baseUrl.length() - 1)
+                    : baseUrl;
 
             try {
-                log.info("Chatbot: calling Ollama /api/chat endpoint");
-                HttpEntity<Map<String, Object>> ollamaEntity = new HttpEntity<>(payload, headers);
-                Map<?, ?> ollamaResponse = restTemplate.postForObject(baseUrl + "/api/chat", ollamaEntity, Map.class);
-                String ollamaParsed = parseLlmReply(ollamaResponse);
-                if (ollamaParsed != null) {
-                    return ollamaParsed;
+                log.info("Chatbot: calling OpenAI-compatible /v1/chat/completions endpoint");
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+                Map<?, ?> response = restTemplate.postForObject(
+                        normalizedBaseUrl + "/v1/chat/completions",
+                        entity,
+                        Map.class
+                );
+                String parsed = parseLlmReply(response);
+                if (parsed != null) {
+                    return parsed;
                 }
             } catch (Exception ex) {
-                log.warn("Chatbot: Ollama /api/chat call failed: {}", ex.getMessage());
+                log.warn("Chatbot: OpenAI-compatible call failed: {}", ex.getMessage());
             }
 
             log.info("Chatbot: LLM response not usable, fallback reply used");
@@ -1089,7 +1108,6 @@ public class ChatbotService {
             return null;
         }
     }
-
     private static class CachedContext {
         private final String key;
         private final String context;
