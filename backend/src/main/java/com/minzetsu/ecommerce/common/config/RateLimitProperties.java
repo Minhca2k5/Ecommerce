@@ -17,13 +17,13 @@ public class RateLimitProperties {
     private boolean allowK6UserAgentBypass = false;
     private Duration bucketTtl = Duration.ofMinutes(10);
     private Duration cleanupInterval = Duration.ofMinutes(5);
+    private String storage = "local";
     private List<String> bypass = List.of(
             "/actuator/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
-            "/docs/**"
-    );
+            "/docs/**");
 
     public boolean isEnabled() {
         return enabled;
@@ -95,6 +95,14 @@ public class RateLimitProperties {
 
     public void setCleanupInterval(Duration cleanupInterval) {
         this.cleanupInterval = cleanupInterval;
+    }
+
+    public String getStorage() {
+        return storage;
+    }
+
+    public void setStorage(String storage) {
+        this.storage = storage;
     }
 
     public static class Rule {

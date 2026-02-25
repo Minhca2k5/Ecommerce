@@ -29,6 +29,9 @@ class RateLimitFilterTest {
     @Mock
     private Counter blockedCounter;
 
+    @Mock
+    private RedisRateLimitService redisRateLimitService;
+
     private RateLimitProperties properties;
     private RateLimitFilter rateLimitFilter;
 
@@ -42,7 +45,7 @@ class RateLimitFilterTest {
         properties.setUserRule(new RateLimitProperties.Rule(1, 1, Duration.ofMinutes(1)));
         properties.setAdminRule(new RateLimitProperties.Rule(1, 1, Duration.ofMinutes(1)));
 
-        rateLimitFilter = new RateLimitFilter(properties, meterRegistry);
+        rateLimitFilter = new RateLimitFilter(properties, meterRegistry, redisRateLimitService);
     }
 
     @Test

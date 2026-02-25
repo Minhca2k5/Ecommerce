@@ -1,6 +1,5 @@
 package com.minzetsu.ecommerce.common.config;
 
-import lombok.RequiredArgsConstructor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,24 +19,28 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Component
-@RequiredArgsConstructor
 public class RateLimitFilter extends OncePerRequestFilter {
     private static final String HEADER_FORWARDED_FOR = "X-Forwarded-For";
     private static final String HEADER_USER_AGENT = "User-Agent";
     private final RateLimitProperties properties;
     private final MeterRegistry meterRegistry;
+    private final RedisRateLimitService redisRateLimitService;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
     private final Map<String, TokenBucket> buckets = new ConcurrentHashMap<>();
     private final AtomicLong lastCleanupNanos = new AtomicLong(System.nanoTime());
 
-    
+    public RateLimitFilter(RateLimitProperties properties, MeterRegistry meterRegistry,
+            RedisRateLimitService redisRateLimitService) {
+        this.properties = properties;
+        this.meterRegistry = meterRegistry;
+        this.redisRateLimitService = redisRateLimitService;
+    }
 
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+            FilterChain filterChain) throws ServletException, IOException {
         if (!properties.isEnabled()) {
             filterChain.doFilter(request, response);
             return;
@@ -56,13 +59,21 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String ruleKey = resolveRuleKey(path);
         RateLimitProperties.Rule rule = resolveRule(ruleKey);
         String bucketKey = resolveBucketKey(ruleKey, request);
-        maybeCleanupBuckets(properties.getCleanupInterval(), properties.getBucketTtl());
-        TokenBucket bucket = buckets.computeIfAbsent(
-                bucketKey,
-                key -> new TokenBucket(rule.getCapacity(), rule.getRefillTokens(), rule.getPeriod())
-        );
 
-        if (!bucket.tryConsume()) {
+        boolean allowed;
+        if ("redis".equalsIgnoreCase(properties.getStorage())) {
+            allowed = redisRateLimitService.tryConsume(
+                    bucketKey, rule.getCapacity(), rule.getRefillTokens(),
+                    rule.getPeriod(), properties.getBucketTtl());
+        } else {
+            maybeCleanupBuckets(properties.getCleanupInterval(), properties.getBucketTtl());
+            TokenBucket bucket = buckets.computeIfAbsent(
+                    bucketKey,
+                    key -> new TokenBucket(rule.getCapacity(), rule.getRefillTokens(), rule.getPeriod()));
+            allowed = bucket.tryConsume();
+        }
+
+        if (!allowed) {
             meterRegistry.counter("rate_limit.blocked").increment();
             response.setStatus(429);
             response.setContentType("application/json");
