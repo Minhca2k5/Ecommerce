@@ -30,6 +30,7 @@ const SearchLogsPage = lazy(() => import("@/pages/SearchLogsPage"));
 const NotificationsPage = lazy(() => import("@/pages/NotificationsPage"));
 const OrdersPage = lazy(() => import("@/pages/OrdersPage"));
 const OrderDetailPage = lazy(() => import("@/pages/OrderDetailPage"));
+const MomoQrPaymentPage = lazy(() => import("@/pages/MomoQrPaymentPage"));
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 const AdminHomePage = lazy(() => import("@/pages/admin/AdminHomePage"));
@@ -96,6 +97,7 @@ export const router = createBrowserRouter([
           { path: "notifications", element: lazyElement(<NotificationsPage />) },
           { path: "orders", element: lazyElement(<OrdersPage />) },
           { path: "orders/:orderId", element: lazyElement(<OrderDetailPage />) },
+          { path: "orders/:orderId/momo-qr", element: lazyElement(<MomoQrPaymentPage />) },
         ],
       },
       {

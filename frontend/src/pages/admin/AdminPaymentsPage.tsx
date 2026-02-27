@@ -17,7 +17,15 @@ type PageResponse<T> = {
 
 type AdminPayment = Record<string, unknown>;
 
-const paymentStatuses = ["PENDING", "SUCCESS", "FAILED", "REFUNDED", "CANCELED"] as const;
+const paymentStatuses = ["INITIATED", "SUCCEEDED", "FAILED"] as const;
+
+function normalizePaymentStatus(raw: string) {
+  const value = (raw || "").toUpperCase();
+  if (value === "SUCCESS") return "SUCCEEDED";
+  if (value === "PENDING") return "INITIATED";
+  if (value === "CANCELED" || value === "CANCELLED" || value === "REFUNDED") return "FAILED";
+  return paymentStatuses.includes(value as (typeof paymentStatuses)[number]) ? value : "INITIATED";
+}
 
 export default function AdminPaymentsPage() {
   const toast = useToast();
@@ -146,7 +154,7 @@ export default function AdminPaymentsPage() {
                   items.map((p) => {
                     const id = getNumber(p, "id") ?? 0;
                     const orderId = getNumber(p, "orderId");
-                    const status = getString(p, "status") ?? "-";
+                    const status = normalizePaymentStatus(getString(p, "status") ?? "");
                     const method = getString(p, "method") ?? "-";
                     const currency = getString(p, "currency") ?? "VND";
                     const amount = Number(p["amount"] ?? 0);
@@ -232,7 +240,7 @@ export default function AdminPaymentsPage() {
             <div className="text-sm font-semibold">Status</div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <select
-                value={getString(details ?? {}, "status") ?? ""}
+                value={normalizePaymentStatus(getString(details ?? {}, "status") ?? "")}
                 onChange={(e) => {
                   if (detailsId) void updateStatus(detailsId, e.target.value);
                 }}

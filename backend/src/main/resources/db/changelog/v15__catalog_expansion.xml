@@ -68,7 +68,7 @@
                 CONCAT('bulk-', m.cat_slug, '-', LPAD(s.n, 3, '0')),
                 CONCAT('BULK-', m.cat_code, '-', LPAD(s.n, 4, '0')),
                 CONCAT('Bulk seeded catalog item #', s.n, ' for ', m.cat_name, '. Suitable for stress-testing search, filters, and pagination.'),
-                CAST((120000 + (m.idx * 45000) + (s.n * 1700)) AS DECIMAL(12,2)),
+                CAST((22000 + (m.idx * 2500) + (s.n * 300)) AS DECIMAL(12,2)),
                 'VND',
                 'ACTIVE',
                 NOW(),
@@ -130,15 +130,15 @@
                 END,
                 CASE (n % 3)
                     WHEN 0 THEN 5 + (n % 16)
-                    WHEN 1 THEN 15000 + (n * 2000)
+                    WHEN 1 THEN 5000 + (n * 500)
                     ELSE NULL
                 END,
                 CASE (n % 3)
-                    WHEN 0 THEN 70000 + (n * 3000)
+                    WHEN 0 THEN 20000 + (n * 800)
                     WHEN 1 THEN NULL
                     ELSE NULL
                 END,
-                150000 + (n * 10000),
+                30000 + (n * 2000),
                 DATE_SUB(NOW(), INTERVAL 2 DAY),
                 DATE_ADD(NOW(), INTERVAL 180 DAY),
                 500 + (n * 20),
@@ -187,7 +187,7 @@
                 v.id,
                 o.user_id,
                 o.id,
-                CAST(10000 + (o.id * 2500) AS DECIMAL(12,2)),
+                CAST(3000 + (o.id * 500) AS DECIMAL(12,2)),
                 NOW(),
                 NOW()
             FROM orders o

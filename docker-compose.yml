@@ -113,6 +113,9 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
+        VITE_MOMO_SANDBOX_ENABLED: ${VITE_MOMO_SANDBOX_ENABLED:-false}
+        VITE_MANUAL_MOMO_ACCOUNT_NAME: ${VITE_MANUAL_MOMO_ACCOUNT_NAME:-}
+        VITE_MANUAL_MOMO_ACCOUNT_NUMBER: ${VITE_MANUAL_MOMO_ACCOUNT_NUMBER:-}
     depends_on:
       - backend
     ports:

@@ -41,14 +41,14 @@ export default function OrderDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [method, setMethod] = useState("COD");
+  const [method, setMethod] = useState("MOMO_QR");
   const [providerTxnId, setProviderTxnId] = useState("");
   const [isPaying, setIsPaying] = useState(false);
+  const [isMomoLoading, setIsMomoLoading] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [paymentDetail, setPaymentDetail] = useState<PaymentResponse | null>(null);
   const [paymentDetailError, setPaymentDetailError] = useState<string | null>(null);
   const [isPaymentDetailLoading, setIsPaymentDetailLoading] = useState(false);
-  const [isMomoLoading, setIsMomoLoading] = useState(false);
 
   const [itemsMode, setItemsMode] = useState<"embedded" | "endpoint">("embedded");
   const [endpointItems, setEndpointItems] = useState<any[] | null>(null);
@@ -61,6 +61,11 @@ export default function OrderDetailPage() {
   const subtotalAmount = useMemo(() => getNumber(order, "subtotalAmount") ?? 0, [order]);
   const shippingFee = useMemo(() => getNumber(order, "shippingFee") ?? 0, [order]);
   const taxAmount = useMemo(() => getNumber(order, "taxAmount") ?? 0, [order]);
+  const isMomoSandboxEnabled = String(import.meta.env.VITE_MOMO_SANDBOX_ENABLED || "false").toLowerCase() === "true";
+  const paymentMethods = useMemo(
+    () => (isMomoSandboxEnabled ? ["MOMO_QR", "MOMO_SANDBOX", "COD", "CARD"] : ["MOMO_QR", "COD", "CARD"]),
+    [isMomoSandboxEnabled],
+  );
 
   useEffect(() => {
     if (!orderId) return;
@@ -104,11 +109,12 @@ export default function OrderDetailPage() {
     if (!orderId) return;
     setIsPaying(true);
     try {
+      const resolvedProviderTxnId = providerTxnId.trim();
       await createPayment(orderId, {
         orderId,
         method,
         status: "INITIATED",
-        ...(providerTxnId.trim() ? { providerTxnId: providerTxnId.trim() } : {}),
+        ...(resolvedProviderTxnId ? { providerTxnId: resolvedProviderTxnId } : {}),
         ...(voucherId !== undefined ? { voucherId } : {}),
         ...(discountAmount !== undefined ? { discountAmount } : {}),
       });
@@ -150,30 +156,33 @@ export default function OrderDetailPage() {
     }
   }
 
-  async function onCreateMomoPayment() {
-    if (!orderId) return;
-    setIsMomoLoading(true);
-    try {
-      const idempotencyKey =
-        typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `momo_${Date.now()}`;
-      const res = await createMomoPayment(orderId, idempotencyKey);
-      const payUrl = res.payUrl || res.deeplink || res.qrCodeUrl;
-      if (payUrl) {
-        window.open(payUrl, "_blank");
-        toast.push({ variant: "success", title: "MoMo created", message: "Complete payment in the new tab." });
-      } else {
-        toast.push({ variant: "error", title: "MoMo failed", message: res.message || "No payment URL returned." });
-      }
-    } catch (e) {
-      toast.push({ variant: "error", title: "MoMo failed", message: getErrorMessage(e, "Couldn't create MoMo payment.") });
-    } finally {
-      setIsMomoLoading(false);
-    }
-  }
-
   async function onSubmitPayment() {
-    if (method === "EWALLET") {
-      await onCreateMomoPayment();
+    if (payments.length > 0) {
+      toast.push({ variant: "error", title: "Payment exists", message: "This order already has a payment record." });
+      return;
+    }
+    if (method === "MOMO_QR") {
+      navigate(`/orders/${orderId}/momo-qr`);
+      return;
+    }
+    if (method === "MOMO_SANDBOX") {
+      if (!orderId) return;
+      setIsMomoLoading(true);
+      try {
+        const idempotencyKey =
+          typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `momo_${Date.now()}`;
+        const res = await createMomoPayment(orderId, idempotencyKey);
+        const payUrl = res.payUrl || res.deeplink || res.qrCodeUrl;
+        if (!payUrl) {
+          throw new Error(res.message || "No payment URL returned.");
+        }
+        window.open(payUrl, "_blank");
+        toast.push({ variant: "success", title: "MoMo sandbox", message: "Opened sandbox payment in a new tab." });
+      } catch (e) {
+        toast.push({ variant: "error", title: "MoMo failed", message: getErrorMessage(e, "Couldn't create MoMo payment.") });
+      } finally {
+        setIsMomoLoading(false);
+      }
       return;
     }
     await onCreatePayment();
@@ -345,7 +354,7 @@ export default function OrderDetailPage() {
               <div className="space-y-2">
                 <div className="text-xs font-medium text-muted-foreground">Method</div>
                 <div className="flex flex-wrap gap-2">
-                  {["COD", "CARD", "EWALLET"].map((m) => (
+                  {paymentMethods.map((m) => (
                     <button
                       key={m}
                       type="button"
@@ -360,26 +369,36 @@ export default function OrderDetailPage() {
                   ))}
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="text-xs font-medium text-muted-foreground">Provider txn id (optional)</div>
-                <Input className="rounded-xl bg-background/70 backdrop-blur" value={providerTxnId} onChange={(e) => setProviderTxnId(e.target.value)} placeholder="e.g. VNPAY-..." />
-              </div>
+              {method !== "MOMO_QR" && method !== "MOMO_SANDBOX" ? (
+                <div className="space-y-2">
+                  <div className="text-xs font-medium text-muted-foreground">Provider txn id (optional)</div>
+                  <Input className="rounded-xl bg-background/70 backdrop-blur" value={providerTxnId} onChange={(e) => setProviderTxnId(e.target.value)} placeholder="e.g. VNPAY-..." />
+                </div>
+              ) : (
+                <div className="rounded-2xl border bg-background/60 p-3 text-sm text-muted-foreground">
+                  You will be redirected to a dedicated MoMo QR payment page.
+                </div>
+              )}
               <Button
                 disabled={isPaying || isMomoLoading}
                 onClick={onSubmitPayment}
                 className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
               >
-                {method === "EWALLET"
-                  ? isMomoLoading
-                    ? "Opening MoMo..."
-                    : "Pay with MoMo"
-                  : isPaying
-                    ? "Creating..."
-                    : "Create payment"}
+                {isPaying
+                  ? "Creating..."
+                  : isMomoLoading
+                    ? "Opening sandbox..."
+                    : method === "MOMO_QR"
+                      ? "Continue to MoMo QR"
+                      : method === "MOMO_SANDBOX"
+                        ? "Pay with MoMo Sandbox"
+                        : "Create payment"}
               </Button>
               <div className="text-xs text-muted-foreground">
-                {method === "EWALLET"
-                  ? "Redirects to MoMo for payment."
+                {method === "MOMO_QR"
+                  ? "Open a separate page with QR and transfer details. Admin verification is still required."
+                  : method === "MOMO_SANDBOX"
+                    ? "Calls MoMo sandbox and opens payment URL in a new tab."
                   : "Creates a payment record via backend; gateway integration can be added later."}
               </div>
             </CardContent>
