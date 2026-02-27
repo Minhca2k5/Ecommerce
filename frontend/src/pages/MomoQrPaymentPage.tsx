@@ -8,6 +8,7 @@ import momoQrImage from "@/assets/img/momo.jpg";
 import { useToast } from "@/app/ToastProvider";
 import { getErrorMessage } from "@/lib/errors";
 import { formatCurrency } from "@/lib/format";
+import { createMomoPayment } from "@/lib/momoApi";
 import { getMyOrder, type OrderResponse } from "@/lib/orderApi";
 import { createPayment, listPayments } from "@/lib/paymentApi";
 
@@ -21,7 +22,10 @@ export default function MomoQrPaymentPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMomoLoading, setIsMomoLoading] = useState(false);
   const [hasExistingPayment, setHasExistingPayment] = useState(false);
+  const [momoApiQrUrl, setMomoApiQrUrl] = useState<string | null>(null);
+  const isMomoSandboxEnabled = String(import.meta.env.VITE_MOMO_SANDBOX_ENABLED || "false").toLowerCase() === "true";
 
   const manualMomoAccountName =
     ((import.meta.env.VITE_MANUAL_MOMO_ACCOUNT_NAME as string | undefined) ||
@@ -74,6 +78,29 @@ export default function MomoQrPaymentPage() {
     }
   }
 
+  async function onPayWithMomoSandbox() {
+    if (!orderId) return;
+    if (hasExistingPayment) {
+      toast.push({ variant: "error", title: "Payment exists", message: "This order already has a payment record." });
+      return;
+    }
+    setIsMomoLoading(true);
+    try {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `momo_${Date.now()}`;
+      const res = await createMomoPayment(orderId, idempotencyKey);
+      const payUrl = res.payUrl || res.deeplink || res.qrCodeUrl;
+      if (!payUrl) throw new Error(res.message || "No payment URL returned.");
+      setMomoApiQrUrl(res.qrCodeUrl || null);
+      window.open(payUrl, "_blank");
+      toast.push({ variant: "success", title: "MoMo sandbox", message: "Opened sandbox payment in a new tab." });
+    } catch (e) {
+      toast.push({ variant: "error", title: "MoMo failed", message: getErrorMessage(e, "Couldn't create MoMo payment.") });
+    } finally {
+      setIsMomoLoading(false);
+    }
+  }
+
   if (!orderId) return <EmptyState title="Invalid order" description="Missing orderId." />;
   if (isLoading) return <div className="space-y-4"><LoadingCard /><LoadingCard /></div>;
   if (error || !order) {
@@ -116,8 +143,21 @@ export default function MomoQrPaymentPage() {
           <CardTitle>Scan and transfer</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {isMomoSandboxEnabled ? (
+            <Button
+              disabled={isMomoLoading || hasExistingPayment}
+              onClick={onPayWithMomoSandbox}
+              className="h-11 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+            >
+              {isMomoLoading ? "Opening sandbox..." : "Pay with MoMo Sandbox"}
+            </Button>
+          ) : null}
           <div className="overflow-hidden rounded-2xl border bg-white p-3">
-            <img src={momoQrImage} alt="MoMo QR payment" className="mx-auto max-h-[520px] w-auto object-contain" />
+            <img
+              src={momoApiQrUrl || momoQrImage}
+              alt={momoApiQrUrl ? "MoMo API QR payment" : "MoMo QR payment"}
+              className="mx-auto max-h-[520px] w-auto object-contain"
+            />
           </div>
           <div className="grid gap-2 rounded-2xl border bg-background/60 p-4 text-sm">
             <div><span className="text-muted-foreground">Account:</span> <span className="font-medium">{manualMomoAccountName}</span></div>
@@ -134,7 +174,7 @@ export default function MomoQrPaymentPage() {
             </div>
           ) : null}
           <Button
-            disabled={isSubmitting || hasExistingPayment}
+            disabled={isSubmitting || isMomoLoading || hasExistingPayment}
             onClick={onTransferred}
             className="h-11 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
           >

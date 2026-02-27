@@ -8,7 +8,7 @@ public class MomoIpnRequest {
     private String orderInfo;
     private String orderType;
     private String transId;
-    private String resultCode;
+    private Integer resultCode;
     private String message;
     private String payType;
     private String responseTime;
@@ -71,11 +71,11 @@ public class MomoIpnRequest {
         this.transId = transId;
     }
 
-    public String getResultCode() {
+    public Integer getResultCode() {
         return resultCode;
     }
 
-    public void setResultCode(String resultCode) {
+    public void setResultCode(Integer resultCode) {
         this.resultCode = resultCode;
     }
 

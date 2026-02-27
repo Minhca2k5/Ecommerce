@@ -1,6 +1,7 @@
 package com.minzetsu.ecommerce.payment.controller.user;
 
 import com.minzetsu.ecommerce.common.config.CustomUserDetails;
+import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.payment.momo.MomoPaymentService;
 import com.minzetsu.ecommerce.payment.momo.dto.MomoCreateResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,7 +38,7 @@ public class UserMomoPaymentController {
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthenticated");
+            throw new UnAuthorizedException("Unauthenticated");
         }
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }

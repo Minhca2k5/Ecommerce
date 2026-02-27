@@ -20,9 +20,10 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.UUID;
+import java.security.MessageDigest;
 
 @Service
 public class MomoPaymentService {
@@ -97,20 +98,11 @@ public class MomoPaymentService {
             throw new UnAuthorizedException("Invalid MoMo signature");
         }
         Long paymentId = parseLong(ipn.getRequestId());
-        if (paymentId == null) {
-            paymentId = parseLong(ipn.getOrderId());
+        if (paymentId == null && ipn.getOrderId() != null && !ipn.getOrderId().isBlank()) {
+            paymentId = paymentService.getPaymentByProviderTxnId(ipn.getOrderId()).getId();
         }
-        if (paymentId == null && ipn.getOrderId() != null) {
-            PaymentResponse payment = paymentService.getPaymentResponseById(
-                    paymentService.getPaymentByProviderTxnId(ipn.getOrderId()).getId(),
-                    null
-            );
-            paymentId = payment.getId();
-        }
-        if (paymentId == null) {
-            throw new NotFoundException("Payment id not found");
-        }
-        if ("0".equals(ipn.getResultCode())) {
+        if (paymentId == null) throw new NotFoundException("Payment id not found");
+        if (Integer.valueOf(0).equals(ipn.getResultCode())) {
             paymentService.updatePaymentStatusById(PaymentStatus.SUCCEEDED, paymentId);
             PaymentResponse payment = paymentService.getPaymentResponseById(paymentId, null);
             orderService.updateOrderStatus(payment.getOrderId(), OrderStatus.PAID);
@@ -149,10 +141,13 @@ public class MomoPaymentService {
                 + "&payType=" + safe(ipn.getPayType())
                 + "&requestId=" + ipn.getRequestId()
                 + "&responseTime=" + safe(ipn.getResponseTime())
-                + "&resultCode=" + ipn.getResultCode()
+                + "&resultCode=" + String.valueOf(ipn.getResultCode())
                 + "&transId=" + safe(ipn.getTransId());
-        String signature = MomoSignatureUtil.hmacSha256(properties.getSecretKey(), rawSignature);
-        return signature.equals(ipn.getSignature());
+        String expected = MomoSignatureUtil.hmacSha256(properties.getSecretKey(), rawSignature);
+        return MessageDigest.isEqual(
+                expected.getBytes(StandardCharsets.UTF_8),
+                ipn.getSignature().getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     private String buildOrderInfo(Long orderId) {

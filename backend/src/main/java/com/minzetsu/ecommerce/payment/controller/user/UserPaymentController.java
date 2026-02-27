@@ -1,6 +1,7 @@
 package com.minzetsu.ecommerce.payment.controller.user;
 
 import com.minzetsu.ecommerce.common.config.CustomUserDetails;
+import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.payment.dto.request.PaymentRequest;
 import com.minzetsu.ecommerce.payment.dto.response.PaymentResponse;
 import com.minzetsu.ecommerce.payment.service.PaymentService;
@@ -68,7 +69,7 @@ public class UserPaymentController {
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthenticated");
+            throw new UnAuthorizedException("Unauthenticated");
         }
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }
