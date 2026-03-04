@@ -84,43 +84,38 @@ export default function SearchLogsPage() {
   }
 
   if (isLoading) return <div className="space-y-4"><LoadingCard /><LoadingCard /></div>;
-  if (error) return <EmptyState title="Couldn't load search logs" description={error} action={<Button onClick={refresh} className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">Retry</Button>} />;
+  if (error) return <EmptyState title="Couldn't load search logs" description={error} action={<Button onClick={refresh} className="h-10 rounded-xl bg-primary text-primary-foreground">Retry</Button>} />;
   if (!items.length) return <EmptyState title="No search logs" description="Search products to build your history." />;
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+      <section className="page-section">
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="text-sm text-muted-foreground">Account</div>
-            <div className="text-3xl font-semibold tracking-tight">Search logs</div>
-            <div className="mt-1 text-sm text-muted-foreground">Your recent search keywords.</div>
-          </div>
-          <Button variant="outline" className="h-10 rounded-xl border-rose-500/20 bg-background/70 text-rose-700 hover:bg-rose-500/10 backdrop-blur" onClick={() => setIsClearOpen(true)}>
+          <div className="text-2xl font-semibold">Search logs</div>
+          <Button variant="outline" className="h-10 rounded-xl border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10" onClick={() => setIsClearOpen(true)}>
             Clear all
           </Button>
         </div>
       </section>
 
-      <Card className="shine bg-background/70 backdrop-blur">
+      <Card className="bg-background">
         <CardHeader>
           <CardTitle className="text-base">Filter</CardTitle>
         </CardHeader>
         <CardContent>
-          <Input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter by keyword..." className="rounded-xl bg-background/70 backdrop-blur" />
+          <Input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter by keyword..." className="rounded-xl bg-background" />
         </CardContent>
       </Card>
 
       <div className="grid gap-3 lg:grid-cols-2">
         {filtered.map((i) => (
-          <Card key={String(i.id)} className="pressable shine bg-background/70 backdrop-blur shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+          <Card key={String(i.id)} className="pressable bg-background shadow-sm transition hover:shadow-md">
             <CardHeader className="flex flex-row items-start justify-between gap-3">
               <div>
                 <CardTitle className="text-base">{i.keyword || "-"}</CardTitle>
                 <div className="mt-1 text-xs text-muted-foreground">{formatTime(i.createdAt)}</div>
               </div>
-              <Button variant="outline" className="rounded-xl border-rose-500/20 bg-background/70 text-rose-700 hover:bg-rose-500/10 backdrop-blur" onClick={() => setDeleteTarget(i)}>
+              <Button variant="outline" className="rounded-xl border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(i)}>
                 Delete
               </Button>
             </CardHeader>

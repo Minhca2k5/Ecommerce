@@ -3,7 +3,6 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-do
 import { useAuth } from "@/app/AuthProvider";
 import { useToast } from "@/app/ToastProvider";
 import { useNotifications } from "@/app/NotificationProvider";
-import { useTheme } from "@/app/ThemeProvider";
 import { getNotificationRoute } from "@/lib/notificationRoute";
 import { acceptGroupInvite, declineGroupInvite } from "@/lib/chatbotApi";
 import { getErrorMessage } from "@/lib/errors";
@@ -13,14 +12,13 @@ import ChatbotWidget from "@/app/ChatbotWidget";
 
 const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   isActive
-    ? "rounded-full bg-primary/10 px-3 py-1.5 text-foreground ring-1 ring-primary/20"
-    : "rounded-full px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground";
+    ? "rounded-lg bg-primary/20 px-3 py-1.5 text-primary ring-1 ring-primary/40 shadow-sm"
+    : "rounded-lg bg-primary/[0.06] px-3 py-1.5 text-muted-foreground hover:bg-primary/15 hover:text-primary";
 
 export default function AppLayout() {
   const auth = useAuth();
   const toast = useToast();
   const notifications = useNotifications();
-  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -102,19 +100,18 @@ export default function AppLayout() {
 
   return (
     <div className="relative min-h-dvh flex flex-col overflow-hidden bg-background">
-      <div className="pointer-events-none absolute inset-0 animated-aurora opacity-70" />
-      <header className="sticky top-0 z-50 border-b bg-background/75 backdrop-blur supports-[backdrop-filter]:bg-background/50">
+      <header className="sticky top-0 z-50 border-b border-primary/25 bg-[linear-gradient(180deg,rgba(255,112,45,0.12),rgba(255,255,255,0.92))] backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap">
           <Link
             to={isAdminRoute ? "/admin" : "/"}
-            className="shrink-0 font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500"
+            className="shrink-0 text-lg font-bold tracking-tight text-primary"
           >
             Ecommerce
           </Link>
 
           <nav className="w-full flex flex-wrap items-center gap-2 text-sm sm:w-auto sm:ml-auto sm:flex-nowrap sm:justify-end">
             <NavLink to={isAdminRoute ? "/admin" : "/"} end className={navLinkClassName}>
-              <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
+              <span className="inline-flex items-center gap-2 transition-colors">
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M3 10.5l9-7 9 7" />
                   <path d="M5 10v10h14V10" />
@@ -126,7 +123,7 @@ export default function AppLayout() {
             {!isAdminRoute ? (
               <>
                 <NavLink to="/categories" className={navLinkClassName}>
-                  <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
+                  <span className="inline-flex items-center gap-2 transition-colors">
                     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M4 6h7v7H4z" />
                       <path d="M13 6h7v7h-7z" />
@@ -137,7 +134,7 @@ export default function AppLayout() {
                   </span>
                 </NavLink>
                 <NavLink to="/products" className={navLinkClassName}>
-                  <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
+                  <span className="inline-flex items-center gap-2 transition-colors">
                     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M6 7h12l-1 13H7L6 7z" />
                       <path d="M9 7a3 3 0 0 1 6 0" />
@@ -149,7 +146,7 @@ export default function AppLayout() {
             ) : null}
             {!isAdminRoute ? (
               <NavLink to="/cart" className={navLinkClassName}>
-                <span className="relative inline-flex items-center gap-2 transition hover:-translate-y-0.5">
+                <span className="relative inline-flex items-center gap-2 transition-colors">
                   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M6 7h12l-1 13H7L6 7z" />
                     <path d="M9 7a3 3 0 0 1 6 0" />
@@ -173,10 +170,10 @@ export default function AppLayout() {
                       setIsMenuOpen(false);
                       setIsNotifOpen((v) => !v);
                     }}
-                    className="relative cursor-pointer rounded-full px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground ring-1 ring-transparent hover:ring-primary/10"
+                    className="relative cursor-pointer rounded-lg px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground ring-1 ring-transparent hover:ring-primary/10"
                     aria-label="Notifications"
                   >
-                    <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
+                    <span className="inline-flex items-center gap-2 transition-colors">
                       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
                         <path d="M13.73 21a2 2 0 01-3.46 0" />
@@ -191,7 +188,7 @@ export default function AppLayout() {
                   </button>
 
                   {isNotifOpen ? (
-                    <div className="absolute right-0 mt-2 w-80 overflow-hidden rounded-2xl border bg-background/80 shadow-lg backdrop-blur animate-in fade-in zoom-in-95">
+                    <div className="absolute right-0 mt-2 w-80 overflow-hidden rounded-xl border bg-background shadow-md animate-in fade-in zoom-in-95">
                       <div className="flex items-center justify-between gap-2 p-3">
                         <div className="text-sm font-medium">Notifications</div>
                         <button
@@ -208,7 +205,7 @@ export default function AppLayout() {
                             key={String(n.id)}
                             className={[
                               "w-full cursor-pointer px-3 py-3 text-left transition hover:bg-muted",
-                              n.isRead ? "bg-rose-500/10" : "bg-emerald-500/10",
+                              n.isRead ? "bg-muted/40" : "bg-primary/5",
                             ].join(" ")}
                             onClick={() => {
                               const id = Number(n.id ?? 0);
@@ -223,7 +220,7 @@ export default function AppLayout() {
                               <span
                                 className={[
                                   "shrink-0 rounded-full px-2 py-1 text-[11px] ring-1",
-                                  n.isRead ? "bg-rose-500/10 text-rose-700 ring-rose-500/20" : "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20",
+                                  n.isRead ? "bg-muted text-muted-foreground ring-border" : "bg-primary/10 text-primary ring-primary/30",
                                 ].join(" ")}
                               >
                                 {n.isRead ? "Read" : "Unread"}
@@ -297,38 +294,9 @@ export default function AppLayout() {
               </>
             ) : null}
 
-            <button
-              type="button"
-              className="rounded-full px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground ring-1 ring-transparent hover:ring-primary/10"
-              onClick={() => theme.toggle()}
-              aria-label="Toggle theme"
-              title={theme.resolvedTheme === "dark" ? "Switch to light" : "Switch to dark"}
-            >
-              <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
-                {theme.resolvedTheme === "dark" ? (
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 18a6 6 0 1 1 0-12a6 6 0 0 1 0 12z" />
-                    <path d="M12 2v2" />
-                    <path d="M12 20v2" />
-                    <path d="M4.93 4.93l1.41 1.41" />
-                    <path d="M17.66 17.66l1.41 1.41" />
-                    <path d="M2 12h2" />
-                    <path d="M20 12h2" />
-                    <path d="M4.93 19.07l1.41-1.41" />
-                    <path d="M17.66 6.34l1.41-1.41" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 12.8A8.5 8.5 0 0 1 11.2 3a6.5 6.5 0 1 0 9.8 9.8z" />
-                  </svg>
-                )}
-                <span className="hidden sm:inline">{theme.resolvedTheme === "dark" ? "Light" : "Dark"}</span>
-              </span>
-            </button>
-
             {!auth.isAuthenticated ? (
               <NavLink to="/login" className={navLinkClassName}>
-                <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
+                <span className="inline-flex items-center gap-2 transition-colors">
                   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
                     <path d="M10 17l5-5-5-5" />
@@ -342,10 +310,10 @@ export default function AppLayout() {
                 <button
                   type="button"
                   onClick={() => setIsMenuOpen((v) => !v)}
-                  className="rounded-full px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground ring-1 ring-transparent hover:ring-primary/10"
+                  className="rounded-lg px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground ring-1 ring-transparent hover:ring-primary/10"
                 >
-                  <span className="inline-flex items-center gap-2 transition hover:-translate-y-0.5">
-                    <span className="grid h-6 w-6 place-items-center rounded-full bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-[10px] font-semibold text-white">
+                  <span className="inline-flex items-center gap-2 transition-colors">
+                    <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-[10px] font-semibold text-white">
                       {(displayName || "A").slice(0, 1).toUpperCase()}
                     </span>
                     <span className="max-w-[10rem] truncate">{displayName}</span>
@@ -357,12 +325,11 @@ export default function AppLayout() {
 
                 {isMenuOpen ? (
                   <div
-                    className="absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border bg-background/80 shadow-lg backdrop-blur animate-in fade-in zoom-in-95"
+                    className="absolute right-0 mt-2 w-64 overflow-hidden rounded-xl border bg-background shadow-md animate-in fade-in zoom-in-95"
                     onMouseLeave={() => setIsMenuOpen(false)}
                   >
                     <div className="p-3">
                       <div className="text-sm font-medium truncate">{displayName}</div>
-                      {auth.user?.email ? <div className="text-xs text-muted-foreground truncate">{auth.user.email}</div> : null}
                     </div>
                     <div className="border-t p-2">
                       {availableRoles.length > 1 ? (
@@ -389,7 +356,7 @@ export default function AppLayout() {
                                 toast.push({ variant: "success", title: "Role switched", message: `Switched to ${nextRole}.` });
                                 navigate(defaultRouteForRole(nextRole), { replace: true });
                               }}
-                              className="h-9 shrink-0 rounded-xl border bg-background/75 px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                              className="h-9 shrink-0 rounded-xl border bg-background px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                             >
                               Switch
                             </button>

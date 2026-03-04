@@ -47,7 +47,7 @@ export default function AdminPasswordPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-sm text-muted-foreground">Admin</div>
-          <div className="text-3xl font-semibold tracking-tight">Change password</div>
+          <div className="text-2xl font-semibold">Change password</div>
           <div className="mt-1 text-sm text-muted-foreground">Keep your account secure with a strong password.</div>
         </div>
         <Button asChild variant="outline" className="rounded-xl">
@@ -56,7 +56,6 @@ export default function AdminPasswordPage() {
       </div>
 
       <Card className="overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-25 [background:radial-gradient(60%_60%_at_20%_20%,rgba(239,68,68,.12),transparent),radial-gradient(50%_60%_at_70%_40%,rgba(168,85,247,.16),transparent)]" />
         <CardHeader className="relative">
           <CardTitle>Password</CardTitle>
         </CardHeader>
@@ -75,11 +74,11 @@ export default function AdminPasswordPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Confirm password</label>
               <Input className="rounded-xl" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} type={showPassword ? "text" : "password"} autoComplete="new-password" placeholder="Re-enter new password" />
-              {confirmPassword.length > 0 && confirmPassword !== newPassword ? <div className="text-xs text-rose-600">Passwords do not match.</div> : null}
+              {confirmPassword.length > 0 && confirmPassword !== newPassword ? <div className="text-sm text-danger">Passwords do not match.</div> : null}
             </div>
 
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => setShowPassword((v) => !v)} className="rounded-xl border bg-background/70 px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+              <button type="button" onClick={() => setShowPassword((v) => !v)} className="rounded-xl border bg-background px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
                 {showPassword ? "Hide passwords" : "Show passwords"}
               </button>
             </div>
@@ -90,7 +89,7 @@ export default function AdminPasswordPage() {
               <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate("/admin/profile")}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={!canSubmit} className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
+              <Button type="submit" disabled={!canSubmit} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
                 {isSaving ? "Updating..." : "Update password"}
               </Button>
             </div>

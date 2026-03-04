@@ -124,24 +124,23 @@ export default function AdminProductImagesPage() {
 
   return (
     <>
-      <Card className="border bg-background/75 shadow-sm backdrop-blur">
+      <Card className="border bg-background shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle>Product images</CardTitle>
-            <div className="mt-1 text-sm text-muted-foreground">List images by product, update URL, and set primary.</div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
               Load
             </Button>
-            <Button className="h-9 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={openCreate}>
+            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               Add image
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input value={productId} onChange={(e) => setProductId(e.target.value)} placeholder="Product ID" className="rounded-xl" />
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">Primary</div>
             <div className="mt-3 flex items-center gap-3">
               {primary ? (
@@ -149,7 +148,7 @@ export default function AdminProductImagesPage() {
                   <SafeImage src={getString(primary, "url") ?? ""} alt="primary" fallbackKey={getNumber(primary, "id") ?? "primary"} className="h-14 w-28 rounded-xl border object-cover" />
                   <div className="text-sm">
                     <div className="font-medium">#{getNumber(primary, "id") ?? "-"}</div>
-                    <div className="text-xs text-muted-foreground line-clamp-1">{getString(primary, "url") ?? ""}</div>
+                    <div className="text-sm text-muted-foreground line-clamp-1">{getString(primary, "url") ?? ""}</div>
                   </div>
                 </>
               ) : (
@@ -158,9 +157,9 @@ export default function AdminProductImagesPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+          <div className="table-shell">
             <table className="min-w-[860px] w-full text-sm">
-              <thead className="bg-muted/50 text-xs text-muted-foreground">
+              <thead className="bg-muted/50 text-sm text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Image</th>
                   <th className="px-4 py-3 text-left font-medium">Preview</th>
@@ -192,13 +191,13 @@ export default function AdminProductImagesPage() {
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
                           <div className="font-medium">#{id}</div>
-                          <div className="text-xs text-muted-foreground line-clamp-1">{url}</div>
+                          <div className="text-sm text-muted-foreground line-clamp-1">{url}</div>
                         </td>
                         <td className="px-4 py-3">
                           <SafeImage src={url} alt="img" fallbackKey={id} className="h-12 w-24 rounded-xl border object-cover" />
                         </td>
                         <td className="px-4 py-3">
-                          <span className="rounded-full border bg-background/60 px-3 py-1 text-xs">{isPrimary ? "Primary" : "—"}</span>
+                          <span className="rounded-full border bg-background px-3 py-1 text-sm">{isPrimary ? "Primary" : "—"}</span>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
@@ -210,7 +209,7 @@ export default function AdminProductImagesPage() {
                             </Button>
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                              className="h-9 rounded-xl action-danger"
                               onClick={() => setDeleteId(id)}
                               disabled={!id}
                             >
@@ -239,7 +238,7 @@ export default function AdminProductImagesPage() {
             <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={create}>
+            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={create}>
               Create
             </Button>
           </div>
@@ -253,7 +252,7 @@ export default function AdminProductImagesPage() {
             <Button variant="outline" className="rounded-xl" onClick={() => setIsEditOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={saveUrl}>
+            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={saveUrl}>
               Save
             </Button>
           </div>

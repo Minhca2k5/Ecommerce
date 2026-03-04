@@ -35,7 +35,7 @@ export default function ConfirmDialog({
               "rounded-xl",
               variant === "danger"
                 ? "bg-rose-600 text-white hover:bg-rose-600/90"
-                : "bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95",
+                : "bg-primary text-primary-foreground hover:bg-primary/90",
             ].join(" ")}
             onClick={onConfirm}
             disabled={isLoading}

@@ -140,17 +140,16 @@ export default function AdminNotificationsPage() {
 
   return (
     <>
-      <Card className="border bg-background/75 shadow-sm backdrop-blur">
+      <Card className="border bg-background shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle>Notifications</CardTitle>
-            <div className="mt-1 text-sm text-muted-foreground">Filter, create, and update notifications.</div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
               Refresh
             </Button>
-            <Button className="h-9 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={openCreate}>
+            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               New notification
             </Button>
           </div>
@@ -170,9 +169,9 @@ export default function AdminNotificationsPage() {
             <Input value={qReferenceType} onChange={(e) => setQReferenceType(e.target.value)} placeholder="Reference type" className="rounded-xl" />
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+          <div className="table-shell">
             <table className="min-w-[900px] w-full text-sm">
-              <thead className="bg-muted/50 text-xs text-muted-foreground">
+              <thead className="bg-muted/50 text-sm text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Notification</th>
                   <th className="px-4 py-3 text-left font-medium">User</th>
@@ -204,12 +203,12 @@ export default function AdminNotificationsPage() {
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
                           <div className="font-medium">{getString(n, "title") ?? "-"}</div>
-                          <div className="text-xs text-muted-foreground line-clamp-1">{getString(n, "message") ?? ""}</div>
+                          <div className="text-sm text-muted-foreground line-clamp-1">{getString(n, "message") ?? ""}</div>
                         </td>
                         <td className="px-4 py-3">{getNumber(n, "userId") ?? "-"}</td>
                         <td className="px-4 py-3">
-                          <span className="rounded-full border bg-background/60 px-3 py-1 text-xs">{isRead ? "Read" : "Unread"}</span>
-                          <span className="ml-2 rounded-full border bg-background/60 px-3 py-1 text-xs">{isHidden ? "Hidden" : "Visible"}</span>
+                          <span className="rounded-full border bg-background px-3 py-1 text-sm">{isRead ? "Read" : "Unread"}</span>
+                          <span className="ml-2 rounded-full border bg-background px-3 py-1 text-sm">{isHidden ? "Hidden" : "Visible"}</span>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
@@ -227,7 +226,7 @@ export default function AdminNotificationsPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <div className="text-xs text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
@@ -285,7 +284,7 @@ export default function AdminNotificationsPage() {
             <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={save}>
+            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
               Save
             </Button>
           </div>

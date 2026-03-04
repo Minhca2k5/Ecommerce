@@ -502,7 +502,7 @@ export default function ChatbotWidget() {
           }
           setOpen((v) => !v);
         }}
-        className="fixed bottom-6 right-6 z-40 flex h-[72px] w-[72px] select-none items-center justify-center transition hover:-translate-y-1"
+        className="fixed bottom-6 right-6 z-40 flex h-[72px] w-[72px] select-none items-center justify-center transition "
       >
         <div className="relative">
           <svg viewBox="0 0 64 64" className="h-14 w-14 drop-shadow-[0_10px_16px_rgba(0,0,0,0.35)]" aria-hidden="true">
@@ -520,7 +520,7 @@ export default function ChatbotWidget() {
 
       {open ? createPortal(
         <div className="fixed bottom-24 right-6 z-50 w-[360px] sm:w-[760px]">
-          <div className="rounded-2xl border bg-background/95 shadow-xl backdrop-blur">
+          <div className="rounded-xl border bg-background shadow-md">
             <div className="flex items-center justify-between border-b px-4 py-3">
               <div className="text-sm font-semibold">Chatbot</div>
               <div className="flex items-center gap-2">
@@ -608,13 +608,13 @@ export default function ChatbotWidget() {
                   {isLoading ? <div className="text-sm text-muted-foreground">Loading...</div> : items.length ? (
                     <div className="space-y-2">
                       {items.map((item, idx) => (
-                        <div key={`${item.role}-${idx}`} className={`rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap ${item.role === "user" ? "ml-auto max-w-[80%] bg-primary text-primary-foreground" : "mr-auto max-w-[80%] bg-muted"}`}>
+                        <div key={`${item.role}-${idx}`} className={`rounded-xl px-3 py-2 text-sm whitespace-pre-wrap ${item.role === "user" ? "ml-auto max-w-[80%] bg-primary text-primary-foreground" : "mr-auto max-w-[80%] bg-muted"}`}>
                           {scope === "group" && item.role === "user" && item.senderName ? <div className="mb-1 text-[11px] opacity-80">{item.senderName}</div> : null}
                           {normalizeDisplayText(item.content)}
                         </div>
                       ))}
                       {isSending ? (
-                        <div className="mr-auto max-w-[80%] rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground">
+                        <div className="mr-auto max-w-[80%] rounded-xl bg-muted px-3 py-2 text-sm text-muted-foreground">
                           <span>Thinking</span>
                           <span className="ml-2 inline-flex items-center gap-1">
                             <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -628,7 +628,7 @@ export default function ChatbotWidget() {
                     <div className="space-y-2">
                       <div className="text-sm text-muted-foreground">Ask something...</div>
                       {isSending ? (
-                        <div className="mr-auto max-w-[80%] rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground">
+                        <div className="mr-auto max-w-[80%] rounded-xl bg-muted px-3 py-2 text-sm text-muted-foreground">
                           <span>Thinking</span>
                           <span className="ml-2 inline-flex items-center gap-1">
                             <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -648,7 +648,7 @@ export default function ChatbotWidget() {
                   ) : null}
                   <div className="flex items-center gap-2">
                   <input className="h-9 flex-1 rounded-xl border bg-background px-3 text-sm" placeholder="Ask something..." value={message} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void onSend(); } }} disabled={isSending} />
-                  <button type="button" onClick={onSend} disabled={isSending} className="h-9 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 px-3 text-sm text-white">{isSending ? "..." : "Send"}</button>
+                  <button type="button" onClick={onSend} disabled={isSending} className="h-9 rounded-xl bg-primary px-3 text-sm text-primary-foreground hover:bg-primary/90">{isSending ? "..." : "Send"}</button>
                   <button type="button" onClick={onVoiceInput} className="h-9 rounded-xl border px-2 text-xs">Mic</button>
                   <button type="button" onClick={() => fileInputRef.current?.click()} className="h-9 rounded-xl border px-2 text-xs">File</button>
                   <input ref={fileInputRef} type="file" className="hidden" accept=".txt,.md,.json,.xml,.yml,.yaml,.csv,.log,.pdf,.docx" onChange={(e) => { const f = e.target.files?.[0]; if (f) setPendingFile(f); e.currentTarget.value = ""; }} />

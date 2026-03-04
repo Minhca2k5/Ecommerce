@@ -34,7 +34,7 @@ export default function MomoQrPaymentPage() {
   const manualMomoAccountNumber =
     ((import.meta.env.VITE_MANUAL_MOMO_ACCOUNT_NUMBER as string | undefined) ||
       (import.meta.env.VITE_MOMO_ACCOUNT_NUMBER as string | undefined) ||
-      "").trim() || "Update in frontend/.env";
+      "").trim() || "-";
   const transferContent = `DH${orderId}`;
 
   useEffect(() => {
@@ -93,7 +93,7 @@ export default function MomoQrPaymentPage() {
       if (!payUrl) throw new Error(res.message || "No payment URL returned.");
       setMomoApiQrUrl(res.qrCodeUrl || null);
       window.open(payUrl, "_blank");
-      toast.push({ variant: "success", title: "MoMo sandbox", message: "Opened sandbox payment in a new tab." });
+      toast.push({ variant: "success", title: "MoMo", message: "Opened payment in a new tab." });
     } catch (e) {
       toast.push({ variant: "error", title: "MoMo failed", message: getErrorMessage(e, "Couldn't create MoMo payment.") });
     } finally {
@@ -109,7 +109,7 @@ export default function MomoQrPaymentPage() {
         title="Couldn't load payment page"
         description={error || "Order not found."}
         action={
-          <Button asChild className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button asChild className="rounded-xl bg-primary text-primary-foreground">
             <Link to="/orders">Back to orders</Link>
           </Button>
         }
@@ -122,23 +122,22 @@ export default function MomoQrPaymentPage() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+      <section className="page-section">
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-sm text-muted-foreground">MoMo QR Payment</div>
-            <div className="text-3xl font-semibold tracking-tight">Order #{orderId}</div>
+            <div className="text-2xl font-semibold">Order #{orderId}</div>
             <div className="mt-1 text-sm text-muted-foreground">
               Transfer exactly {formatCurrency(amount, currency)} with content {transferContent}.
             </div>
           </div>
-          <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
+          <Button asChild variant="outline" className="h-10 rounded-xl bg-background">
             <Link to={`/orders/${orderId}`}>Back to order</Link>
           </Button>
         </div>
       </section>
 
-      <Card className="mx-auto w-full max-w-2xl bg-background/70 backdrop-blur">
+      <Card className="mx-auto w-full max-w-2xl bg-background">
         <CardHeader>
           <CardTitle>Scan and transfer</CardTitle>
         </CardHeader>
@@ -147,26 +146,23 @@ export default function MomoQrPaymentPage() {
             <Button
               disabled={isMomoLoading || hasExistingPayment}
               onClick={onPayWithMomoSandbox}
-              className="h-11 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+              className="h-11 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              {isMomoLoading ? "Opening sandbox..." : "Pay with MoMo Sandbox"}
+              {isMomoLoading ? "Opening MoMo..." : "Pay with MoMo"}
             </Button>
           ) : null}
-          <div className="overflow-hidden rounded-2xl border bg-white p-3">
+          <div className="overflow-hidden rounded-xl border bg-white p-3">
             <img
               src={momoApiQrUrl || momoQrImage}
-              alt={momoApiQrUrl ? "MoMo API QR payment" : "MoMo QR payment"}
+              alt="MoMo QR payment"
               className="mx-auto max-h-[520px] w-auto object-contain"
             />
           </div>
-          <div className="grid gap-2 rounded-2xl border bg-background/60 p-4 text-sm">
+          <div className="grid gap-2 rounded-xl border bg-background p-4 text-sm">
             <div><span className="text-muted-foreground">Account:</span> <span className="font-medium">{manualMomoAccountName}</span></div>
             <div><span className="text-muted-foreground">Number:</span> <span className="font-medium">{manualMomoAccountNumber}</span></div>
             <div><span className="text-muted-foreground">Amount:</span> <span className="font-medium">{formatCurrency(amount, currency)}</span></div>
             <div><span className="text-muted-foreground">Transfer content:</span> <span className="font-semibold">{transferContent}</span></div>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            If account or number is wrong, update `VITE_MANUAL_MOMO_ACCOUNT_NAME` and `VITE_MANUAL_MOMO_ACCOUNT_NUMBER` in `frontend/.env`, then rebuild/restart frontend.
           </div>
           {hasExistingPayment ? (
             <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">
@@ -176,7 +172,7 @@ export default function MomoQrPaymentPage() {
           <Button
             disabled={isSubmitting || isMomoLoading || hasExistingPayment}
             onClick={onTransferred}
-            className="h-11 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+            className="h-11 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {isSubmitting ? "Submitting..." : "I've transferred"}
           </Button>

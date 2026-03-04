@@ -172,17 +172,16 @@ export default function AdminWarehousesPage() {
 
   return (
     <>
-      <Card className="border bg-background/75 shadow-sm backdrop-blur">
+      <Card className="border bg-background shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle>Warehouses</CardTitle>
-            <div className="mt-1 text-sm text-muted-foreground">Manage warehouses and toggle active status.</div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
               Refresh
             </Button>
-            <Button className="h-9 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={openCreate}>
+            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               New warehouse
             </Button>
           </div>
@@ -198,9 +197,9 @@ export default function AdminWarehousesPage() {
             </select>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+          <div className="table-shell">
             <table className="min-w-[760px] w-full text-sm">
-              <thead className="bg-muted/50 text-xs text-muted-foreground">
+              <thead className="bg-muted/50 text-sm text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Warehouse</th>
                   <th className="px-4 py-3 text-left font-medium">Address</th>
@@ -231,13 +230,13 @@ export default function AdminWarehousesPage() {
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
                           <div className="font-medium">{getString(w, "name") ?? "-"}</div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-sm text-muted-foreground">
                             {getString(w, "code") ?? "-"} • #{id}
                           </div>
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{formatAddress(w)}</td>
                         <td className="px-4 py-3">
-                          <span className={["rounded-full border px-3 py-1 text-xs", isActive ? "bg-emerald-500/10 text-emerald-700" : "bg-rose-500/10 text-rose-700"].join(" ")}>
+                          <span className={["rounded-full border px-3 py-1 text-sm", isActive ? "bg-emerald-500/10 text-emerald-700" : "bg-rose-500/10 text-rose-700"].join(" ")}>
                             {isActive ? "Active" : "Inactive"}
                           </span>
                         </td>
@@ -254,7 +253,7 @@ export default function AdminWarehousesPage() {
                             </Button>
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                              className="h-9 rounded-xl action-danger"
                               onClick={() => setDeleteId(id)}
                               disabled={!id}
                             >
@@ -271,7 +270,7 @@ export default function AdminWarehousesPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <div className="text-xs text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
@@ -322,7 +321,7 @@ export default function AdminWarehousesPage() {
             <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={save}>
+            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
               Save
             </Button>
           </div>
@@ -331,11 +330,11 @@ export default function AdminWarehousesPage() {
 
       <Modal isOpen={isDetailsOpen} title={detailsId ? `Warehouse #${detailsId}` : "Warehouse"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">{getString(details ?? {}, "name") ?? "-"}</div>
-            <div className="mt-1 text-xs text-muted-foreground">{formatAddress(details ?? {})}</div>
+            <div className="mt-1 text-sm text-muted-foreground">{formatAddress(details ?? {})}</div>
           </div>
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">Inventories</div>
             <div className="mt-2 text-sm text-muted-foreground">This response may include inventory details depending on backend mapping.</div>
           </div>

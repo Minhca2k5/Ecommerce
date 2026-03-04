@@ -332,7 +332,7 @@ export default function CheckoutPage() {
         title="Couldn't load checkout"
         description={error}
         action={
-          <Button onClick={() => window.location.reload()} className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button onClick={() => window.location.reload()} className="rounded-xl bg-primary text-primary-foreground">
             Retry
           </Button>
         }
@@ -346,7 +346,7 @@ export default function CheckoutPage() {
         title="Nothing to checkout"
         description="Your cart is empty."
         action={
-          <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground">
             <Link to="/products">Browse products</Link>
           </Button>
         }
@@ -360,7 +360,7 @@ export default function CheckoutPage() {
         title="Add an address first"
         description="Checkout requires at least one delivery address."
         action={
-          <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground">
             <Link to="/me/addresses">Go to address book</Link>
           </Button>
         }
@@ -370,15 +370,14 @@ export default function CheckoutPage() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+      <section className="page-section">
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-sm text-muted-foreground">Checkout</div>
-            <div className="text-3xl font-semibold tracking-tight">Place your order</div>
+            <div className="text-2xl font-semibold">Place your order</div>
             <div className="mt-1 text-sm text-muted-foreground">Confirm address, extras, and create the order.</div>
           </div>
-          <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
+          <Button asChild variant="outline" className="h-10 rounded-xl bg-background">
             <Link to="/cart">Back to cart</Link>
           </Button>
         </div>
@@ -386,7 +385,7 @@ export default function CheckoutPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-4">
-          <Card className="overflow-hidden bg-background/70 backdrop-blur">
+          <Card className="overflow-hidden bg-background">
             <CardHeader className="relative">
               <CardTitle>{isGuest ? "Guest shipping info" : "Delivery address"}</CardTitle>
             </CardHeader>
@@ -395,38 +394,38 @@ export default function CheckoutPage() {
                 <div className="space-y-2">
                   <div className="text-xs text-muted-foreground">Enter shipping info for guest checkout.</div>
                   <Input
-                    className="rounded-xl bg-background/70 backdrop-blur"
+                    className="rounded-xl bg-background"
                     value={guestAddress.fullName}
                     onChange={(e) => setGuestAddress((s) => ({ ...s, fullName: e.target.value }))}
                     placeholder="Full name"
                   />
                   <Input
-                    className="rounded-xl bg-background/70 backdrop-blur"
+                    className="rounded-xl bg-background"
                     value={guestAddress.phone}
                     onChange={(e) => setGuestAddress((s) => ({ ...s, phone: e.target.value }))}
                     placeholder="Phone number"
                   />
                   <Input
-                    className="rounded-xl bg-background/70 backdrop-blur"
+                    className="rounded-xl bg-background"
                     value={guestAddress.line1}
                     onChange={(e) => setGuestAddress((s) => ({ ...s, line1: e.target.value }))}
                     placeholder="Address line"
                   />
                   <div className="grid gap-2 sm:grid-cols-2">
                     <Input
-                      className="rounded-xl bg-background/70 backdrop-blur"
+                      className="rounded-xl bg-background"
                       value={guestAddress.city}
                       onChange={(e) => setGuestAddress((s) => ({ ...s, city: e.target.value }))}
                       placeholder="City"
                     />
                     <Input
-                      className="rounded-xl bg-background/70 backdrop-blur"
+                      className="rounded-xl bg-background"
                       value={guestAddress.country}
                       onChange={(e) => setGuestAddress((s) => ({ ...s, country: e.target.value }))}
                       placeholder="Country"
                     />
                   </div>
-                  <div className="rounded-xl border bg-background/60 px-3 py-2 text-xs text-muted-foreground">
+                  <div className="rounded-xl border bg-background px-3 py-2 text-xs text-muted-foreground">
                     Snapshot id (auto): <span className="font-medium text-foreground">{guestAddressSnapshotId || "-"}</span>
                   </div>
                 </div>
@@ -442,8 +441,8 @@ export default function CheckoutPage() {
                           type="button"
                           onClick={() => setSelectedAddressId(id)}
                           className={[
-                            "pressable rounded-2xl border p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md",
-                            active ? "border-primary bg-primary/10 ring-1 ring-primary/20" : "bg-background/70 hover:bg-muted",
+                            "pressable rounded-xl border p-3 text-left shadow-sm transition hover:shadow-md",
+                            active ? "border-primary bg-primary/10 ring-1 ring-primary/20" : "bg-background hover:bg-muted",
                           ].join(" ")}
                         >
                           <div className="flex items-start justify-between gap-2">
@@ -457,7 +456,7 @@ export default function CheckoutPage() {
                       );
                     })}
                   </div>
-                  <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
+                  <Button asChild variant="outline" className="h-10 rounded-xl bg-background">
                     <Link to="/me/addresses">Manage addresses</Link>
                   </Button>
                 </>
@@ -465,19 +464,19 @@ export default function CheckoutPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-background/70 backdrop-blur">
+          <Card className="bg-background">
             <CardHeader>
               <CardTitle>Extras</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <div className="text-xs font-medium text-muted-foreground">Shipping fee</div>
-                <Input className="rounded-xl bg-background/70 backdrop-blur" value={shippingFee} onChange={(e) => setShippingFee(e.target.value)} inputMode="numeric" />
+                <Input className="rounded-xl bg-background" value={shippingFee} onChange={(e) => setShippingFee(e.target.value)} inputMode="numeric" />
               </div>
               <div className="space-y-2">
                 <div className="text-xs font-medium text-muted-foreground">Currency</div>
                 <select
-                  className="h-10 w-full rounded-xl border bg-background/70 px-3 text-sm backdrop-blur"
+                  className="h-10 w-full rounded-xl border bg-background px-3 text-sm"
                   value={currency}
                   onChange={(e) => setSelectedCurrency(e.target.value)}
                 >
@@ -495,7 +494,7 @@ export default function CheckoutPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="rounded-xl bg-background/70 backdrop-blur"
+                    className="rounded-xl bg-background"
                     onClick={() => {
                       setIsVoucherPickerOpen(true);
                       setVoucherView("eligible");
@@ -511,7 +510,7 @@ export default function CheckoutPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="rounded-xl bg-background/70 text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 backdrop-blur"
+                      className="rounded-xl bg-background action-danger"
                       onClick={() => {
                         setAppliedVoucher(null);
                         void refreshDiscount(null);
@@ -520,13 +519,13 @@ export default function CheckoutPage() {
                       Remove
                     </Button>
                   ) : null}
-                  <Button asChild variant="outline" className="rounded-xl bg-background/70 backdrop-blur">
+                  <Button asChild variant="outline" className="rounded-xl bg-background">
                     <Link to="/me/vouchers">My vouchers</Link>
                   </Button>
                 </div>
                 )}
                 {!isGuest && appliedVoucher?.id ? (
-                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 backdrop-blur">
+                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
                     Applied: <span className="font-medium">{appliedVoucher.code}</span> — {appliedVoucher.name || "Voucher"}
                   </div>
                 ) : !isGuest ? (
@@ -537,7 +536,7 @@ export default function CheckoutPage() {
           </Card>
         </div>
 
-        <Card className="sticky top-24 overflow-hidden bg-background/70 backdrop-blur shadow-sm">
+        <Card className="sticky top-24 overflow-hidden bg-background shadow-sm">
           <CardHeader className="relative">
             <CardTitle>Order summary</CardTitle>
           </CardHeader>
@@ -552,21 +551,21 @@ export default function CheckoutPage() {
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Discount</span>
-              <span className={discount > 0 ? "text-emerald-600" : ""}>- {money(discount, currency)}</span>
+              <span className={discount > 0 ? "text-success" : ""}>- {money(discount, currency)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Tax</span>
               <span>{money(tax, currency)}</span>
             </div>
             {discountStatus === "loading" ? <div className="text-xs text-muted-foreground">Calculating discount…</div> : null}
-            {discountStatus === "error" && discountError ? <div className="text-xs text-rose-600">{discountError}</div> : null}
+            {discountStatus === "error" && discountError ? <div className="text-xs text-danger">{discountError}</div> : null}
             <div className="h-px bg-border" />
             <div className="flex items-center justify-between text-base font-semibold">
               <span>Total</span>
               <span>{money(total, currency)}</span>
             </div>
 
-            <Button disabled={!canSubmit} onClick={placeOrder} className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
+            <Button disabled={!canSubmit} onClick={placeOrder} className="h-10 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
               {isSubmitting ? "Placing..." : "Place order"}
             </Button>
           </CardContent>
@@ -575,14 +574,14 @@ export default function CheckoutPage() {
 
       {isVoucherPickerOpen ? (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4-sm sm:items-center"
           role="dialog"
           aria-modal="true"
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsVoucherPickerOpen(false);
           }}
         >
-          <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-3xl border bg-background/90 shadow-xl backdrop-blur max-h-[85vh]">
+          <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-xl border bg-background shadow-md max-h-[85vh]">
             <div className="flex items-center justify-between gap-3 border-b p-4">
               <div>
                 <div className="text-sm text-muted-foreground">Checkout</div>
@@ -592,7 +591,7 @@ export default function CheckoutPage() {
                 {voucherView === "search" ? (
                   <Button
                     variant="outline"
-                    className="h-9 rounded-xl bg-background/70 backdrop-blur"
+                    className="h-9 rounded-xl bg-background"
                     onClick={() => {
                       void resetVoucherSearch();
                     }}
@@ -600,7 +599,7 @@ export default function CheckoutPage() {
                     Reset
                   </Button>
                 ) : null}
-                <Button variant="outline" className="h-9 rounded-xl bg-background/70 backdrop-blur" onClick={() => setIsVoucherPickerOpen(false)}>
+                <Button variant="outline" className="h-9 rounded-xl bg-background" onClick={() => setIsVoucherPickerOpen(false)}>
                   Close
                 </Button>
               </div>
@@ -614,7 +613,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex gap-2">
                   <Input
-                    className="h-10 w-56 rounded-xl bg-background/70 backdrop-blur"
+                    className="h-10 w-56 rounded-xl bg-background"
                     value={searchCode}
                     onChange={(e) => {
                       setSearchCode(e.target.value);
@@ -623,7 +622,7 @@ export default function CheckoutPage() {
                     }}
                     placeholder="e.g. SAVE10"
                   />
-                  <Button className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={runVoucherSearch} disabled={!searchCode.trim() || searchLoading}>
+                  <Button className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={runVoucherSearch} disabled={!searchCode.trim() || searchLoading}>
                     {searchLoading ? "Searching..." : "Search"}
                   </Button>
                 </div>
@@ -663,24 +662,24 @@ export default function CheckoutPage() {
               </div>
 
               {voucherView === "search" && searchError ? (
-                <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-700">{searchError}</div>
+                <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-700">{searchError}</div>
               ) : null}
               {voucherView === "eligible" && eligibleError ? (
-                <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-700">{eligibleError}</div>
+                <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-700">{eligibleError}</div>
               ) : null}
 
               {voucherView === "eligible" && eligibleLoading ? (
                 <div className="space-y-2">
-                  <div className="h-20 animate-pulse rounded-2xl border bg-muted" />
-                  <div className="h-20 animate-pulse rounded-2xl border bg-muted" />
+                  <div className="h-20 animate-pulse rounded-xl border bg-muted" />
+                  <div className="h-20 animate-pulse rounded-xl border bg-muted" />
                 </div>
               ) : voucherView === "search" && searchLoading ? (
                 <div className="space-y-2">
-                  <div className="h-20 animate-pulse rounded-2xl border bg-muted" />
-                  <div className="h-20 animate-pulse rounded-2xl border bg-muted" />
+                  <div className="h-20 animate-pulse rounded-xl border bg-muted" />
+                  <div className="h-20 animate-pulse rounded-xl border bg-muted" />
                 </div>
               ) : (voucherView === "search" ? searchResults : eligibleItems).length === 0 ? (
-                <div className="rounded-2xl border bg-background/60 p-3 text-sm text-muted-foreground">
+                <div className="rounded-xl border bg-background p-3 text-sm text-muted-foreground">
                   {voucherView === "search" ? "No vouchers found for this code." : "No eligible vouchers for this order total."}
                 </div>
               ) : (
@@ -702,7 +701,7 @@ export default function CheckoutPage() {
                           toast.push({ variant: "success", title: "Voucher selected", message: v.code ? `Applied ${v.code}.` : "Voucher applied." });
                         }}
                         className={[
-                          "w-full rounded-2xl border bg-background/60 p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md",
+                          "w-full rounded-xl border bg-background p-3 text-left shadow-sm transition hover:shadow-md",
                           disabled ? "opacity-60" : "hover:bg-muted",
                           appliedVoucher?.id && v.id && Number(appliedVoucher.id) === Number(v.id) ? "border-primary ring-1 ring-primary/20" : "",
                         ].join(" ")}

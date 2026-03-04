@@ -18,12 +18,12 @@ type Totals = {
 function StatCard({ label, value, to }: { label: string; value: number | null; to: string }) {
   return (
     <Link to={to} className="block">
-      <Card className="shine pressable border bg-background/75 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg">
+      <Card className="pressable border bg-background shadow-sm transition hover:shadow-md">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-semibold tracking-tight">{typeof value === "number" ? value.toLocaleString() : "—"}</div>
+          <div className="text-2xl font-semibold">{typeof value === "number" ? value.toLocaleString() : "-"}</div>
         </CardContent>
       </Card>
     </Link>
@@ -33,7 +33,7 @@ function StatCard({ label, value, to }: { label: string; value: number | null; t
 function MiniBarChart({ title, data }: { title: string; data: Array<{ label: string; value: number }> }) {
   const max = Math.max(1, ...data.map((d) => d.value));
   return (
-    <Card className="border bg-background/75 shadow-sm backdrop-blur">
+    <Card className="border bg-background shadow-sm">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
@@ -43,12 +43,12 @@ function MiniBarChart({ title, data }: { title: string; data: Array<{ label: str
         ) : (
           data.map((d) => (
             <div key={d.label} className="space-y-1">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span className="font-medium text-foreground">{d.label}</span>
                 <span>{d.value.toLocaleString()}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full border bg-background/60">
-                <div className="h-full rounded-full bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500" style={{ width: `${Math.round((d.value / max) * 100)}%` }} />
+              <div className="h-2 overflow-hidden rounded-full border bg-background">
+                <div className="h-full rounded-full bg-primary/70" style={{ width: `${Math.round((d.value / max) * 100)}%` }} />
               </div>
             </div>
           ))
@@ -83,7 +83,7 @@ function PieChart({ title, data }: { title: string; data: Array<{ label: string;
   });
 
   return (
-    <Card className="border bg-background/75 shadow-sm backdrop-blur">
+    <Card className="border bg-background shadow-sm">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
@@ -101,7 +101,7 @@ function PieChart({ title, data }: { title: string; data: Array<{ label: string;
             <div className="text-sm text-muted-foreground">No data yet.</div>
           ) : (
             data.map((d, idx) => (
-              <div key={d.label} className="flex items-center justify-between gap-3 text-xs">
+              <div key={d.label} className="flex items-center justify-between gap-3 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full" style={{ background: colors[idx % colors.length] }} />
                   <span className="text-muted-foreground">{d.label}</span>
@@ -133,7 +133,7 @@ function LineChart({ title, data }: { title: string; data: Array<{ label: string
     .join(" ");
 
   return (
-    <Card className="border bg-background/75 shadow-sm backdrop-blur">
+    <Card className="border bg-background shadow-sm">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
@@ -152,7 +152,7 @@ function LineChart({ title, data }: { title: string; data: Array<{ label: string
                 </linearGradient>
               </defs>
             </svg>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>{data[0]?.label}</span>
               <span>{data[data.length - 1]?.label}</span>
             </div>
@@ -166,7 +166,7 @@ function LineChart({ title, data }: { title: string; data: Array<{ label: string
 function BarChart({ title, data }: { title: string; data: Array<{ label: string; value: number }> }) {
   const max = Math.max(1, ...data.map((d) => d.value));
   return (
-    <Card className="border bg-background/75 shadow-sm backdrop-blur">
+    <Card className="border bg-background shadow-sm">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
@@ -176,11 +176,11 @@ function BarChart({ title, data }: { title: string; data: Array<{ label: string;
         ) : (
           data.map((d) => (
             <div key={d.label} className="grid gap-1">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span className="font-medium text-foreground">{d.label}</span>
                 <span>{d.value.toLocaleString()}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full border bg-background/60">
+              <div className="h-2 overflow-hidden rounded-full border bg-background">
                 <div className="h-full rounded-full bg-primary/60" style={{ width: `${Math.round((d.value / max) * 100)}%` }} />
               </div>
             </div>
@@ -293,13 +293,10 @@ export default function AdminHomePage() {
 
   return (
     <div className="grid gap-4">
-      <Card className="overflow-hidden border bg-background/75 shadow-sm backdrop-blur">
+      <Card className="overflow-hidden border bg-background shadow-sm">
         <CardHeader>
           <CardTitle>Overview</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          Use the dashboard below for quick insights, or use the sidebar to manage resources.
-        </CardContent>
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -310,23 +307,7 @@ export default function AdminHomePage() {
         <StatCard label="Reviews" value={totals.reviews} to="/admin/reviews" />
         <StatCard label="Vouchers" value={totals.vouchers} to="/admin/vouchers" />
         <StatCard label="Payments" value={totals.payments} to="/admin/payments" />
-        <Card className="border bg-background/75 shadow-sm backdrop-blur">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Quick links</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            <Link to="/admin/orders" className="rounded-xl border bg-background/60 px-3 py-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">
-              Orders
-            </Link>
-            <Link to="/admin/products" className="rounded-xl border bg-background/60 px-3 py-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">
-              Products
-            </Link>
-            <Link to="/admin/users" className="rounded-xl border bg-background/60 px-3 py-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">
-              Users
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+</div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <PieChart title="Orders by status (last 50)" data={statusChartData} />
@@ -337,7 +318,7 @@ export default function AdminHomePage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         {groups.map((g) => (
-          <Card key={g} className="shine border bg-background/75 shadow-sm backdrop-blur">
+          <Card key={g} className="border bg-background shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">{g}</CardTitle>
             </CardHeader>
@@ -348,7 +329,7 @@ export default function AdminHomePage() {
                   <Link
                     key={i.to}
                     to={i.to}
-                    className="pressable inline-flex items-center gap-2 rounded-xl border bg-background/60 px-3 py-2 text-sm text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground hover:shadow-md"
+                    className="pressable inline-flex items-center gap-2 rounded-xl border bg-background px-3 py-2 text-sm text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground hover:shadow-md"
                   >
                     <i.icon className="h-4 w-4" />
                     {i.label}

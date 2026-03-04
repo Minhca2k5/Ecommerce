@@ -98,11 +98,10 @@ export default function AdminPaymentsPage() {
 
   return (
     <>
-      <Card className="border bg-background/75 shadow-sm backdrop-blur">
+      <Card className="border bg-background shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle>Payments</CardTitle>
-            <div className="mt-1 text-sm text-muted-foreground">Search payments and update status.</div>
           </div>
           <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
             Refresh
@@ -123,9 +122,9 @@ export default function AdminPaymentsPage() {
             <Input value={qCurrency} onChange={(e) => setQCurrency(e.target.value)} placeholder="Currency" className="rounded-xl" />
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+          <div className="table-shell">
             <table className="min-w-[820px] w-full text-sm">
-              <thead className="bg-muted/50 text-xs text-muted-foreground">
+              <thead className="bg-muted/50 text-sm text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Payment</th>
                   <th className="px-4 py-3 text-left font-medium">Order</th>
@@ -162,11 +161,11 @@ export default function AdminPaymentsPage() {
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
                           <div className="font-medium">#{id}</div>
-                          <div className="text-xs text-muted-foreground">{getString(p, "createdAt") ?? ""}</div>
+                          <div className="text-sm text-muted-foreground">{getString(p, "createdAt") ?? ""}</div>
                         </td>
                         <td className="px-4 py-3">{orderId ?? "-"}</td>
                         <td className="px-4 py-3">
-                          <span className="rounded-full border bg-background/60 px-3 py-1 text-xs">{status}</span>
+                          <span className="rounded-full border bg-background px-3 py-1 text-sm">{status}</span>
                         </td>
                         <td className="px-4 py-3">{method}</td>
                         <td className="px-4 py-3">{formatCurrency(amount, currency)}</td>
@@ -178,7 +177,7 @@ export default function AdminPaymentsPage() {
                             <select
                               value={status}
                               onChange={(e) => void updateStatus(id, e.target.value)}
-                              className="h-9 rounded-xl border bg-background px-3 text-xs"
+                              className="h-9 rounded-xl border bg-background px-3 text-sm"
                               disabled={!id}
                             >
                               {paymentStatuses.map((s) => (
@@ -198,7 +197,7 @@ export default function AdminPaymentsPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <div className="text-xs text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
@@ -227,16 +226,16 @@ export default function AdminPaymentsPage() {
 
       <Modal isOpen={isDetailsOpen} title={detailsId ? `Payment #${detailsId}` : "Payment"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">
               {formatCurrency(Number((details ?? {})["amount"] ?? 0), getString(details ?? {}, "currency") ?? "VND")}
             </div>
-            <div className="mt-1 text-xs text-muted-foreground">
+            <div className="mt-1 text-sm text-muted-foreground">
               Order: {getNumber(details ?? {}, "orderId") ?? "-"} • Method: {getString(details ?? {}, "method") ?? "-"}
             </div>
           </div>
 
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">Status</div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <select
@@ -253,7 +252,7 @@ export default function AdminPaymentsPage() {
                   </option>
                 ))}
               </select>
-              <div className="text-xs text-muted-foreground">Updated at: {getString(details ?? {}, "updatedAt") ?? "-"}</div>
+              <div className="text-sm text-muted-foreground">Updated at: {getString(details ?? {}, "updatedAt") ?? "-"}</div>
             </div>
           </div>
 

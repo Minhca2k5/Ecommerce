@@ -53,7 +53,7 @@ export default function NotificationsPage() {
         title="No notifications"
         description="You're all caught up."
         action={
-          <Button className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={() => navigate("/")}>
+          <Button className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => navigate("/")}>
             Go home
           </Button>
         }
@@ -63,19 +63,14 @@ export default function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
-        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="text-sm text-muted-foreground">Account</div>
-            <div className="text-3xl font-semibold tracking-tight">Notifications</div>
-            <div className="mt-1 text-sm text-muted-foreground">Click a notification to open the referenced page.</div>
-          </div>
+      <section className="page-section">
+                <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="text-2xl font-semibold">Notifications</div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur" onClick={() => notifications.markAllRead()}>
+            <Button variant="outline" className="h-10 rounded-xl bg-background" onClick={() => notifications.markAllRead()}>
               Mark all read
             </Button>
-            <Button variant="outline" className="h-10 rounded-xl border-rose-500/20 bg-background/70 text-rose-700 hover:bg-rose-500/10 backdrop-blur" onClick={() => notifications.clear()}>
+            <Button variant="outline" className="h-10 rounded-xl border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10" onClick={() => notifications.clear()}>
               Clear all
             </Button>
           </div>
@@ -87,8 +82,8 @@ export default function NotificationsPage() {
           <Card
             key={String(n.id)}
             className={[
-              "pressable relative overflow-hidden bg-background/70 backdrop-blur shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg",
-              n.isRead ? "opacity-90 ring-1 ring-border/40" : "shine ring-1 ring-primary/25",
+              "pressable relative overflow-hidden bg-background shadow-sm transition hover:shadow-md",
+              n.isRead ? "opacity-90 ring-1 ring-border/40" : "ring-1 ring-primary/25",
             ].join(" ")}
             onClick={() => {
               const id = Number(n.id ?? 0);
@@ -99,10 +94,8 @@ export default function NotificationsPage() {
           >
             <div
               className={[
-                "pointer-events-none absolute inset-0 opacity-25",
-                n.isRead
-                  ? "[background:radial-gradient(60%_60%_at_20%_20%,rgba(239,68,68,.12),transparent),radial-gradient(50%_60%_at_75%_40%,rgba(16,185,129,.08),transparent)]"
-                  : "[background:radial-gradient(60%_60%_at_20%_20%,rgba(16,185,129,.14),transparent),radial-gradient(50%_60%_at_75%_40%,rgba(239,68,68,.10),transparent)]",
+                "pointer-events-none absolute inset-0",
+                n.isRead ? "bg-muted/40" : "bg-primary/5",
               ].join(" ")}
             />
             <CardHeader className="relative">
@@ -133,7 +126,7 @@ export default function NotificationsPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-xl bg-background/70 backdrop-blur"
+                  className="rounded-xl bg-background"
                   onClick={(e) => {
                     e.stopPropagation();
                     const id = Number(n.id ?? 0);
@@ -147,7 +140,7 @@ export default function NotificationsPage() {
                     <>
                       <Button
                         type="button"
-                        className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+                        className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
                         onClick={async (e) => {
                           e.stopPropagation();
                           const id = Number(n.id ?? 0);
@@ -174,7 +167,7 @@ export default function NotificationsPage() {
                   ) : (
                     <Button
                       type="button"
-                      className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+                      className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
                       onClick={(e) => {
                         e.stopPropagation();
                         const id = Number(n.id ?? 0);

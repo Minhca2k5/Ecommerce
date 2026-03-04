@@ -88,16 +88,14 @@ export default function RegisterPage() {
 
   return (
     <div className="mx-auto max-w-md space-y-4">
-      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
-        <div className="relative">
-          <div className="text-sm text-muted-foreground">Welcome</div>
-          <div className="mt-1 text-3xl font-semibold tracking-tight">Create account</div>
+      <section className="page-section">
+                <div className="relative">
+          <div className="mt-1 text-2xl font-semibold">Create account</div>
           <div className="mt-1 text-sm text-muted-foreground">Two-step verification via email OTP.</div>
         </div>
       </section>
 
-      <Card className="overflow-hidden bg-background/70 backdrop-blur">
+      <Card className="overflow-hidden bg-background">
         <CardHeader className="relative"><CardTitle>{otpRequested ? "Verify email" : "Create account"}</CardTitle></CardHeader>
         <CardContent className="relative">
           <form onSubmit={onSubmit} className="space-y-4">
@@ -112,7 +110,7 @@ export default function RegisterPage() {
             {otpRequested ? (
               <>
                 <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="6-digit verification code" className="rounded-xl" />
-                <div className={`text-xs ${otpExpired ? "text-rose-600" : "text-muted-foreground"}`}>
+                <div className={`text-xs ${otpExpired ? "text-danger" : "text-muted-foreground"}`}>
                   {otpExpired
                     ? "Verification code expired. Please request a new code."
                     : `Code expires in: ${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, "0")}`}
@@ -121,7 +119,7 @@ export default function RegisterPage() {
             ) : null}
             {error ? <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
 
-            <Button type="submit" disabled={!canSubmit} className="h-10 w-full rounded-xl bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-emerald-500 text-white">
+            <Button type="submit" disabled={!canSubmit} className="h-10 w-full rounded-xl bg-primary text-primary-foreground">
               {isLoading ? (otpRequested ? "Verifying..." : "Sending code...") : (otpRequested ? "Verify and create" : "Send verification code")}
             </Button>
 

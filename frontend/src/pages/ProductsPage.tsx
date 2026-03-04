@@ -114,20 +114,17 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+      <section className="page-section">
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="text-sm text-muted-foreground">Browse</div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Products</h1>
-            <div className="mt-1 text-xs text-muted-foreground">Search, filter by category, and paginate results.</div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="outline"
-              className="h-9 rounded-xl bg-background/70 backdrop-blur"
+              className="h-9 rounded-xl bg-background"
               onClick={() => {
                 const next = new URLSearchParams(searchParams);
                 next.delete("name");
@@ -142,7 +139,7 @@ export default function ProductsPage() {
             <Button
               type="button"
               variant="outline"
-              className="h-9 rounded-xl bg-background/70 backdrop-blur"
+              className="h-9 rounded-xl bg-background"
               onClick={() => {
                 const next = new URLSearchParams(searchParams);
                 next.set("page", String(Math.max(0, page - 1)));
@@ -155,7 +152,7 @@ export default function ProductsPage() {
             <Button
               type="button"
               variant="outline"
-              className="h-9 rounded-xl bg-background/70 backdrop-blur"
+              className="h-9 rounded-xl bg-background"
               onClick={() => {
                 const next = new URLSearchParams(searchParams);
                 next.set("page", String(page + 1));
@@ -170,15 +167,12 @@ export default function ProductsPage() {
       </section>
 
       {hasNewProducts ? (
-        <div className="rounded-2xl border bg-background/70 p-4 text-sm shadow-sm backdrop-blur">
+        <div className="rounded-xl border bg-background p-4 text-sm shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div className="text-sm font-medium">New products are available.</div>
-              <div className="text-xs text-muted-foreground">Refresh to load the latest catalog updates.</div>
-            </div>
+            <div className="text-sm font-medium">New products are available.</div>
             <Button
               type="button"
-              className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white"
+              className="rounded-xl bg-primary text-primary-foreground"
               onClick={() => {
                 setHasNewProducts(false);
                 setRefreshKey((prev) => prev + 1);
@@ -191,13 +185,12 @@ export default function ProductsPage() {
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-        <Card className="h-fit shine bg-background/70 backdrop-blur lg:sticky lg:top-24">
+        <Card className="h-fit bg-background lg:sticky lg:top-24">
           <CardHeader>
             <CardTitle className="text-base">Filters</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <div className="text-xs font-medium text-muted-foreground">Search</div>
               <Input
                 placeholder="Product name..."
                 value={name}
@@ -208,15 +201,13 @@ export default function ProductsPage() {
                   setSearchParams(next, { replace: true });
                 }}
               />
-              <div className="text-[11px] text-muted-foreground">Powered by Elasticsearch when available.</div>
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-medium text-muted-foreground">Category</div>
               <div className="flex flex-wrap gap-2 max-lg:overflow-auto max-lg:pb-1 max-lg:[-ms-overflow-style:none] max-lg:[scrollbar-width:none] max-lg:[&::-webkit-scrollbar]:hidden">
                 <button
                   type="button"
-                  className={`pressable rounded-full border px-3 py-1 text-xs shadow-sm transition hover:-translate-y-0.5 ${
+                  className={`pressable rounded-full border px-3 py-1 text-xs shadow-sm transition ${
                     categoryId ? "bg-background" : "border-primary bg-primary text-primary-foreground"
                   }`}
                   onClick={() => {
@@ -236,7 +227,7 @@ export default function ProductsPage() {
                     <button
                       key={id}
                       type="button"
-                      className={`pressable rounded-full border px-3 py-1 text-xs shadow-sm transition hover:-translate-y-0.5 ${
+                      className={`pressable rounded-full border px-3 py-1 text-xs shadow-sm transition ${
                         active
                           ? "border-primary bg-primary text-primary-foreground"
                           : "bg-background hover:bg-muted"
@@ -271,55 +262,41 @@ export default function ProductsPage() {
             <EmptyState title="No products" description="Try adjusting your filters." />
           ) : (
             <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border bg-background/70 p-3 text-xs text-muted-foreground shadow-sm backdrop-blur">
-                <div>
-                  Showing <span className="font-semibold text-foreground">{products.length}</span> of{" "}
-                  <span className="font-semibold text-foreground">{data?.totalElements ?? products.length}</span> items
-                </div>
-                <div>
-                  Page <span className="font-semibold text-foreground">{page + 1}</span> /{" "}
-                  <span className="font-semibold text-foreground">{data?.totalPages ?? 1}</span>
-                </div>
-              </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {products.map((p, index) => {
                   const id = getNumber(p, "id") ?? index + 1;
                   return <ProductCard key={String(id)} product={p} href={`/products/${id}`} />;
                 })}
               </div>
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-xs text-muted-foreground">
-                  Page {page + 1} / {data?.totalPages ?? 1} • {data?.totalElements ?? products.length} items
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      const next = new URLSearchParams(searchParams);
-                      next.set("page", String(Math.max(0, page - 1)));
-                      setSearchParams(next, { replace: true });
-                    }}
-                    disabled={isLoading || page <= 0}
-                  >
-                    Prev
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      const next = new URLSearchParams(searchParams);
-                      next.set("page", String(page + 1));
-                      setSearchParams(next, { replace: true });
-                    }}
-                    disabled={isLoading || Boolean(data?.last)}
-                  >
-                    Next
-                  </Button>
-                </div>
+              <div className="flex items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const next = new URLSearchParams(searchParams);
+                    next.set("page", String(Math.max(0, page - 1)));
+                    setSearchParams(next, { replace: true });
+                  }}
+                  disabled={isLoading || page <= 0}
+                >
+                  Prev
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const next = new URLSearchParams(searchParams);
+                    next.set("page", String(page + 1));
+                    setSearchParams(next, { replace: true });
+                  }}
+                  disabled={isLoading || Boolean(data?.last)}
+                >
+                  Next
+                </Button>
               </div>
             </div>
-          )}
+          )
+        }
         </div>
       </div>
     </div>

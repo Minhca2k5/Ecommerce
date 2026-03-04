@@ -68,11 +68,10 @@ export default function AdminVoucherUsesPage() {
   }, [mode, query]);
 
   return (
-    <Card className="border bg-background/75 shadow-sm backdrop-blur">
+    <Card className="border bg-background shadow-sm">
       <CardHeader className="flex flex-row items-start justify-between gap-3">
         <div>
           <CardTitle>Voucher uses</CardTitle>
-          <div className="mt-1 text-sm text-muted-foreground">Track voucher usage across users and orders.</div>
         </div>
         <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
           Refresh
@@ -91,9 +90,9 @@ export default function AdminVoucherUsesPage() {
           <Input value={qVoucherId} onChange={(e) => setQVoucherId(e.target.value)} placeholder="voucherId" className="rounded-xl" disabled={mode !== "byVoucher"} />
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border bg-background/70">
+        <div className="table-shell">
           <table className="min-w-[900px] w-full text-sm">
-            <thead className="bg-muted/50 text-xs text-muted-foreground">
+            <thead className="bg-muted/50 text-sm text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 text-left font-medium">Use</th>
                 <th className="px-4 py-3 text-left font-medium">Voucher</th>
@@ -122,7 +121,7 @@ export default function AdminVoucherUsesPage() {
                   <tr key={String(getNumber(u, "id") ?? idx)} className="border-t">
                     <td className="px-4 py-3">
                       <div className="font-medium">#{getNumber(u, "id") ?? "-"}</div>
-                      <div className="text-xs text-muted-foreground">{getString(u, "createdAt") ?? ""}</div>
+                      <div className="text-sm text-muted-foreground">{getString(u, "createdAt") ?? ""}</div>
                     </td>
                     <td className="px-4 py-3">{getNumber(u, "voucherId") ?? "-"}</td>
                     <td className="px-4 py-3">{getNumber(u, "userId") ?? "-"}</td>
@@ -136,7 +135,7 @@ export default function AdminVoucherUsesPage() {
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <div className="text-xs text-muted-foreground">
+          <div className="text-sm text-muted-foreground">
             Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
           </div>
           <div className="flex items-center gap-2">

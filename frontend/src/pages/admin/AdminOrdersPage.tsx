@@ -109,11 +109,10 @@ export default function AdminOrdersPage() {
 
   return (
     <>
-      <Card className="border bg-background/75 shadow-sm backdrop-blur">
+      <Card className="border bg-background shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle>Orders</CardTitle>
-            <div className="mt-1 text-sm text-muted-foreground">Search orders, view details, and update status/currency.</div>
           </div>
           <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
             Refresh
@@ -135,9 +134,9 @@ export default function AdminOrdersPage() {
             <Input value={qMaxTotal} onChange={(e) => setQMaxTotal(e.target.value)} placeholder="Max total" className="rounded-xl" />
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+          <div className="table-shell">
             <table className="min-w-[820px] w-full text-sm">
-              <thead className="bg-muted/50 text-xs text-muted-foreground">
+              <thead className="bg-muted/50 text-sm text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Order</th>
                   <th className="px-4 py-3 text-left font-medium">User</th>
@@ -172,11 +171,11 @@ export default function AdminOrdersPage() {
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
                           <div className="font-medium">#{id}</div>
-                          <div className="text-xs text-muted-foreground">{getString(o, "createdAt") ?? ""}</div>
+                          <div className="text-sm text-muted-foreground">{getString(o, "createdAt") ?? ""}</div>
                         </td>
                         <td className="px-4 py-3">{userId ?? "-"}</td>
                         <td className="px-4 py-3">
-                          <span className="rounded-full border bg-background/60 px-3 py-1 text-xs">{status}</span>
+                          <span className="rounded-full border bg-background px-3 py-1 text-sm">{status}</span>
                         </td>
                         <td className="px-4 py-3">{formatCurrency(total, currency)}</td>
                         <td className="px-4 py-3">
@@ -187,7 +186,7 @@ export default function AdminOrdersPage() {
                             <select
                               value={status}
                               onChange={(e) => void updateStatus(id, e.target.value)}
-                              className="h-9 rounded-xl border bg-background px-3 text-xs"
+                              className="h-9 rounded-xl border bg-background px-3 text-sm"
                               disabled={!id}
                             >
                               {orderStatuses.map((s) => (
@@ -207,7 +206,7 @@ export default function AdminOrdersPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <div className="text-xs text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
@@ -237,23 +236,23 @@ export default function AdminOrdersPage() {
       <Modal isOpen={isDetailsOpen} title={detailsId ? `Order #${detailsId}` : "Order"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <div className="rounded-2xl border bg-background/60 p-4">
-              <div className="text-xs text-muted-foreground">Status</div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="text-sm text-muted-foreground">Status</div>
               <div className="mt-1 text-sm font-semibold">{getString(details ?? {}, "status") ?? "-"}</div>
             </div>
-            <div className="rounded-2xl border bg-background/60 p-4">
-              <div className="text-xs text-muted-foreground">Total</div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="text-sm text-muted-foreground">Total</div>
               <div className="mt-1 text-sm font-semibold">
                 {formatCurrency(Number((details ?? {})["totalAmount"] ?? (details ?? {})["total"] ?? 0), resolvedDetailsCurrency)}
               </div>
             </div>
-            <div className="rounded-2xl border bg-background/60 p-4">
-              <div className="text-xs text-muted-foreground">Currency</div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="text-sm text-muted-foreground">Currency</div>
               <div className="mt-1 text-sm font-semibold">{resolvedDetailsCurrency}</div>
             </div>
           </div>
 
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">Quick updates</div>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <select
@@ -287,7 +286,7 @@ export default function AdminOrdersPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">Items</div>
             <div className="mt-2 space-y-2">
               {asArray((details ?? {})["items"]).length ? (
@@ -299,7 +298,7 @@ export default function AdminOrdersPage() {
                     <div key={idx} className="flex items-center justify-between rounded-xl border bg-background/50 px-3 py-2 text-sm">
                       <div className="min-w-0">
                         <div className="truncate font-medium">{name}</div>
-                        <div className="text-xs text-muted-foreground">Qty: {qty}</div>
+                        <div className="text-sm text-muted-foreground">Qty: {qty}</div>
                       </div>
                       <div className="shrink-0 font-medium">{formatCurrency(lineTotal, resolvedDetailsCurrency)}</div>
                     </div>

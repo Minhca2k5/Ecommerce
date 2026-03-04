@@ -96,11 +96,10 @@ export default function AdminAddressesPage() {
 
   return (
     <>
-      <Card className="border bg-background/75 shadow-sm backdrop-blur">
+      <Card className="border bg-background shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle>Addresses</CardTitle>
-            <div className="mt-1 text-sm text-muted-foreground">Search addresses, view details, and lookup user default address.</div>
           </div>
           <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
             Refresh
@@ -113,7 +112,7 @@ export default function AdminAddressesPage() {
             <Input value={qCountry} onChange={(e) => setQCountry(e.target.value)} placeholder="Country" className="rounded-xl" />
           </div>
 
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">Default address lookup</div>
             <div className="mt-3 grid gap-2 md:grid-cols-3">
               <Input value={defaultUserId} onChange={(e) => setDefaultUserId(e.target.value)} placeholder="User ID" className="rounded-xl" />
@@ -124,9 +123,9 @@ export default function AdminAddressesPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+          <div className="table-shell">
             <table className="min-w-[760px] w-full text-sm">
-              <thead className="bg-muted/50 text-xs text-muted-foreground">
+              <thead className="bg-muted/50 text-sm text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Address</th>
                   <th className="px-4 py-3 text-left font-medium">User</th>
@@ -156,7 +155,7 @@ export default function AdminAddressesPage() {
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
                           <div className="font-medium">#{id}</div>
-                          <div className="text-xs text-muted-foreground">{renderLine(a)}</div>
+                          <div className="text-sm text-muted-foreground">{renderLine(a)}</div>
                         </td>
                         <td className="px-4 py-3">{userId ?? "-"}</td>
                         <td className="px-4 py-3 text-right">
@@ -173,7 +172,7 @@ export default function AdminAddressesPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <div className="text-xs text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
@@ -202,9 +201,9 @@ export default function AdminAddressesPage() {
 
       <Modal isOpen={isDetailsOpen} title={detailsId ? `Address #${detailsId}` : "Address"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">{renderLine(details)}</div>
-            <div className="mt-1 text-xs text-muted-foreground">User: {getNumber(details ?? {}, "userId") ?? "-"}</div>
+            <div className="mt-1 text-sm text-muted-foreground">User: {getNumber(details ?? {}, "userId") ?? "-"}</div>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             {[
@@ -213,8 +212,8 @@ export default function AdminAddressesPage() {
               ["Country", getString(details ?? {}, "country")],
               ["Zipcode", getString(details ?? {}, "zipcode")],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-2xl border bg-background/60 p-4">
-                <div className="text-xs text-muted-foreground">{label}</div>
+              <div key={label} className="rounded-xl border bg-background p-4">
+                <div className="text-sm text-muted-foreground">{label}</div>
                 <div className="mt-1 text-sm font-semibold">{value || "-"}</div>
               </div>
             ))}

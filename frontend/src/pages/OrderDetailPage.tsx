@@ -50,10 +50,6 @@ export default function OrderDetailPage() {
   const [paymentDetailError, setPaymentDetailError] = useState<string | null>(null);
   const [isPaymentDetailLoading, setIsPaymentDetailLoading] = useState(false);
 
-  const [itemsMode, setItemsMode] = useState<"embedded" | "endpoint">("embedded");
-  const [endpointItems, setEndpointItems] = useState<any[] | null>(null);
-  const [isItemsLoading, setIsItemsLoading] = useState(false);
-  const [itemsError, setItemsError] = useState<string | null>(null);
 
   const currency = order?.currency || "VND";
   const voucherId = useMemo(() => getNumber(order, "voucherId"), [order]);
@@ -177,7 +173,7 @@ export default function OrderDetailPage() {
           throw new Error(res.message || "No payment URL returned.");
         }
         window.open(payUrl, "_blank");
-        toast.push({ variant: "success", title: "MoMo sandbox", message: "Opened sandbox payment in a new tab." });
+        toast.push({ variant: "success", title: "MoMo", message: "Opened payment in a new tab." });
       } catch (e) {
         toast.push({ variant: "error", title: "MoMo failed", message: getErrorMessage(e, "Couldn't create MoMo payment.") });
       } finally {
@@ -206,22 +202,6 @@ export default function OrderDetailPage() {
     }
   }
 
-  async function loadItemsFromEndpoint() {
-    if (!orderId) return;
-    setItemsMode("endpoint");
-    setIsItemsLoading(true);
-    setItemsError(null);
-    try {
-      const list = await apiJson<any[]>(`/api/users/me/orders/${orderId}/items/all`, { method: "GET", auth: true });
-      setEndpointItems(list ?? []);
-    } catch (e) {
-      setItemsError(getErrorMessage(e, "Failed to load order items."));
-      setEndpointItems([]);
-    } finally {
-      setIsItemsLoading(false);
-    }
-  }
-
   if (!orderId) return <EmptyState title="Invalid order" description="Missing orderId." />;
   if (isLoading) return <div className="space-y-4"><LoadingCard /><LoadingCard /></div>;
   if (error || !order) {
@@ -230,7 +210,7 @@ export default function OrderDetailPage() {
         title="Couldn't load order"
         description={error || "Order not found."}
         action={
-          <Button asChild className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button asChild className="rounded-xl bg-primary text-primary-foreground">
             <Link to="/orders">Back to orders</Link>
           </Button>
         }
@@ -238,26 +218,24 @@ export default function OrderDetailPage() {
     );
   }
 
-  const embeddedItems = (order.items ?? []) as any[];
-  const items = itemsMode === "endpoint" ? (endpointItems ?? []) : embeddedItems;
+  const items = (order.items ?? []) as any[];
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+      <section className="page-section">
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-sm text-muted-foreground">Order</div>
-            <div className="text-3xl font-semibold tracking-tight">Order details</div>
+            <div className="text-2xl font-semibold">Order details</div>
             <div className="mt-1 text-sm text-muted-foreground">
             {items.length} items • {formatCurrency(Number(order.totalAmount ?? 0), currency)} • {statusBadge(order.status)}
             </div>
         </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur" onClick={() => navigate("/orders")}>
+            <Button variant="outline" className="h-10 rounded-xl bg-background" onClick={() => navigate("/orders")}>
             Back
             </Button>
-            <Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
+            <Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
               <Link to="/products">Shop more</Link>
             </Button>
           </div>
@@ -265,46 +243,14 @@ export default function OrderDetailPage() {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        <Card className="shine bg-background/70 backdrop-blur">
+        <Card className="bg-background">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between gap-2 text-base">
-              <span>Items</span>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-8 rounded-lg bg-background/70 px-2 text-xs backdrop-blur"
-                  onClick={() => {
-                    setItemsMode("embedded");
-                    setEndpointItems(null);
-                    setItemsError(null);
-                  }}
-                  disabled={itemsMode === "embedded"}
-                >
-                  Embedded
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-8 rounded-lg bg-background/70 px-2 text-xs backdrop-blur"
-                  onClick={() => void loadItemsFromEndpoint()}
-                  disabled={isItemsLoading || itemsMode === "endpoint"}
-                >
-                  Load via API
-                </Button>
-              </div>
-            </CardTitle>
+            <CardTitle className="text-base">Items</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {itemsMode === "endpoint" && isItemsLoading ? (
-              <div className="text-sm text-muted-foreground">Loading items...</div>
-            ) : itemsMode === "endpoint" && itemsError ? (
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{itemsError}</div>
-            ) : items.length ? (
+            {items.length ? (
               items.map((it, idx) => (
-                <div key={String(it?.id ?? idx)} className="pressable group flex gap-3 rounded-2xl border bg-background/70 p-3 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg">
+                <div key={String(it?.id ?? idx)} className="pressable group flex gap-3 rounded-xl border bg-background p-3 shadow-sm transition hover:shadow-md">
                   <div className="h-16 w-16 overflow-hidden rounded-xl border bg-muted">
                     <SafeImage
                       src={it?.url ?? ""}
@@ -317,7 +263,7 @@ export default function OrderDetailPage() {
                     <div className="truncate font-medium">{it?.productName ?? "Product"}</div>
                     <div className="mt-1 text-xs text-muted-foreground">Qty: {it?.quantity ?? 1}</div>
                     <div className="mt-2">
-                      <Button asChild variant="outline" className="rounded-xl bg-background/70 backdrop-blur">
+                      <Button asChild variant="outline" className="rounded-xl bg-background">
                         <Link to={`/products/${it?.productId ?? ""}`}>View product</Link>
                       </Button>
                     </div>
@@ -332,13 +278,13 @@ export default function OrderDetailPage() {
         </Card>
 
         <div className="space-y-4">
-          <Card className="bg-background/70 backdrop-blur">
+          <Card className="bg-background">
             <CardHeader>
               <CardTitle>Order summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Subtotal</span><span>{formatCurrency(subtotalAmount, currency)}</span></div>
-              <div className="flex items-center justify-between"><span className="text-muted-foreground">Discount</span><span className={discountAmount > 0 ? "text-emerald-600" : ""}>- {formatCurrency(discountAmount, currency)}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Discount</span><span className={discountAmount > 0 ? "text-success" : ""}>- {formatCurrency(discountAmount, currency)}</span></div>
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Shipping</span><span>{formatCurrency(shippingFee, currency)}</span></div>
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Tax</span><span>{formatCurrency(taxAmount, currency)}</span></div>
               <div className="h-px bg-border" />
@@ -346,7 +292,7 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-background/70 backdrop-blur">
+          <Card className="bg-background">
             <CardHeader>
               <CardTitle>Payment</CardTitle>
             </CardHeader>
@@ -360,7 +306,7 @@ export default function OrderDetailPage() {
                       type="button"
                       onClick={() => setMethod(m)}
                       className={[
-                        "pressable rounded-full border px-3 py-1 text-xs shadow-sm transition hover:-translate-y-0.5",
+                        "pressable rounded-full border px-3 py-1 text-xs shadow-sm transition ",
                         method === m ? "border-primary bg-primary text-primary-foreground" : "bg-background hover:bg-muted",
                       ].join(" ")}
                     >
@@ -369,42 +315,29 @@ export default function OrderDetailPage() {
                   ))}
                 </div>
               </div>
-              {method !== "MOMO_QR" && method !== "MOMO_SANDBOX" ? (
-                <div className="space-y-2">
+              <div className="space-y-2">
                   <div className="text-xs font-medium text-muted-foreground">Provider txn id (optional)</div>
-                  <Input className="rounded-xl bg-background/70 backdrop-blur" value={providerTxnId} onChange={(e) => setProviderTxnId(e.target.value)} placeholder="e.g. VNPAY-..." />
+                  <Input className="rounded-xl bg-background" value={providerTxnId} onChange={(e) => setProviderTxnId(e.target.value)} placeholder="e.g. VNPAY-..." />
                 </div>
-              ) : (
-                <div className="rounded-2xl border bg-background/60 p-3 text-sm text-muted-foreground">
-                  You will be redirected to a dedicated MoMo QR payment page.
-                </div>
-              )}
               <Button
                 disabled={isPaying || isMomoLoading}
                 onClick={onSubmitPayment}
-                className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+                className="h-10 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {isPaying
                   ? "Creating..."
                   : isMomoLoading
-                    ? "Opening sandbox..."
+                    ? "Opening MoMo..."
                     : method === "MOMO_QR"
                       ? "Continue to MoMo QR"
                       : method === "MOMO_SANDBOX"
-                        ? "Pay with MoMo Sandbox"
+                        ? "Pay with MoMo"
                         : "Create payment"}
               </Button>
-              <div className="text-xs text-muted-foreground">
-                {method === "MOMO_QR"
-                  ? "Open a separate page with QR and transfer details. Admin verification is still required."
-                  : method === "MOMO_SANDBOX"
-                    ? "Calls MoMo sandbox and opens payment URL in a new tab."
-                  : "Creates a payment record via backend; gateway integration can be added later."}
-              </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-background/70 backdrop-blur">
+          <Card className="bg-background">
             <CardHeader>
               <CardTitle className="text-base">Payments</CardTitle>
             </CardHeader>
@@ -414,7 +347,7 @@ export default function OrderDetailPage() {
                   <button
                     key={String(p.id)}
                     type="button"
-                    className="pressable flex w-full items-center justify-between rounded-xl border bg-background/60 px-3 py-2 text-left shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:shadow-md"
+                    className="pressable flex w-full items-center justify-between rounded-xl border bg-background px-3 py-2 text-left shadow-sm transition hover:bg-muted hover:shadow-md"
                     onClick={() => void openPayment(Number(p.id ?? 0))}
                   >
                     <div className="min-w-0">
@@ -447,7 +380,7 @@ export default function OrderDetailPage() {
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Provider txn</span><span className="font-medium truncate max-w-[220px]">{paymentDetail.providerTxnId || "-"}</span></div>
             </div>
           ) : null}
-          <Button variant="outline" className="h-10 w-full rounded-xl bg-background/70 backdrop-blur" onClick={() => setIsPaymentOpen(false)}>
+          <Button variant="outline" className="h-10 w-full rounded-xl bg-background" onClick={() => setIsPaymentOpen(false)}>
             Close
           </Button>
         </div>

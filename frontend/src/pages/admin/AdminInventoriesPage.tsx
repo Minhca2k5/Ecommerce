@@ -137,17 +137,16 @@ export default function AdminInventoriesPage() {
 
   return (
     <>
-      <Card className="border bg-background/75 shadow-sm backdrop-blur">
+      <Card className="border bg-background shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle>Inventories</CardTitle>
-            <div className="mt-1 text-sm text-muted-foreground">Create inventory rows and update stock/reserved quantities.</div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
               Refresh
             </Button>
-            <Button className="h-9 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={openCreate}>
+            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               New inventory
             </Button>
           </div>
@@ -163,9 +162,9 @@ export default function AdminInventoriesPage() {
             </select>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+          <div className="table-shell">
             <table className="min-w-[900px] w-full text-sm">
-              <thead className="bg-muted/50 text-xs text-muted-foreground">
+              <thead className="bg-muted/50 text-sm text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Inventory</th>
                   <th className="px-4 py-3 text-left font-medium">Product</th>
@@ -202,17 +201,17 @@ export default function AdminInventoriesPage() {
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
                           <div className="font-medium">#{id}</div>
-                          <div className="text-xs text-muted-foreground">{hasAvailable === undefined ? "" : hasAvailable ? "Available" : "No available"}</div>
+                          <div className="text-sm text-muted-foreground">{hasAvailable === undefined ? "" : hasAvailable ? "Available" : "No available"}</div>
                         </td>
                         <td className="px-4 py-3">{productId ?? "-"}</td>
                         <td className="px-4 py-3">{warehouseId ?? "-"}</td>
                         <td className="px-4 py-3">
-                          <button className="rounded-xl border bg-background/60 px-3 py-1 text-xs hover:bg-muted" onClick={() => openQty(inv, "stock")}>
+                          <button className="rounded-xl border bg-background px-3 py-1 text-sm hover:bg-muted" onClick={() => openQty(inv, "stock")}>
                             {stockQty}
                           </button>
                         </td>
                         <td className="px-4 py-3">
-                          <button className="rounded-xl border bg-background/60 px-3 py-1 text-xs hover:bg-muted" onClick={() => openQty(inv, "reserved")}>
+                          <button className="rounded-xl border bg-background px-3 py-1 text-sm hover:bg-muted" onClick={() => openQty(inv, "reserved")}>
                             {reservedQty}
                           </button>
                         </td>
@@ -220,7 +219,7 @@ export default function AdminInventoriesPage() {
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                              className="h-9 rounded-xl action-danger"
                               onClick={() => setDeleteId(id)}
                               disabled={!id}
                             >
@@ -237,7 +236,7 @@ export default function AdminInventoriesPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <div className="text-xs text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
@@ -278,7 +277,7 @@ export default function AdminInventoriesPage() {
             <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={create}>
+            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={create}>
               Create
             </Button>
           </div>
@@ -292,7 +291,7 @@ export default function AdminInventoriesPage() {
             <Button variant="outline" className="rounded-xl" onClick={() => setIsQtyOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={saveQty}>
+            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={saveQty}>
               Save
             </Button>
           </div>

@@ -53,11 +53,11 @@ export default function MyVoucherDetailPage() {
   }
 
   if (error) {
-    return <EmptyState title="Couldn't load voucher" description={error} action={<Button asChild className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white"><Link to="/me/vouchers">Back</Link></Button>} />;
+    return <EmptyState title="Couldn't load voucher" description={error} action={<Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground"><Link to="/me/vouchers">Back</Link></Button>} />;
   }
 
   if (!item) {
-    return <EmptyState title="Voucher not found" description="This voucher is not available for your account." action={<Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur"><Link to="/me/vouchers">Back</Link></Button>} />;
+    return <EmptyState title="Voucher not found" description="This voucher is not available for your account." action={<Button asChild variant="outline" className="h-10 rounded-xl bg-background"><Link to="/me/vouchers">Back</Link></Button>} />;
   }
 
   const discountLabel =
@@ -69,43 +69,41 @@ export default function MyVoucherDetailPage() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+      <section className="page-section">
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-sm text-muted-foreground">My vouchers</div>
-            <div className="text-3xl font-semibold tracking-tight">{item.name || item.code || "Voucher"}</div>
-            <div className="mt-1 text-sm text-muted-foreground">{item.code ? `Code: ${item.code}` : "Code unavailable"}</div>
+            <div className="text-2xl font-semibold">{item.name || item.code || "Voucher"}</div>
           </div>
-          <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
+          <Button asChild variant="outline" className="h-10 rounded-xl bg-background">
             <Link to="/me/vouchers">Back</Link>
           </Button>
         </div>
       </section>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="shine bg-background/70 backdrop-blur lg:col-span-2">
+        <Card className="bg-background lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base">Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="text-muted-foreground">{item.description || "No description."}</div>
             <div className="grid gap-2 sm:grid-cols-2">
-              <div className="rounded-2xl border bg-background/60 p-4">
+              <div className="rounded-xl border bg-background p-4">
                 <div className="text-xs font-medium text-muted-foreground">Discount</div>
                 <div className="mt-1 font-medium">{discountLabel}</div>
               </div>
-              <div className="rounded-2xl border bg-background/60 p-4">
+              <div className="rounded-xl border bg-background p-4">
                 <div className="text-xs font-medium text-muted-foreground">Min order total</div>
                 <div className="mt-1 font-medium">{money(item.minOrderTotal)}</div>
               </div>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
-              <div className="rounded-2xl border bg-background/60 p-4">
+              <div className="rounded-xl border bg-background p-4">
                 <div className="text-xs font-medium text-muted-foreground">Valid from</div>
                 <div className="mt-1 font-medium">{item.startAt || "-"}</div>
               </div>
-              <div className="rounded-2xl border bg-background/60 p-4">
+              <div className="rounded-xl border bg-background p-4">
                 <div className="text-xs font-medium text-muted-foreground">Valid until</div>
                 <div className="mt-1 font-medium">{item.endAt || "-"}</div>
               </div>
@@ -113,23 +111,23 @@ export default function MyVoucherDetailPage() {
           </CardContent>
         </Card>
 
-        <Card className="shine bg-background/70 backdrop-blur">
+        <Card className="bg-background">
           <CardHeader>
             <CardTitle className="text-base">Availability</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <div className="rounded-2xl border bg-background/60 p-4">
-              <div className="text-xs font-medium text-muted-foreground">Remaining uses (you)</div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="text-xs font-medium text-muted-foreground">Remaining uses</div>
               <div className="mt-1 text-lg font-semibold">{typeof item.activeUsesForUser === "number" ? item.activeUsesForUser : "-"}</div>
             </div>
             {typeof item.usageLimitUser === "number" ? (
-              <div className="rounded-2xl border bg-background/60 p-4">
+              <div className="rounded-xl border bg-background p-4">
                 <div className="text-xs font-medium text-muted-foreground">Limit per user</div>
                 <div className="mt-1 font-medium">{item.usageLimitUser}</div>
               </div>
             ) : null}
             {typeof item.usageLimitGlobal === "number" || typeof item.activeUses === "number" ? (
-              <div className="rounded-2xl border bg-background/60 p-4">
+              <div className="rounded-xl border bg-background p-4">
                 <div className="text-xs font-medium text-muted-foreground">System remaining</div>
                 <div className="mt-1 font-medium">{typeof item.activeUses === "number" ? item.activeUses : "-"}</div>
               </div>

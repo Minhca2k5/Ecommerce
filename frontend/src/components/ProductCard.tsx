@@ -33,19 +33,19 @@ export default function ProductCard({
     (isRecord(product) ? (product["primaryImage"] as string | undefined) : undefined);
 
   return (
-    <Card className="shine pressable group overflow-hidden border-muted/60 bg-card/80 backdrop-blur shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl">
-      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-primary/15 via-background to-background">
+    <Card className="pressable group overflow-hidden border-primary/15 bg-card shadow-sm transition hover:shadow-md hover:shadow-primary/15">
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted/40">
+        <div className="absolute inset-x-0 top-0 z-10 h-1 bg-gradient-to-r from-primary/70 via-amber-400/70 to-cyan-500/70" />
         <SafeImage
           src={imageUrl}
           alt={name}
           fallbackKey={id || name}
           className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-black/0 opacity-90" />
 
         <div className="absolute left-3 top-3 flex gap-2">
           {inStockText ? (
-            <Badge variant="secondary" className="bg-background/70 backdrop-blur">
+            <Badge variant="secondary" className="bg-background/95 text-foreground ring-1 ring-primary/15">
               {inStockText}
             </Badge>
           ) : null}
@@ -74,11 +74,7 @@ export default function ProductCard({
           <Button asChild variant="outline" className="w-full rounded-xl">
             <Link to={href}>View</Link>
           </Button>
-          <Button
-            className="w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
-            onClick={() => addToCart(id, 1)}
-            disabled={!id || isWorking}
-          >
+          <Button className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => addToCart(id, 1)} disabled={!id || isWorking}>
             Add
           </Button>
         </div>

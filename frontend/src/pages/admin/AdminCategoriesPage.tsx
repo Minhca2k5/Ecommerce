@@ -129,13 +129,12 @@ export default function AdminCategoriesPage() {
 
   return (
     <>
-      <Card className="border bg-background/75 shadow-sm backdrop-blur">
+      <Card className="border bg-background shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle>Categories</CardTitle>
-            <div className="mt-1 text-sm text-muted-foreground">Create, rename, delete categories, and view subcategories.</div>
           </div>
-          <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={openCreate}>
+          <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
             New category
           </Button>
         </CardHeader>
@@ -146,9 +145,9 @@ export default function AdminCategoriesPage() {
             <Input value={qParentId} onChange={(e) => setQParentId(e.target.value)} placeholder="Parent ID..." className="rounded-xl" />
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+          <div className="table-shell">
             <table className="min-w-[760px] w-full text-sm">
-              <thead className="bg-muted/40 text-left text-xs text-muted-foreground">
+              <thead className="bg-muted/40 text-left text-sm text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3">Category</th>
                   <th className="px-4 py-3">Slug</th>
@@ -179,7 +178,6 @@ export default function AdminCategoriesPage() {
                       <tr key={String(id)} className="border-t hover:bg-muted/20">
                         <td className="px-4 py-3">
                           <div className="font-medium">{name}</div>
-                          <div className="text-xs text-muted-foreground">#{id}</div>
                         </td>
                         <td className="px-4 py-3">{slug}</td>
                         <td className="px-4 py-3">{parentId ? `#${parentId}` : "-"}</td>
@@ -193,7 +191,7 @@ export default function AdminCategoriesPage() {
                             </Button>
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                              className="h-9 rounded-xl action-danger"
                               onClick={() => setDeleteId(id)}
                             >
                               Delete
@@ -209,9 +207,7 @@ export default function AdminCategoriesPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <div className="text-xs text-muted-foreground">
-              Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
-            </div>
+            <div />
             <div className="flex items-center gap-2">
               <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
                 {[10, 20, 50, 100].map((n) => (
@@ -245,7 +241,7 @@ export default function AdminCategoriesPage() {
             <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={save}>
+            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
               Save
             </Button>
           </div>
@@ -254,9 +250,9 @@ export default function AdminCategoriesPage() {
 
       <Modal isOpen={isDetailsOpen} title="Category details" onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-4">
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">{getString(details, "name") ?? "Category"}</div>
-            <div className="mt-1 text-xs text-muted-foreground">Slug: {getString(details, "slug") ?? "-"}</div>
+            <div className="mt-1 text-sm text-muted-foreground">{getString(details, "slug") ?? "-"}</div>
           </div>
           <div>
             <div className="text-sm font-semibold">Subcategories</div>
@@ -266,7 +262,7 @@ export default function AdminCategoriesPage() {
                   const id = getNumber(s as any, "id") ?? 0;
                   const name = getString(s as any, "name") ?? "Sub";
                   return (
-                    <span key={String(id)} className="rounded-full border bg-background/60 px-3 py-1 text-xs">
+                    <span key={String(id)} className="rounded-full border bg-background px-3 py-1 text-sm">
                       {name}
                     </span>
                   );

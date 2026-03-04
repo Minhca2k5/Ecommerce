@@ -48,13 +48,9 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border bg-gradient-to-br from-primary/20 via-background to-background p-6">
+      <section className="rounded-xl border border-primary/20 bg-card p-6 shadow-sm">
         <div className="max-w-2xl space-y-2">
-          <div className="text-sm text-muted-foreground">Browse</div>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Categories</h1>
-          <p className="text-sm text-muted-foreground">
-            Explore curated collections—pick a category and discover what’s trending.
-          </p>
         </div>
       </section>
 
@@ -78,26 +74,26 @@ export default function CategoriesPage() {
             const meta = (slug && categoryMetaBySlug[slug]) || defaultCategoryMeta;
             return (
               <Link key={id} to={href} className="block cursor-pointer">
-                <Card className="shine pressable group overflow-hidden border-muted/60 bg-card/80 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg">
-                  <div className={`h-20 bg-gradient-to-br ${meta.gradientClassName}`} />
+                <Card className="pressable group overflow-hidden border-primary/15 bg-card transition hover:shadow-md hover:shadow-primary/10">
+                  <div className={`h-20 ${meta.gradientClassName}`} />
                   <CardHeader className="-mt-10 space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <CategoryIcon
                           name={meta.icon}
-                          className="transition duration-300 group-hover:-rotate-3 group-hover:scale-105"
+                          className="transition duration-200"
                         />
-                        <div className="space-y-1">
-                          <CardTitle className="text-base">{name}</CardTitle>
-                          <div className="text-xs text-muted-foreground">
-                            {meta.description}
+                          <div className="space-y-1">
+                            <CardTitle className="text-base">{name}</CardTitle>
+                            <div className="text-sm text-muted-foreground">
+                              {meta.description}
+                            </div>
                           </div>
-                        </div>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <div className="inline-flex items-center gap-2 rounded-xl border bg-background/70 px-3 py-2 text-sm font-medium backdrop-blur transition hover:bg-accent">
+                    <div className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-medium text-primary transition hover:bg-primary hover:text-primary-foreground">
                       Explore
                     </div>
                   </CardContent>

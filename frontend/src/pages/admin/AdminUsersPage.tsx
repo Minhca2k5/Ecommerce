@@ -182,17 +182,16 @@ export default function AdminUsersPage() {
 
   return (
     <>
-      <Card className="border bg-background/75 shadow-sm backdrop-blur">
+      <Card className="border bg-background shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle>Users</CardTitle>
-            <div className="mt-1 text-sm text-muted-foreground">Create users, search, view details, and delete.</div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
               Refresh
             </Button>
-            <Button className="h-9 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={openCreate}>
+            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               New user
             </Button>
           </div>
@@ -208,9 +207,9 @@ export default function AdminUsersPage() {
             </select>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+          <div className="table-shell">
             <table className="min-w-[760px] w-full text-sm">
-              <thead className="bg-muted/50 text-xs text-muted-foreground">
+              <thead className="bg-muted/50 text-sm text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">User</th>
                   <th className="px-4 py-3 text-left font-medium">Email</th>
@@ -243,11 +242,11 @@ export default function AdminUsersPage() {
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
                           <div className="font-medium">{username}</div>
-                          <div className="text-xs text-muted-foreground">#{id}</div>
+                          <div className="text-sm text-muted-foreground">#{id}</div>
                         </td>
                         <td className="px-4 py-3">{email}</td>
                         <td className="px-4 py-3">
-                          <span className={["rounded-full border px-3 py-1 text-xs", enabled ? "bg-emerald-500/10 text-emerald-700" : "bg-rose-500/10 text-rose-700"].join(" ")}>
+                          <span className={["rounded-full border px-3 py-1 text-sm", enabled ? "bg-emerald-500/10 text-emerald-700" : "bg-rose-500/10 text-rose-700"].join(" ")}>
                             {enabled ? "Enabled" : "Disabled"}
                           </span>
                         </td>
@@ -261,7 +260,7 @@ export default function AdminUsersPage() {
                             </Button>
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                              className="h-9 rounded-xl action-danger"
                               onClick={() => setDeleteId(id)}
                               disabled={!id}
                             >
@@ -278,7 +277,7 @@ export default function AdminUsersPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <div className="text-xs text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
@@ -334,7 +333,7 @@ export default function AdminUsersPage() {
             <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={save}>
+            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
               Create
             </Button>
           </div>
@@ -343,26 +342,26 @@ export default function AdminUsersPage() {
 
       <Modal isOpen={isDetailsOpen} title={detailsId ? `User #${detailsId}` : "User"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">{getString(details ?? {}, "username") ?? "-"}</div>
-            <div className="mt-1 text-xs text-muted-foreground">{getString(details ?? {}, "email") ?? "-"}</div>
+            <div className="mt-1 text-sm text-muted-foreground">{getString(details ?? {}, "email") ?? "-"}</div>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
-            <div className="rounded-2xl border bg-background/60 p-4">
-              <div className="text-xs text-muted-foreground">Full name</div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="text-sm text-muted-foreground">Full name</div>
               <div className="mt-1 text-sm font-semibold">{getString(details ?? {}, "fullName") ?? "-"}</div>
             </div>
-            <div className="rounded-2xl border bg-background/60 p-4">
-              <div className="text-xs text-muted-foreground">Phone</div>
+            <div className="rounded-xl border bg-background p-4">
+              <div className="text-sm text-muted-foreground">Phone</div>
               <div className="mt-1 text-sm font-semibold">{getString(details ?? {}, "phone") ?? "-"}</div>
             </div>
           </div>
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">Roles</div>
             <div className="mt-2 flex flex-wrap gap-2">
               {asArray((details ?? {})["roles"]).length ? (
                 asArray((details ?? {})["roles"]).map((r, idx) => (
-                  <span key={idx} className="rounded-full border bg-background/50 px-3 py-1 text-xs">
+                  <span key={idx} className="rounded-full border bg-background/50 px-3 py-1 text-sm">
                     {typeof r === "string" ? r : getString(r as any, "name") ?? "ROLE"}
                   </span>
                 ))
@@ -386,41 +385,40 @@ export default function AdminUsersPage() {
             <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{cartError}</div>
           ) : null}
           {cart ? (
-            <div className="rounded-2xl border bg-background/60 p-4">
+            <div className="rounded-xl border bg-background p-4">
               <div className="text-sm font-semibold">Cart #{getNumber(cart, "id") ?? "-"}</div>
-              <div className="mt-1 text-xs text-muted-foreground">
-                Currency: {getString(cart, "currency") ?? "-"} • Items: {getNumber(cart, "itemCount") ?? getNumber(cart, "itemsCount") ?? cartItems.length}
+              <div className="mt-1 text-sm text-muted-foreground">
+                Currency: {getString(cart, "currency") ?? "-"}  -  Items: {getNumber(cart, "itemCount") ?? getNumber(cart, "itemsCount") ?? cartItems.length}
               </div>
             </div>
           ) : null}
 
           <div className="flex items-center justify-between gap-2">
             <div className="text-sm font-medium">Items</div>
-            <Button variant="outline" className="h-9 rounded-xl bg-background/70 backdrop-blur" disabled={isCartLoading || !cart} onClick={() => void loadCartItemsAll()}>
+            <Button variant="outline" className="h-9 rounded-xl bg-background" disabled={isCartLoading || !cart} onClick={() => void loadCartItemsAll()}>
               Load items (all)
             </Button>
           </div>
           {cartItems.length ? (
             <div className="space-y-2">
               {cartItems.slice(0, 20).map((it, idx) => (
-                <div key={String((it as any)?.id ?? idx)} className="flex items-start justify-between gap-3 rounded-2xl border bg-background/60 p-3">
+                <div key={String((it as any)?.id ?? idx)} className="flex items-start justify-between gap-3 rounded-xl border bg-background p-3">
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold">{getString(it, "productName") ?? "Item"}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      productId: {getNumber(it, "productId") ?? "-"} • qty: {getNumber(it, "quantity") ?? "-"}
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      productId: {getNumber(it, "productId") ?? "-"}  -  qty: {getNumber(it, "quantity") ?? "-"}
                     </div>
                   </div>
                   <div className="text-sm font-semibold">{getNumber(it, "lineTotal") ?? "-"}</div>
                 </div>
               ))}
-              {cartItems.length > 20 ? <div className="text-xs text-muted-foreground">Showing first 20 items.</div> : null}
-            </div>
+                          </div>
           ) : (
             <div className="text-sm text-muted-foreground">No items loaded.</div>
           )}
 
           <div className="flex justify-end">
-            <Button variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur" onClick={() => setIsCartOpen(false)}>
+            <Button variant="outline" className="h-10 rounded-xl bg-background" onClick={() => setIsCartOpen(false)}>
               Close
             </Button>
           </div>
@@ -443,3 +441,4 @@ export default function AdminUsersPage() {
     </>
   );
 }
+

@@ -84,7 +84,7 @@ export default function GuestOrderPage() {
         title="Guest order unavailable"
         description={error || "Order not found."}
         action={
-          <Button asChild className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button asChild className="rounded-xl bg-primary text-primary-foreground">
             <Link to="/products">Back to products</Link>
           </Button>
         }
@@ -96,11 +96,10 @@ export default function GuestOrderPage() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+      <section className="page-section">
         <div className="relative">
           <div className="text-sm text-muted-foreground">Guest order</div>
-          <div className="text-3xl font-semibold tracking-tight">Order #{order.id}</div>
+          <div className="text-2xl font-semibold">Order #{order.id}</div>
           <div className="mt-1 text-sm text-muted-foreground">
             Status: {(order.status || "PENDING").toUpperCase()} - Total: {formatCurrency(Number(order.totalAmount || 0), currency)}
           </div>
@@ -108,14 +107,14 @@ export default function GuestOrderPage() {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        <Card className="bg-background/70 backdrop-blur">
+        <Card className="bg-background">
           <CardHeader>
             <CardTitle>Items</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {(order.items || []).length ? (
               (order.items || []).map((it, idx) => (
-                <div key={String(it.id || idx)} className="rounded-xl border bg-background/60 px-3 py-2 text-sm">
+                <div key={String(it.id || idx)} className="rounded-xl border bg-background px-3 py-2 text-sm">
                   <div className="font-medium">{it.productName || "Product"}</div>
                   <div className="text-xs text-muted-foreground">
                     Qty: {it.quantity || 1} - {formatCurrency(Number(it.lineTotal || 0), currency)}
@@ -129,7 +128,7 @@ export default function GuestOrderPage() {
         </Card>
 
         <div className="space-y-4">
-          <Card className="bg-background/70 backdrop-blur">
+          <Card className="bg-background">
             <CardHeader>
               <CardTitle>Payment</CardTitle>
             </CardHeader>
@@ -137,7 +136,7 @@ export default function GuestOrderPage() {
               <Button
                 onClick={onPayWithMomo}
                 disabled={isMomoLoading}
-                className="h-10 w-full rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+                className="h-10 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {isMomoLoading ? "Opening MoMo..." : "Pay with MoMo"}
               </Button>
@@ -147,14 +146,14 @@ export default function GuestOrderPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-background/70 backdrop-blur">
+          <Card className="bg-background">
             <CardHeader>
               <CardTitle className="text-base">Payment history</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {payments.length ? (
                 payments.map((p) => (
-                  <div key={String(p.id)} className="rounded-xl border bg-background/60 px-3 py-2 text-sm">
+                  <div key={String(p.id)} className="rounded-xl border bg-background px-3 py-2 text-sm">
                     <div className="font-medium">
                       {p.method || "Payment"} - {formatCurrency(Number(p.amount || 0), p.orderCurrency || currency)}
                     </div>

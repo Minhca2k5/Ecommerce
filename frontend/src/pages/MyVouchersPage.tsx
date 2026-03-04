@@ -5,7 +5,6 @@ import LoadingCard from "@/components/LoadingCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/app/ToastProvider";
 import { getErrorMessage } from "@/lib/errors";
 import { formatCurrency } from "@/lib/format";
 import { filterMyVouchersByMinOrderAmount, getMyVouchersByCode, type VoucherResponse } from "@/lib/voucherApi";
@@ -32,7 +31,6 @@ function badgeForUses(remaining?: number) {
 }
 
 export default function MyVouchersPage() {
-  const toast = useToast();
   const [items, setItems] = useState<VoucherResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -87,25 +85,13 @@ export default function MyVouchersPage() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+      <section className="page-section">
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="text-sm text-muted-foreground">Account</div>
-            <div className="text-3xl font-semibold tracking-tight">My vouchers</div>
-            <div className="mt-1 text-sm text-muted-foreground">Browse vouchers you can currently use, or search by code.</div>
-          </div>
-          <Button
-            variant="outline"
-            className="h-10 rounded-xl bg-background/70 backdrop-blur"
-            onClick={() => toast.push({ variant: "default", title: "Tip", message: "Checkout will show only vouchers eligible for your current order total." })}
-          >
-            How it works
-          </Button>
+          <div className="text-2xl font-semibold">My vouchers</div>
         </div>
       </section>
 
-      <Card className="shine bg-background/70 backdrop-blur">
+      <Card className="bg-background">
         <CardHeader>
           <CardTitle className="text-base">Search by code</CardTitle>
         </CardHeader>
@@ -113,7 +99,7 @@ export default function MyVouchersPage() {
           <div className="space-y-2">
             <div className="text-xs font-medium text-muted-foreground">Voucher code</div>
             <Input
-              className="rounded-xl bg-background/70 backdrop-blur"
+              className="rounded-xl bg-background"
               value={searchCode}
               onChange={(e) => {
                 setSearchCode(e.target.value);
@@ -125,7 +111,7 @@ export default function MyVouchersPage() {
             />
           </div>
           <Button
-            className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+            className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={runSearch}
             disabled={!searchCode.trim() || searchStatus === "loading"}
           >
@@ -148,7 +134,7 @@ export default function MyVouchersPage() {
           title="Couldn't load vouchers"
           description={error}
           action={
-            <Button onClick={loadAvailable} className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+            <Button onClick={loadAvailable} className="h-10 rounded-xl bg-primary text-primary-foreground">
               Retry
             </Button>
           }
@@ -189,7 +175,7 @@ export default function MyVouchersPage() {
                 const id = Number(v.id ?? 0);
                 const remaining = typeof v.activeUsesForUser === "number" ? v.activeUsesForUser : undefined;
                 return (
-                  <Card key={String(id || v.code)} className="pressable shine overflow-hidden bg-background/70 backdrop-blur shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+                  <Card key={String(id || v.code)} className="pressable overflow-hidden bg-background shadow-sm transition hover:shadow-md">
                     <CardHeader className="flex flex-row items-start justify-between gap-3">
                       <div>
                         <CardTitle className="text-base">{v.name || v.code || "Voucher"}</CardTitle>
@@ -207,7 +193,7 @@ export default function MyVouchersPage() {
                         </div>
                       </div>
                       {id ? (
-                        <Button asChild variant="outline" className="mt-2 w-full rounded-xl bg-background/70 backdrop-blur">
+                        <Button asChild variant="outline" className="mt-2 w-full rounded-xl bg-background">
                           <Link to={`/me/vouchers/${id}`}>View details</Link>
                         </Button>
                       ) : null}
@@ -222,4 +208,3 @@ export default function MyVouchersPage() {
     </div>
   );
 }
-

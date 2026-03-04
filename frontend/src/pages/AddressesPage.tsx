@@ -192,7 +192,7 @@ export default function AddressesPage() {
         title="Couldn’t load addresses"
         description={error}
         action={
-          <Button onClick={() => window.location.reload()} className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button onClick={() => window.location.reload()} className="h-10 rounded-xl bg-primary text-primary-foreground">
             Retry
           </Button>
         }
@@ -202,19 +202,14 @@ export default function AddressesPage() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/20 via-fuchsia-500/10 to-emerald-500/10" />
+      <section className="page-section">
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="text-sm text-muted-foreground">Account</div>
-            <div className="text-3xl font-semibold tracking-tight">Address book</div>
-            <div className="mt-1 text-sm text-muted-foreground">Manage delivery addresses and your default address.</div>
-          </div>
+          <div className="text-2xl font-semibold">Address book</div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
+            <Button asChild variant="outline" className="h-10 rounded-xl bg-background">
               <Link to="/me">Back</Link>
             </Button>
-            <Button onClick={openCreate} className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
+            <Button onClick={openCreate} className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
               Add address
             </Button>
           </div>
@@ -226,7 +221,7 @@ export default function AddressesPage() {
           title="No addresses yet"
           description="Add your first address to speed up checkout."
           action={
-            <Button onClick={openCreate} className="h-10 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+            <Button onClick={openCreate} className="h-10 rounded-xl bg-primary text-primary-foreground">
               Add address
             </Button>
           }
@@ -234,8 +229,7 @@ export default function AddressesPage() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {sorted.map((a) => (
-            <Card key={a.id} className="shine pressable overflow-hidden bg-background/70 backdrop-blur shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
-              <div className="pointer-events-none absolute inset-0 opacity-20 [background:radial-gradient(60%_60%_at_20%_20%,rgba(59,130,246,.16),transparent),radial-gradient(50%_60%_at_75%_40%,rgba(168,85,247,.12),transparent)]" />
+            <Card key={a.id} className="pressable overflow-hidden bg-background shadow-sm transition hover:shadow-md">
               <CardHeader className="relative flex flex-row items-start justify-between gap-3">
                 <div className="min-w-0">
                   <CardTitle className="truncate">{a.city || "Address"}</CardTitle>
@@ -245,12 +239,12 @@ export default function AddressesPage() {
               </CardHeader>
               <CardContent className="relative flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" className="rounded-xl bg-background/70 backdrop-blur" onClick={() => openEdit(a)}>
+                  <Button variant="outline" className="rounded-xl bg-background" onClick={() => openEdit(a)}>
                     Edit
                   </Button>
                   <Button
                     variant="outline"
-                    className="rounded-xl border-rose-500/20 bg-background/70 text-rose-700 hover:bg-rose-500/10 backdrop-blur"
+                    className="rounded-xl border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10"
                     onClick={() => setDeleteTarget(a)}
                   >
                     Delete
@@ -259,7 +253,7 @@ export default function AddressesPage() {
                 <Button
                   disabled={Boolean(a.isDefault) || !a.id}
                   onClick={() => a.id && onSetDefault(a.id)}
-                  className="h-10 rounded-xl bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-emerald-500 text-white hover:opacity-95 disabled:opacity-60"
+                  className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
                 >
                   {a.isDefault ? "Default" : "Set default"}
                 </Button>
@@ -311,7 +305,7 @@ export default function AddressesPage() {
               onClick={() => setDraft((d) => ({ ...d, isDefault: !d.isDefault }))}
               className={[
                 "w-full rounded-xl border px-3 py-2 text-left text-sm",
-                draft.isDefault ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800" : "bg-background/70 text-muted-foreground hover:bg-muted hover:text-foreground",
+                draft.isDefault ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800" : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
               ].join(" ")}
             >
               {draft.isDefault ? "✓ Set as default address" : "Set as default address"}
@@ -330,7 +324,7 @@ export default function AddressesPage() {
                 !draft.city.trim() ||
                 !draft.country.trim()
               }
-              className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95"
+              className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {isSaving ? "Saving..." : editing ? "Save changes" : "Add address"}
             </Button>

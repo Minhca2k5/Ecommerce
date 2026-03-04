@@ -87,7 +87,7 @@ export default function AdminProfileEditPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-sm text-muted-foreground">Admin</div>
-          <div className="text-3xl font-semibold tracking-tight">Edit profile</div>
+          <div className="text-2xl font-semibold">Edit profile</div>
           <div className="mt-1 text-sm text-muted-foreground">Update your personal details.</div>
         </div>
         <Button asChild variant="outline" className="rounded-xl">
@@ -96,7 +96,6 @@ export default function AdminProfileEditPage() {
       </div>
 
       <Card className="overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-25 [background:radial-gradient(60%_60%_at_20%_20%,rgba(168,85,247,.18),transparent),radial-gradient(50%_60%_at_70%_40%,rgba(16,185,129,.14),transparent)]" />
         <CardHeader className="relative">
           <CardTitle>Details</CardTitle>
         </CardHeader>
@@ -130,7 +129,7 @@ export default function AdminProfileEditPage() {
               <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate("/admin/profile")}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={!canSave} className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95">
+              <Button type="submit" disabled={!canSave} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
                 {isSaving ? "Saving..." : "Save changes"}
               </Button>
             </div>

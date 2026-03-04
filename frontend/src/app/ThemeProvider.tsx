@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -11,55 +11,25 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-const STORAGE_KEY = "theme";
-
-function resolveTheme(theme: Theme): "light" | "dark" {
-  if (theme === "dark") return "dark";
-  if (theme === "light") return "light";
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
-function applyThemeClass(resolved: "light" | "dark") {
+function applyThemeClass() {
   const root = document.documentElement;
-  if (resolved === "dark") root.classList.add("dark");
-  else root.classList.remove("dark");
+  root.classList.remove("dark");
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "light" || saved === "dark" || saved === "system") return saved;
-    return "system";
-  });
-
-  const resolvedTheme = useMemo(() => resolveTheme(theme), [theme]);
+  const theme: Theme = "light";
+  const resolvedTheme: "light" | "dark" = "light";
 
   useEffect(() => {
-    applyThemeClass(resolvedTheme);
-  }, [resolvedTheme]);
-
-  useEffect(() => {
-    if (theme !== "system") return;
-    const mql = window.matchMedia?.("(prefers-color-scheme: dark)");
-    if (!mql) return;
-    const onChange = () => applyThemeClass(resolveTheme("system"));
-    mql.addEventListener?.("change", onChange);
-    return () => mql.removeEventListener?.("change", onChange);
-  }, [theme]);
+    applyThemeClass();
+  }, []);
 
   const value = useMemo<ThemeContextValue>(
     () => ({
       theme,
       resolvedTheme,
-      setTheme: (t) => {
-        setThemeState(t);
-        localStorage.setItem(STORAGE_KEY, t);
-      },
-      toggle: () => {
-        const next = resolvedTheme === "dark" ? "light" : "dark";
-        setThemeState(next);
-        localStorage.setItem(STORAGE_KEY, next);
-      },
+      setTheme: () => undefined,
+      toggle: () => undefined,
     }),
     [resolvedTheme, theme],
   );
@@ -72,4 +42,3 @@ export function useTheme() {
   if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
   return ctx;
 }
-

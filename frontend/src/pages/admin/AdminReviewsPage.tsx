@@ -75,11 +75,10 @@ export default function AdminReviewsPage() {
 
   return (
     <>
-      <Card className="border bg-background/75 shadow-sm backdrop-blur">
+      <Card className="border bg-background shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle>Reviews</CardTitle>
-            <div className="mt-1 text-sm text-muted-foreground">Search reviews and view details.</div>
           </div>
           <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
             Refresh
@@ -92,9 +91,9 @@ export default function AdminReviewsPage() {
             <Input value={qMinRating} onChange={(e) => setQMinRating(e.target.value)} placeholder="Min rating" className="rounded-xl" />
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+          <div className="table-shell">
             <table className="min-w-[820px] w-full text-sm">
-              <thead className="bg-muted/50 text-xs text-muted-foreground">
+              <thead className="bg-muted/50 text-sm text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Review</th>
                   <th className="px-4 py-3 text-left font-medium">Product</th>
@@ -126,14 +125,14 @@ export default function AdminReviewsPage() {
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
                           <div className="font-medium">#{id}</div>
-                          <div className="text-xs text-muted-foreground line-clamp-1">{getString(r, "comment") ?? getString(r, "commentSnapshot") ?? ""}</div>
+                          <div className="text-sm text-muted-foreground line-clamp-1">{getString(r, "comment") ?? getString(r, "commentSnapshot") ?? ""}</div>
                         </td>
                         <td className="px-4 py-3">{getNumber(r, "productId") ?? "-"}</td>
                         <td className="px-4 py-3">{getNumber(r, "userId") ?? "-"}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <RatingStars rating={rating} />
-                            <span className="text-xs text-muted-foreground">{rating}</span>
+                            <span className="text-sm text-muted-foreground">{rating}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-right">
@@ -150,7 +149,7 @@ export default function AdminReviewsPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <div className="text-xs text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
@@ -179,16 +178,16 @@ export default function AdminReviewsPage() {
 
       <Modal isOpen={isDetailsOpen} title={detailsId ? `Review #${detailsId}` : "Review"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
-          <div className="rounded-2xl border bg-background/60 p-4">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-sm font-semibold">
               Product: {getNumber(details ?? {}, "productId") ?? "-"} • User: {getNumber(details ?? {}, "userId") ?? "-"}
             </div>
             <div className="mt-2 flex items-center gap-2">
               <RatingStars rating={Number((details ?? {})["rating"] ?? 0)} />
-              <span className="text-xs text-muted-foreground">{String((details ?? {})["rating"] ?? 0)}</span>
+              <span className="text-sm text-muted-foreground">{String((details ?? {})["rating"] ?? 0)}</span>
             </div>
           </div>
-          <div className="rounded-2xl border bg-background/60 p-4 text-sm text-muted-foreground whitespace-pre-wrap">{getString(details ?? {}, "comment") ?? "-"}</div>
+          <div className="rounded-xl border bg-background p-4 text-sm text-muted-foreground whitespace-pre-wrap">{getString(details ?? {}, "comment") ?? "-"}</div>
           <div className="flex justify-end">
             <Button variant="outline" className="rounded-xl" onClick={() => setIsDetailsOpen(false)}>
               Close

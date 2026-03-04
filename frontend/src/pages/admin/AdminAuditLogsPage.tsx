@@ -60,11 +60,10 @@ export default function AdminAuditLogsPage() {
   }, [query]);
 
   return (
-    <Card className="border bg-background/75 shadow-sm backdrop-blur">
+    <Card className="border bg-background shadow-sm">
       <CardHeader className="flex flex-row items-start justify-between gap-3">
         <div>
           <CardTitle>Audit logs</CardTitle>
-          <div className="mt-1 text-sm text-muted-foreground">Search operational audit events with filters.</div>
         </div>
         <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
           Refresh
@@ -84,9 +83,9 @@ export default function AdminAuditLogsPage() {
           <Input value={qTo} onChange={(e) => setQTo(e.target.value)} placeholder="To (ISO datetime)" className="rounded-xl" />
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border bg-background/70">
+        <div className="table-shell">
           <table className="min-w-[1100px] w-full text-sm">
-            <thead className="bg-muted/50 text-xs text-muted-foreground">
+            <thead className="bg-muted/50 text-sm text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 text-left font-medium">Event</th>
                 <th className="px-4 py-3 text-left font-medium">Actor</th>
@@ -119,7 +118,7 @@ export default function AdminAuditLogsPage() {
                     <tr key={String(id ?? Math.random())} className="border-t">
                       <td className="px-4 py-3">
                         <div className="font-medium">{getString(it, "action") || "-"}</div>
-                        <div className="text-xs text-muted-foreground">#{id ?? "-"}</div>
+                        <div className="text-sm text-muted-foreground">#{id ?? "-"}</div>
                       </td>
                       <td className="px-4 py-3">{getNumber(it, "userId") ?? "-"}</td>
                       <td className="px-4 py-3">
@@ -128,21 +127,21 @@ export default function AdminAuditLogsPage() {
                       <td className="px-4 py-3">
                         <span
                           className={[
-                            "rounded-full border px-3 py-1 text-xs",
+                            "rounded-full border px-3 py-1 text-sm",
                             success ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" : "bg-rose-500/10 text-rose-700 border-rose-500/20",
                           ].join(" ")}
                         >
                           {success ? "SUCCESS" : "FAILED"}
                         </span>
                         {!success && getString(it, "errorMessage") ? (
-                          <div className="mt-1 max-w-[260px] truncate text-xs text-rose-700">{getString(it, "errorMessage")}</div>
+                          <div className="mt-1 max-w-[260px] truncate text-sm text-rose-700">{getString(it, "errorMessage")}</div>
                         ) : null}
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
                         <div className="max-w-[320px] truncate">IP: {getString(it, "ipAddress") || "-"}</div>
                         <div className="max-w-[320px] truncate">UA: {getString(it, "userAgent") || "-"}</div>
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{getString(it, "createdAt") || "-"}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{getString(it, "createdAt") || "-"}</td>
                     </tr>
                   );
                 })
@@ -152,7 +151,7 @@ export default function AdminAuditLogsPage() {
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <div className="text-xs text-muted-foreground">
+          <div className="text-sm text-muted-foreground">
             Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
           </div>
           <div className="flex items-center gap-2">

@@ -1,60 +1,34 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --background: 35 33% 98%;
+    --foreground: 220 14% 14%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 220 14% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 10% 3.9%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 10% 3.9%;
+    --popover-foreground: 220 14% 14%;
+    --primary: 16 92% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 20% 94%;
+    --secondary-foreground: 220 14% 18%;
+    --muted: 30 20% 94%;
+    --muted-foreground: 220 10% 44%;
+    --accent: 30 20% 94%;
+    --accent-foreground: 220 14% 18%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 221 83% 53%;
+    --border: 28 22% 88%;
+    --input: 28 22% 88%;
+    --ring: 16 92% 52%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem
-  }
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%
+    --radius: 0.75rem
   }
 }
 
@@ -66,10 +40,61 @@
     @apply bg-background text-foreground antialiased transition-colors duration-300;
     font-family: "Be Vietnam Pro", "Segoe UI", "Noto Sans", "Inter", Roboto, Arial, sans-serif;
     text-rendering: optimizeLegibility;
+    background-image:
+      radial-gradient(1200px 520px at 8% -8%, rgba(255, 99, 40, 0.13), transparent 62%),
+      radial-gradient(900px 400px at 94% -24%, rgba(255, 167, 38, 0.10), transparent 60%),
+      radial-gradient(1000px 420px at 90% -20%, rgba(14, 165, 233, 0.06), transparent 60%);
+    background-attachment: fixed;
   }
 }
 
-@layer utilities {
+@layer components {
+  .page-section {
+    @apply relative overflow-hidden rounded-xl border bg-background p-6 shadow-sm;
+    border-color: hsl(var(--primary) / 0.22);
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 243, 232, 0.96));
+  }
+
+  .table-shell {
+    @apply overflow-x-auto rounded-xl border bg-background;
+    border-color: hsl(var(--primary) / 0.15);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 250, 246, 0.96));
+  }
+
+  .status-success {
+    @apply border border-emerald-500/20 bg-emerald-500/10 text-emerald-700;
+  }
+
+  .status-danger {
+    @apply border border-rose-500/20 bg-rose-500/10 text-rose-700;
+  }
+
+  .text-success {
+    @apply text-emerald-600;
+  }
+
+  .text-danger {
+    @apply text-rose-600;
+  }
+
+  .action-danger {
+    @apply text-rose-600 hover:bg-rose-500/10 hover:text-rose-700;
+  }
+}
+
+@layer utilities {  /* Normalize tiny helper text to production-friendly size */
+  .text-xs {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  .text-\[11px\] {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  .text-\[10px\] {
+    font-size: 0.8125rem;
+    line-height: 1.125rem;
+  }
   @keyframes shimmer {
     0% {
       transform: translateX(-120%);
@@ -79,73 +104,17 @@
     }
   }
 
-  .shine {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .shine::after {
-    content: "";
-    position: absolute;
-    inset: -40%;
-    background: linear-gradient(
-      115deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.0) 35%,
-      rgba(255, 255, 255, 0.28) 50%,
-      rgba(255, 255, 255, 0.0) 65%,
-      transparent 100%
-    );
-    transform: translateX(-120%);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .shine:hover::after {
-    opacity: 1;
-    animation: shimmer 1.2s ease-out;
-  }
-
   .pressable {
     transition: transform 160ms ease, box-shadow 160ms ease;
+  }
+
+  .pressable:hover {
+    box-shadow: 0 10px 24px -18px rgba(255, 99, 40, 0.55);
   }
 
   .pressable:active {
     transform: translateY(1px) scale(0.99);
   }
 
-  @keyframes gradient-pan {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-
-  .animated-aurora {
-    background-image: radial-gradient(800px circle at 20% 0%, hsl(var(--primary) / 0.22), transparent 55%),
-      radial-gradient(700px circle at 80% 10%, rgba(16, 185, 129, 0.14), transparent 55%),
-      radial-gradient(900px circle at 55% 85%, rgba(236, 72, 153, 0.10), transparent 60%),
-      linear-gradient(115deg, rgba(59, 130, 246, 0.10), rgba(236, 72, 153, 0.08), rgba(16, 185, 129, 0.08));
-    background-size: 200% 200%;
-    animation: gradient-pan 14s ease-in-out infinite;
-  }
-
-  @keyframes floaty {
-    0%,
-    100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-8px);
-    }
-  }
-
-  .floaty {
-    animation: floaty 6s ease-in-out infinite;
-  }
 }
+

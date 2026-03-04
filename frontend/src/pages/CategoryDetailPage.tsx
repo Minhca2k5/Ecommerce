@@ -101,9 +101,6 @@ export default function CategoryDetailPage() {
         <div>
           <div className="text-sm text-muted-foreground">Category</div>
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-          <div className="mt-1 text-xs text-muted-foreground">
-            Browse subcategories, then paginate products.
-          </div>
         </div>
         <Button asChild variant="outline">
           <Link to="/products">Browse products</Link>
@@ -138,11 +135,11 @@ export default function CategoryDetailPage() {
                       <Link
                         key={String(id)}
                         to={href}
-                        className="shine pressable group inline-flex items-center gap-2 rounded-full border bg-background/70 px-3 py-1 text-xs shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-muted hover:shadow-md"
+                        className="pressable group inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs shadow-sm transition hover:bg-muted hover:shadow-md"
                       >
                         <CategoryIcon
                           name={meta.icon}
-                          className="h-4 w-4 transition duration-300 group-hover:-rotate-6"
+                          className="h-4 w-4 transition duration-300 "
                         />
                         <span className="font-medium">{name}</span>
                       </Link>

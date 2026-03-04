@@ -53,7 +53,7 @@ export default function ProfilePage() {
         title="Couldn’t load profile"
         description={error}
         action={
-          <Button onClick={() => window.location.reload()} className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white">
+          <Button onClick={() => window.location.reload()} className="rounded-xl bg-primary text-primary-foreground">
             Retry
           </Button>
         }
@@ -68,11 +68,7 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="text-sm text-muted-foreground">Account</div>
-          <div className="text-3xl font-semibold tracking-tight">{title}</div>
-          <div className="mt-1 text-sm text-muted-foreground">Manage your personal info, password, and addresses.</div>
-        </div>
+        <div className="text-2xl font-semibold">{title}</div>
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline" className="rounded-xl">
             <Link to="/me/edit">Edit profile</Link>
@@ -80,14 +76,13 @@ export default function ProfilePage() {
           <Button asChild variant="outline" className="rounded-xl">
             <Link to="/me/password">Change password</Link>
           </Button>
-          <Button asChild className="rounded-xl bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-emerald-500 text-white">
+          <Button asChild className="rounded-xl bg-primary text-primary-foreground">
             <Link to="/me/addresses">Address book</Link>
           </Button>
         </div>
       </div>
 
       <Card className="overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-25 [background:radial-gradient(60%_60%_at_15%_20%,rgba(59,130,246,.22),transparent),radial-gradient(50%_60%_at_70%_40%,rgba(168,85,247,.18),transparent),radial-gradient(50%_70%_at_45%_90%,rgba(16,185,129,.12),transparent)]" />
         <CardHeader className="relative flex flex-row items-center justify-between">
           <CardTitle>Profile</CardTitle>
           <div className="rounded-full bg-primary/10 px-3 py-1 text-xs text-foreground ring-1 ring-primary/20">
@@ -95,26 +90,26 @@ export default function ProfilePage() {
           </div>
         </CardHeader>
         <CardContent className="relative grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border bg-background/60 p-4 backdrop-blur">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-xs text-muted-foreground">Username</div>
             <div className="mt-1 text-base font-medium">{me.username || "—"}</div>
           </div>
-          <div className="rounded-2xl border bg-background/60 p-4 backdrop-blur">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-xs text-muted-foreground">Email</div>
             <div className="mt-1 text-base font-medium">{me.email || "—"}</div>
           </div>
-          <div className="rounded-2xl border bg-background/60 p-4 backdrop-blur">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-xs text-muted-foreground">Full name</div>
             <div className="mt-1 text-base font-medium">{me.fullName || "—"}</div>
           </div>
-          <div className="rounded-2xl border bg-background/60 p-4 backdrop-blur">
+          <div className="rounded-xl border bg-background p-4">
             <div className="text-xs text-muted-foreground">Phone</div>
             <div className="mt-1 text-base font-medium">{me.phone || "—"}</div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="shine pressable">
+      <Card className="pressable">
         <CardHeader>
           <CardTitle>Session</CardTitle>
         </CardHeader>

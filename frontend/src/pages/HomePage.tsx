@@ -131,28 +131,17 @@ export default function HomePage() {
 
   return (
     <div className="space-y-10">
-      <section className="relative overflow-hidden rounded-3xl border bg-background/70 p-6 shadow-sm backdrop-blur sm:p-8">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/25 via-fuchsia-500/10 to-emerald-500/10" />
-        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-primary/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-emerald-500/15 blur-3xl" />
-        <div className="relative max-w-2xl space-y-3">
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border bg-background/70 px-3 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            Storefront
-          </div>
+      <section className="overflow-hidden rounded-xl border bg-card p-6 shadow-sm sm:p-8">
+        <div className="max-w-2xl space-y-3">
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Discover products you'll love</h1>
           <div className="flex flex-col gap-2 pt-1 sm:flex-row">
             <Button asChild className="h-10 rounded-xl">
               <Link to="/products">Browse products</Link>
             </Button>
-            <Button asChild variant="outline" className="h-10 rounded-xl bg-background/70 backdrop-blur">
+            <Button asChild variant="outline" className="h-10 rounded-xl">
               <Link to="/categories">Explore categories</Link>
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Browse trending items, explore categories, and check product details — powered by your
-            backend APIs.
-          </p>
         </div>
       </section>
 
@@ -160,17 +149,16 @@ export default function HomePage() {
         <section className="space-y-3">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <div className="text-sm text-muted-foreground">For you</div>
               <div className="text-xl font-semibold tracking-tight">Recently viewed</div>
             </div>
-            <Button asChild variant="outline" className="h-9 rounded-xl bg-background/70 backdrop-blur">
-              <Link to="/products">Browse</Link>
+            <Button asChild variant="outline" className="h-9 rounded-xl">
+              <Link to="/products">View all</Link>
             </Button>
           </div>
           <div className="flex gap-3 overflow-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
             {recentViews.slice(0, 12).map((rv) => (
               <Link key={String(rv.id)} to={`/products/${rv.productId ?? ""}`} className="group w-60 shrink-0 snap-start">
-                <div className="pressable shine overflow-hidden rounded-2xl border bg-background/70 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg">
+                <div className="pressable overflow-hidden rounded-xl border bg-background shadow-sm transition hover:shadow-md">
                   <div className="aspect-[4/3] overflow-hidden bg-muted">
                     <SafeImage
                       src={rv.url || ""}
@@ -181,7 +169,6 @@ export default function HomePage() {
                   </div>
                   <div className="p-3">
                     <div className="truncate text-sm font-semibold">{rv.productName || "Product"}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">Tap to open</div>
                   </div>
                 </div>
               </Link>
@@ -220,17 +207,14 @@ export default function HomePage() {
                     <Link
                       key={String(id)}
                       to={`/categories/${id}`}
-                      className="shine pressable group flex items-center gap-3 rounded-2xl border bg-card/80 p-3 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"
+                      className="pressable group flex items-center gap-3 rounded-xl border bg-card p-3 transition hover:shadow-md"
                     >
                       <CategoryIcon
                         name={meta.icon}
-                        className="transition duration-300 group-hover:-rotate-3 group-hover:scale-105"
+                        className="transition duration-300 "
                       />
                       <div className="min-w-0">
                         <div className="truncate text-sm font-semibold">{name}</div>
-                        <div className="truncate text-xs text-muted-foreground">
-                          {meta.description}
-                        </div>
                       </div>
                     </Link>
                   );
@@ -242,10 +226,9 @@ export default function HomePage() {
           <section className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm text-muted-foreground">Highlights</div>
                 <h2 className="text-lg font-semibold tracking-tight">Banners</h2>
               </div>
-              <Button asChild variant="outline" className="h-9 rounded-xl bg-background/70 backdrop-blur">
+              <Button asChild variant="outline" className="h-9 rounded-xl">
                 <Link to="/products">Browse products</Link>
               </Button>
             </div>
@@ -265,42 +248,34 @@ export default function HomePage() {
                   return (
                     <div
                       key={String(index)}
-                      className="group relative min-w-[340px] snap-start overflow-hidden rounded-2xl border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                      className="group relative min-w-[340px] snap-start overflow-hidden rounded-xl border bg-card shadow-sm transition hover:shadow-md"
                     >
                       {isInternal ? (
                         <Link to={targetPath} className="block">
-                          <div className="relative aspect-[16/7] bg-gradient-to-br from-primary/20 via-background to-background">
+                          <div className="relative aspect-[16/7] bg-muted/40">
                             <SafeImage
                               src={imageUrl}
                               alt={title}
                               fallbackKey={`banner-${index}`}
                               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                             />
-                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
                           </div>
                           <div className="p-4">
                             <div className="line-clamp-1 text-sm font-semibold">{title}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">
-                              View collection
-                            </div>
                           </div>
                         </Link>
                       ) : (
                         <a href={targetUrl} className="block">
-                          <div className="relative aspect-[16/7] bg-gradient-to-br from-primary/20 via-background to-background">
+                          <div className="relative aspect-[16/7] bg-muted/40">
                             <SafeImage
                               src={imageUrl}
                               alt={title}
                               fallbackKey={`banner-${index}`}
                               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                             />
-                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
                           </div>
                           <div className="p-4">
                             <div className="line-clamp-1 text-sm font-semibold">{title}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">
-                              View collection
-                            </div>
                           </div>
                         </a>
                       )}
@@ -318,7 +293,6 @@ export default function HomePage() {
               <h2 className="text-lg font-semibold tracking-tight">Top products</h2>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-2">
-                  <div className="text-xs text-muted-foreground">List:</div>
                   <select
                     className="h-9 cursor-pointer rounded-md border bg-background px-3 text-sm shadow-sm transition hover:bg-muted"
                     value={topKey}
@@ -345,10 +319,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-xs text-muted-foreground">
-                    Showing {Math.min(topStart + 1, topTotal)}-{Math.min(topEnd, topTotal)} of{" "}
-                    {topTotal}
-                  </div>
+                  <div />
                   <div className="flex items-center justify-end gap-2">
                     <Button
                       type="button"
@@ -358,9 +329,6 @@ export default function HomePage() {
                     >
                       Prev
                     </Button>
-                    <div className="rounded-full border bg-background/70 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
-                      Page {topPageClamped + 1} / {topTotalPages}
-                    </div>
                     <Button
                       type="button"
                       variant="outline"

@@ -86,17 +86,16 @@ export default function AdminRolesPage() {
 
   return (
     <>
-      <Card className="border bg-background/75 shadow-sm backdrop-blur">
+      <Card className="border bg-background shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
             <CardTitle>Roles</CardTitle>
-            <div className="mt-1 text-sm text-muted-foreground">Create roles, delete roles, and lookup by name.</div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
               Refresh
             </Button>
-            <Button className="h-9 rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={openCreate}>
+            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               New role
             </Button>
           </div>
@@ -111,14 +110,14 @@ export default function AdminRolesPage() {
             </Button>
           </div>
           {lookupResult ? (
-            <div className="rounded-2xl border bg-background/60 p-4 text-sm">
+            <div className="rounded-xl border bg-background p-4 text-sm">
               Resolved: <span className="font-semibold">{getString(lookupResult, "name") ?? "-"}</span> (id: {getNumber(lookupResult, "id") ?? "-"})
             </div>
           ) : null}
 
-          <div className="overflow-x-auto rounded-2xl border bg-background/70">
+          <div className="table-shell">
             <table className="min-w-[640px] w-full text-sm">
-              <thead className="bg-muted/50 text-xs text-muted-foreground">
+              <thead className="bg-muted/50 text-sm text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Role</th>
                   <th className="px-4 py-3 text-right font-medium">Actions</th>
@@ -147,13 +146,13 @@ export default function AdminRolesPage() {
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
                           <div className="font-medium">{roleName}</div>
-                          <div className="text-xs text-muted-foreground">#{id}</div>
+                          <div className="text-sm text-muted-foreground">#{id}</div>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl text-rose-600 hover:bg-rose-500/10 hover:text-rose-700"
+                              className="h-9 rounded-xl action-danger"
                               onClick={() => setDeleteId(id)}
                               disabled={!id}
                             >
@@ -178,7 +177,7 @@ export default function AdminRolesPage() {
             <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-gradient-to-r from-primary via-fuchsia-500 to-emerald-500 text-white hover:opacity-95" onClick={create}>
+            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={create}>
               Create
             </Button>
           </div>
