@@ -109,11 +109,23 @@ export default function ChatbotWidget() {
       } else {
         list = [];
       }
-      setConversations(list.map((c) => ({ ...c, scopeLabel: scope === "project" ? "PROJECT" : scope === "group" ? "GROUP" : "PERSONAL" } as any)));
+      const filtered = list.filter((c) => {
+        const isBlank = !c.updatedAt && String(c.title || "").trim().toLowerCase() === "new chat";
+        if (!isBlank) return true;
+        const alreadyKept = list.some(
+          (x) =>
+            x !== c &&
+            !x.updatedAt &&
+            String(x.title || "").trim().toLowerCase() === "new chat" &&
+            list.indexOf(x) < list.indexOf(c),
+        );
+        return !alreadyKept || Number(c.id) === Number(activeConversationId ?? 0);
+      });
+      setConversations(filtered.map((c) => ({ ...c, scopeLabel: scope === "project" ? "PROJECT" : scope === "group" ? "GROUP" : "PERSONAL" } as any)));
       if (list.length > 0) {
         const key = `${scope}:${activeProjectId ?? "-"}:${activeGroupId ?? "-"}`;
         const remembered = lastByScope[key];
-        const chosen = remembered && list.some((x) => x.id === remembered) ? remembered : list[0].id;
+        const chosen = remembered && filtered.some((x) => x.id === remembered) ? remembered : filtered[0]?.id;
         setActiveConversationId(chosen);
       } else {
         setActiveConversationId(null);
@@ -212,6 +224,9 @@ export default function ChatbotWidget() {
 
   async function startNewChat() {
     try {
+      if (activeConversationId && items.length === 0 && !message.trim() && !pendingFile) {
+        return;
+      }
       const created = await createChatConversation("New chat", scope === "project" ? activeProjectId ?? undefined : undefined, scope === "group" ? activeGroupId ?? undefined : undefined);
       setConversations((prev) => [created, ...prev]);
       setActiveConversationId(created.id);
