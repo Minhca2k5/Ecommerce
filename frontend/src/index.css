@@ -1,34 +1,36 @@
-﻿@tailwind base;
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap");
+
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 35 33% 98%;
-    --foreground: 220 14% 14%;
+    --background: 210 33% 98%;
+    --foreground: 222 25% 14%;
     --card: 0 0% 100%;
-    --card-foreground: 220 14% 14%;
+    --card-foreground: 222 25% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 14% 14%;
-    --primary: 16 92% 52%;
+    --popover-foreground: 222 25% 14%;
+    --primary: 196 78% 36%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 30 20% 94%;
-    --secondary-foreground: 220 14% 18%;
-    --muted: 30 20% 94%;
-    --muted-foreground: 220 10% 44%;
-    --accent: 30 20% 94%;
-    --accent-foreground: 220 14% 18%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 210 24% 92%;
+    --secondary-foreground: 222 18% 20%;
+    --muted: 210 26% 94%;
+    --muted-foreground: 218 12% 45%;
+    --accent: 24 92% 96%;
+    --accent-foreground: 222 18% 20%;
+    --destructive: 0 78% 54%;
     --destructive-foreground: 0 0% 98%;
-    --border: 28 22% 88%;
-    --input: 28 22% 88%;
-    --ring: 16 92% 52%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.75rem
+    --border: 214 18% 86%;
+    --input: 214 18% 86%;
+    --ring: 196 78% 36%;
+    --chart-1: 196 78% 36%;
+    --chart-2: 154 62% 36%;
+    --chart-3: 25 78% 52%;
+    --chart-4: 220 42% 46%;
+    --chart-5: 350 58% 52%;
+    --radius: 0.8rem
   }
 }
 
@@ -38,27 +40,112 @@
   }
   body {
     @apply bg-background text-foreground antialiased transition-colors duration-300;
-    font-family: "Be Vietnam Pro", "Segoe UI", "Noto Sans", "Inter", Roboto, Arial, sans-serif;
+    font-family: "Manrope", "Segoe UI", "Noto Sans", Arial, sans-serif;
     text-rendering: optimizeLegibility;
     background-image:
-      radial-gradient(1200px 520px at 8% -8%, rgba(255, 99, 40, 0.13), transparent 62%),
-      radial-gradient(900px 400px at 94% -24%, rgba(255, 167, 38, 0.10), transparent 60%),
-      radial-gradient(1000px 420px at 90% -20%, rgba(14, 165, 233, 0.06), transparent 60%);
+      radial-gradient(900px 520px at -6% -10%, rgba(14, 116, 144, 0.14), transparent 62%),
+      radial-gradient(820px 460px at 98% -14%, rgba(249, 115, 22, 0.12), transparent 60%),
+      radial-gradient(760px 380px at 92% 16%, rgba(56, 189, 248, 0.10), transparent 60%),
+      linear-gradient(180deg, rgba(248, 250, 252, 0.95), rgba(241, 245, 249, 0.92));
     background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Fraunces", "Georgia", "Times New Roman", serif;
+    letter-spacing: -0.01em;
   }
 }
 
 @layer components {
+  .app-shell {
+    background-image:
+      radial-gradient(900px 520px at 0% -10%, rgba(14, 116, 144, 0.12), transparent 62%),
+      radial-gradient(820px 460px at 100% -14%, rgba(249, 115, 22, 0.10), transparent 60%);
+    background-attachment: fixed;
+  }
+
+  .app-header {
+    background-image: linear-gradient(120deg, rgba(255, 255, 255, 0.9), rgba(244, 248, 250, 0.95));
+    border-color: hsl(var(--primary) / 0.2);
+    box-shadow: 0 18px 40px -36px rgba(15, 23, 42, 0.45);
+  }
+
+  .admin-shell {
+    --primary: 219 79% 44%;
+    --ring: 219 79% 44%;
+    --secondary: 215 30% 92%;
+    --accent: 214 100% 95%;
+    background-image:
+      radial-gradient(900px 520px at 0% -12%, rgba(15, 23, 42, 0.18), transparent 62%),
+      radial-gradient(840px 460px at 100% -18%, rgba(30, 64, 175, 0.14), transparent 60%),
+      linear-gradient(180deg, rgba(245, 247, 250, 0.96), rgba(235, 240, 246, 0.96));
+  }
+
+  .admin-header {
+    background-image: linear-gradient(120deg, rgba(248, 250, 252, 0.98), rgba(226, 232, 240, 0.92));
+    border-color: hsl(215 25% 75% / 0.5);
+  }
+
   .page-section {
     @apply relative overflow-hidden rounded-xl border bg-background p-6 shadow-sm;
-    border-color: hsl(var(--primary) / 0.22);
-    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 243, 232, 0.96));
+    border-color: hsl(var(--primary) / 0.18);
+    background-image: linear-gradient(150deg, rgba(255, 255, 255, 0.98), rgba(236, 246, 249, 0.92));
+  }
+
+  .category-card {
+    border-color: hsl(var(--primary) / 0.14);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(241, 247, 250, 0.92));
+    box-shadow: 0 18px 40px -30px rgba(15, 23, 42, 0.35);
+    backdrop-filter: blur(8px);
+  }
+
+  .category-card:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: 0 24px 50px -34px rgba(14, 116, 144, 0.45);
+    transform: translateY(-2px);
+  }
+
+  .category-cta {
+    background: linear-gradient(120deg, rgba(14, 116, 144, 0.15), rgba(2, 132, 199, 0.08));
+    border-color: hsl(var(--primary) / 0.25);
+  }
+
+  .page-hero {
+    @apply relative overflow-hidden rounded-2xl border p-8 shadow-sm;
+    border-color: hsl(var(--primary) / 0.15);
+    background: linear-gradient(140deg, rgba(255, 255, 255, 0.94), rgba(238, 246, 249, 0.9));
+  }
+
+  .hero-orb {
+    @apply pointer-events-none absolute rounded-full blur-3xl;
+  }
+
+  .hero-orb--a {
+    left: -2.5rem;
+    top: -3rem;
+    height: 12rem;
+    width: 12rem;
+    background: rgba(14, 116, 144, 0.16);
+  }
+
+  .hero-orb--b {
+    right: -1.5rem;
+    top: 1.5rem;
+    height: 10rem;
+    width: 10rem;
+    background: rgba(251, 146, 60, 0.18);
+  }
+
+  .panel-card {
+    border-color: hsl(var(--primary) / 0.12);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(239, 246, 249, 0.88));
+    box-shadow: 0 18px 40px -34px rgba(15, 23, 42, 0.4);
   }
 
   .table-shell {
     @apply overflow-x-auto rounded-xl border bg-background;
-    border-color: hsl(var(--primary) / 0.15);
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 250, 246, 0.96));
+    border-color: hsl(var(--primary) / 0.12);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(242, 247, 250, 0.94));
   }
 
   .status-success {
@@ -109,12 +196,10 @@
   }
 
   .pressable:hover {
-    box-shadow: 0 10px 24px -18px rgba(255, 99, 40, 0.55);
+    box-shadow: 0 14px 30px -22px rgba(14, 116, 144, 0.6);
   }
 
   .pressable:active {
     transform: translateY(1px) scale(0.99);
   }
-
 }
-

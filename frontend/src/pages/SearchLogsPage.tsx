@@ -88,34 +88,42 @@ export default function SearchLogsPage() {
   if (!items.length) return <EmptyState title="No search logs" description="Search products to build your history." />;
 
   return (
-    <div className="space-y-6">
-      <section className="page-section">
-        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="text-2xl font-semibold">Search logs</div>
-          <Button variant="outline" className="h-10 rounded-xl border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10" onClick={() => setIsClearOpen(true)}>
+    <div className="space-y-8">
+      <section className="page-hero">
+        <div className="hero-orb hero-orb--a" />
+        <div className="hero-orb hero-orb--b" />
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl space-y-2">
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Search</div>
+            <div className="text-3xl font-semibold tracking-tight">Search logs</div>
+            <p className="text-sm text-muted-foreground">
+              Review what you searched for and clean it up anytime.
+            </p>
+          </div>
+          <Button variant="outline" className="h-10 rounded-xl border-rose-500/20 bg-white/80 text-rose-700 hover:bg-rose-500/10" onClick={() => setIsClearOpen(true)}>
             Clear all
           </Button>
         </div>
       </section>
 
-      <Card className="bg-background">
+      <Card className="panel-card">
         <CardHeader>
           <CardTitle className="text-base">Filter</CardTitle>
         </CardHeader>
         <CardContent>
-          <Input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter by keyword..." className="rounded-xl bg-background" />
+          <Input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter by keyword..." className="rounded-xl bg-white/80" />
         </CardContent>
       </Card>
 
       <div className="grid gap-3 lg:grid-cols-2">
         {filtered.map((i) => (
-          <Card key={String(i.id)} className="pressable bg-background shadow-sm transition hover:shadow-md">
+          <Card key={String(i.id)} className="pressable bg-white/90 shadow-sm transition hover:shadow-md">
             <CardHeader className="flex flex-row items-start justify-between gap-3">
               <div>
                 <CardTitle className="text-base">{i.keyword || "-"}</CardTitle>
                 <div className="mt-1 text-xs text-muted-foreground">{formatTime(i.createdAt)}</div>
               </div>
-              <Button variant="outline" className="rounded-xl border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(i)}>
+              <Button variant="outline" className="rounded-xl border-rose-500/20 bg-white/80 text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(i)}>
                 Delete
               </Button>
             </CardHeader>

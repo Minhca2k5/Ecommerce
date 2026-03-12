@@ -96,12 +96,20 @@ export default function WishlistPage() {
   if (!items.length) return <EmptyState title="Wishlist is empty" description="Save products you love for later." action={<Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground"><Link to="/products">Browse products</Link></Button>} />;
 
   return (
-    <div className="space-y-6">
-      <section className="page-section">
-        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="text-2xl font-semibold">Wishlist</div>
+    <div className="space-y-8">
+      <section className="page-hero">
+        <div className="hero-orb hero-orb--a" />
+        <div className="hero-orb hero-orb--b" />
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl space-y-2">
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Wishlist</div>
+            <div className="text-3xl font-semibold tracking-tight">Saved for later</div>
+            <p className="text-sm text-muted-foreground">
+              Keep track of items you want to buy next.
+            </p>
+          </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" className="h-10 rounded-xl bg-background" onClick={() => setIsClearOpen(true)}>
+            <Button variant="outline" className="h-10 rounded-xl bg-white/80" onClick={() => setIsClearOpen(true)}>
               Clear all
             </Button>
             <Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground">
@@ -111,18 +119,18 @@ export default function WishlistPage() {
         </div>
       </section>
 
-      <Card className="bg-background">
+      <Card className="panel-card">
         <CardHeader>
           <CardTitle className="text-base">Search</CardTitle>
         </CardHeader>
         <CardContent>
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search wishlist..." className="rounded-xl bg-background" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search wishlist..." className="rounded-xl bg-white/80" />
         </CardContent>
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((w) => (
-          <Card key={String(w.id)} className="pressable group overflow-hidden bg-background shadow-sm transition hover:shadow-md">
+          <Card key={String(w.id)} className="pressable group overflow-hidden bg-white/90">
             <div className="relative aspect-[4/3] overflow-hidden bg-muted/40">
               <SafeImage
                 src={w.url || ""}
@@ -136,10 +144,10 @@ export default function WishlistPage() {
               <div className="font-semibold line-clamp-2">{w.productName || "Product"}</div>
               <div className="text-sm text-primary font-bold">{money(w.productPrice, w.productCurrency)}</div>
               <div className="flex gap-2">
-                <Button asChild variant="outline" className="w-full rounded-xl bg-background">
+                <Button asChild variant="outline" className="w-full rounded-xl bg-white/80">
                   <Link to={`/products/${w.productId ?? ""}`}>View</Link>
                 </Button>
-                <Button variant="outline" className="w-full rounded-xl border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(w)}>
+                <Button variant="outline" className="w-full rounded-xl border-rose-500/20 bg-white/80 text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(w)}>
                   Remove
                 </Button>
               </div>

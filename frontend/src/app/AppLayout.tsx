@@ -9,11 +9,12 @@ import { getErrorMessage } from "@/lib/errors";
 import { getAvailableRoles, getSelectedRole, setSelectedRole } from "@/lib/roleSelection";
 import { getMyCart, getGuestCart, getStoredGuestId } from "@/lib/cartApi";
 import ChatbotWidget from "@/app/ChatbotWidget";
+import { cn } from "@/lib/utils";
 
 const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   isActive
-    ? "rounded-lg bg-primary/20 px-3 py-1.5 text-primary ring-1 ring-primary/40 shadow-sm"
-    : "rounded-lg bg-primary/[0.06] px-3 py-1.5 text-muted-foreground hover:bg-primary/15 hover:text-primary";
+    ? "rounded-lg bg-primary/15 px-3 py-1.5 text-primary ring-1 ring-primary/30 shadow-sm"
+    : "rounded-lg bg-white/70 px-3 py-1.5 text-muted-foreground ring-1 ring-transparent hover:bg-primary/10 hover:text-primary";
 
 export default function AppLayout() {
   const auth = useAuth();
@@ -99,8 +100,8 @@ export default function AppLayout() {
   }, [auth.isAuthenticated, isAdminRoute, location.pathname]);
 
   return (
-    <div className="relative min-h-dvh flex flex-col overflow-hidden bg-background">
-      <header className="sticky top-0 z-50 border-b border-primary/25 bg-[linear-gradient(180deg,rgba(255,112,45,0.12),rgba(255,255,255,0.92))] backdrop-blur">
+    <div className={cn("app-shell relative min-h-dvh flex flex-col overflow-hidden bg-background", isAdminRoute && "admin-shell")}>
+      <header className={cn("app-header sticky top-0 z-50 border-b backdrop-blur", isAdminRoute && "admin-header")}>
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap">
           <Link
             to={isAdminRoute ? "/admin" : "/"}
@@ -466,9 +467,22 @@ export default function AppLayout() {
 
       {!isAdminRoute ? <ChatbotWidget /> : null}
       <footer className="border-t">
-        <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-muted-foreground">© {new Date().getFullYear()} Ecommerce</div>
+        <div className="mx-auto max-w-6xl px-4 py-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/80 px-3 py-1 text-sm text-muted-foreground">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="8" />
+                <path d="M9 10h.01" />
+                <path d="M15 10h.01" />
+                <path d="M8.5 14.5c1.2 1 2.5 1.5 3.5 1.5s2.3-.5 3.5-1.5" />
+              </svg>
+            </span>
+            Always happy to help
+          </div>
+        </div>
       </footer>
     </div>
   );
 }
+
 

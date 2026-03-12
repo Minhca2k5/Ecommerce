@@ -12,7 +12,6 @@ import {
   declineGroupInvite,
   getChatHistory,
   getInviteBadgeCount,
-  listChatConversations,
   listConversationsByProject,
   listGroupConversations,
   listPersonalConversations,
@@ -108,7 +107,7 @@ export default function ChatbotWidget() {
       } else if (scope === "group" && activeGroupId) {
         list = await listGroupConversations(activeGroupId);
       } else {
-        list = await listChatConversations();
+        list = [];
       }
       setConversations(list.map((c) => ({ ...c, scopeLabel: scope === "project" ? "PROJECT" : scope === "group" ? "GROUP" : "PERSONAL" } as any)));
       if (list.length > 0) {
@@ -424,6 +423,17 @@ export default function ChatbotWidget() {
     if (!open) return;
     void refreshMeta();
   }, [open, activeGroupId]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (scope === "project" && !activeProjectId && projects.length) {
+      setActiveProjectId(projects[0].id);
+      return;
+    }
+    if (scope === "group" && !activeGroupId && groups.length) {
+      setActiveGroupId(groups[0].id);
+    }
+  }, [open, scope, projects, groups, activeProjectId, activeGroupId]);
 
   useEffect(() => {
     if (!open) return;

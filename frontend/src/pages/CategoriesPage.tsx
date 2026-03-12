@@ -47,10 +47,35 @@ export default function CategoriesPage() {
   const categories = data?.content ?? [];
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-xl border border-primary/20 bg-card p-6 shadow-sm">
-        <div className="max-w-2xl space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Categories</h1>
+    <div className="space-y-8">
+      <section className="relative overflow-hidden rounded-2xl border border-primary/15 bg-white/85 p-8 shadow-sm">
+        <div className="pointer-events-none absolute -left-10 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-6 top-6 h-40 w-40 rounded-full bg-amber-400/15 blur-3xl" />
+        <div className="relative z-10 max-w-2xl space-y-4">
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            Collections
+          </span>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Browse by category</h1>
+            <p className="text-base text-muted-foreground">
+              Curated lanes for every shopping mood. Dive into a category to see what&apos;s trending and ready to ship.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/products"
+              className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground"
+            >
+              Explore all products
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12h14" />
+                <path d="M13 6l6 6-6 6" />
+              </svg>
+            </Link>
+            <div className="inline-flex items-center gap-2 rounded-xl border border-primary/15 bg-white/70 px-4 py-2 text-sm text-muted-foreground">
+              Updated daily with new arrivals
+            </div>
+          </div>
         </div>
       </section>
 
@@ -65,7 +90,7 @@ export default function CategoriesPage() {
       ) : categories.length === 0 ? (
         <EmptyState title="No categories" description="Try again later." />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((c) => {
             const id = getNumber(c, "id") ?? 0;
             const name = getString(c, "name", "title") ?? "Category";
@@ -74,27 +99,30 @@ export default function CategoriesPage() {
             const meta = (slug && categoryMetaBySlug[slug]) || defaultCategoryMeta;
             return (
               <Link key={id} to={href} className="block cursor-pointer">
-                <Card className="pressable group overflow-hidden border-primary/15 bg-card transition hover:shadow-md hover:shadow-primary/10">
-                  <div className={`h-20 ${meta.gradientClassName}`} />
-                  <CardHeader className="-mt-10 space-y-3">
+                <Card className="category-card pressable group relative overflow-hidden border transition">
+                  <div className={`absolute inset-0 ${meta.gradientClassName}`} />
+                  <div className="absolute -right-10 -top-16 h-32 w-32 rounded-full bg-white/60 blur-2xl" />
+                  <CardHeader className="relative z-10 space-y-4 pb-2">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <CategoryIcon
-                          name={meta.icon}
-                          className="transition duration-200"
-                        />
-                          <div className="space-y-1">
-                            <CardTitle className="text-base">{name}</CardTitle>
-                            <div className="text-sm text-muted-foreground">
-                              {meta.description}
-                            </div>
-                          </div>
+                      <CategoryIcon
+                        name={meta.icon}
+                        className="border-white/60 bg-white/85 shadow-md group-hover:-translate-y-0.5 transition"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <CardTitle className="text-lg">{name}</CardTitle>
+                      <div className="text-sm text-muted-foreground">
+                        {meta.description}
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-medium text-primary transition hover:bg-primary hover:text-primary-foreground">
-                      Explore
+                  <CardContent className="relative z-10 pt-2">
+                    <div className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold text-primary transition group-hover:text-primary-foreground category-cta group-hover:bg-primary">
+                      Explore category
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M5 12h14" />
+                        <path d="M13 6l6 6-6 6" />
+                      </svg>
                     </div>
                   </CardContent>
                 </Card>

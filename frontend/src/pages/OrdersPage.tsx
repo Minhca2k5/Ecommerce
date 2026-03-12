@@ -106,13 +106,24 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="page-section">
-        <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="text-2xl font-semibold">Orders</div>
+    <div className="space-y-8">
+      <section className="page-hero">
+        <div className="hero-orb hero-orb--a" />
+        <div className="hero-orb hero-orb--b" />
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl space-y-2">
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Orders</div>
+            <div className="text-3xl font-semibold tracking-tight">Track your purchases</div>
+            <p className="text-sm text-muted-foreground">
+              Review recent orders, check status, and open details in one place.
+            </p>
+          </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button asChild variant="outline" className="h-10 rounded-xl bg-background">
-              <Link to="/cart">Cart</Link>
+            <Button asChild variant="outline" className="h-10 rounded-xl bg-white/80">
+              <Link to="/cart">Go to cart</Link>
+            </Button>
+            <Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground">
+              <Link to="/products">Shop</Link>
             </Button>
           </div>
         </div>
@@ -120,14 +131,15 @@ export default function OrdersPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {sorted.map((order) => (
-          <Card key={String(order.id)} className="pressable overflow-hidden">
+          <Card key={String(order.id)} className="pressable relative overflow-hidden bg-white/90">
+            <div className="h-1 w-full bg-gradient-to-r from-primary/60 via-sky-400/50 to-amber-300/40" />
             <CardHeader className="relative flex flex-row items-start justify-between gap-3">
               <div>
-                <CardTitle>Order</CardTitle>
+                <CardTitle>Order {order.id ? `#${order.id}` : ""}</CardTitle>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  {`Subtotal ${formatCurrency(Number(order.subtotalAmount ?? 0), order.currency || "VND")} • Tax ${formatCurrency(Number(order.taxAmount ?? 0), order.currency || "VND")}`}
+                  {`Subtotal ${formatCurrency(Number(order.subtotalAmount ?? 0), order.currency || "VND")} | Tax ${formatCurrency(Number(order.taxAmount ?? 0), order.currency || "VND")}`}
                 </div>
-                <div className="mt-1 text-sm text-muted-foreground">Total • {formatCurrency(Number(order.totalAmount ?? 0), order.currency || "VND")}</div>
+                <div className="mt-1 text-sm text-muted-foreground">Total - {formatCurrency(Number(order.totalAmount ?? 0), order.currency || "VND")}</div>
               </div>
               {statusBadge(order.status)}
             </CardHeader>
