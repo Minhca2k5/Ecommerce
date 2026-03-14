@@ -1,6 +1,6 @@
 package com.minzetsu.ecommerce.product.service.impl;
 
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.product.dto.request.ProductImageRequest;
@@ -167,3 +167,4 @@ public class ProductImageServiceImpl implements ProductImageService {
         return productImageMapper.toResponse(image);
     }
 }
+

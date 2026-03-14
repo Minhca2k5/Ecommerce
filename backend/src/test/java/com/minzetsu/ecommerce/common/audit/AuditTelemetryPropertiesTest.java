@@ -3,6 +3,8 @@ package com.minzetsu.ecommerce.common.audit;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.minzetsu.ecommerce.common.audit.config.AuditTelemetryProperties;
+
 
 class AuditTelemetryPropertiesTest {
 
@@ -29,3 +31,4 @@ class AuditTelemetryPropertiesTest {
         assertThat(properties.getChannel()).isEqualTo("   ");
     }
 }
+

@@ -1,7 +1,7 @@
 package com.minzetsu.ecommerce.common.config;
 
-import com.minzetsu.ecommerce.common.audit.AuditTelemetryProperties;
-import com.minzetsu.ecommerce.common.audit.AuditTelemetrySubscriber;
+import com.minzetsu.ecommerce.common.audit.config.AuditTelemetryProperties;
+import com.minzetsu.ecommerce.common.audit.telemetry.AuditTelemetrySubscriber;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,3 +27,7 @@ public class AuditTelemetryRedisConfig {
         return container;
     }
 }
+
+
+
+

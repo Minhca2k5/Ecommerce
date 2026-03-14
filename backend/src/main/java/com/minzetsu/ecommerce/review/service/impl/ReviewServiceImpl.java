@@ -1,6 +1,6 @@
 package com.minzetsu.ecommerce.review.service.impl;
 
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.common.exception.InvalidObjectException;
@@ -196,3 +196,4 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewMapper.toResponse(review);
     }
 }
+

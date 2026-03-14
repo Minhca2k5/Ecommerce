@@ -1,6 +1,6 @@
 package com.minzetsu.ecommerce.inventory.service.impl;
 
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.InsufficientNumberException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
@@ -242,3 +242,4 @@ public class InventoryServiceImpl implements InventoryService {
        );
     }
 }
+

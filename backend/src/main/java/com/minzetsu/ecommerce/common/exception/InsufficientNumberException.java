@@ -7,3 +7,6 @@ public class InsufficientNumberException extends AppException{
         super(message, HttpStatus.BAD_REQUEST);
     }
 }
+
+
+

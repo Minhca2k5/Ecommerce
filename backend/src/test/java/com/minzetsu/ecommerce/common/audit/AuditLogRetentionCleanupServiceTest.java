@@ -15,6 +15,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.minzetsu.ecommerce.common.audit.repository.AuditLogRepository;
+import com.minzetsu.ecommerce.common.audit.config.AuditLogRetentionProperties;
+import com.minzetsu.ecommerce.common.audit.service.AuditLogRetentionCleanupService;
+
 
 @ExtendWith(MockitoExtension.class)
 class AuditLogRetentionCleanupServiceTest {
@@ -72,3 +76,4 @@ class AuditLogRetentionCleanupServiceTest {
         verify(auditLogRepository, never()).deleteAllByIdInBatch(any());
     }
 }
+

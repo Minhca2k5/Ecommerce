@@ -2,7 +2,7 @@ package com.minzetsu.ecommerce.promotion.service.impl;
 
 import com.minzetsu.ecommerce.common.exception.DeletionException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
-import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
+import com.minzetsu.ecommerce.messaging.event.DomainEventPublisher;
 import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import com.minzetsu.ecommerce.order.repository.OrderRepository;
 import com.minzetsu.ecommerce.promotion.dto.response.UserVoucherResponse;
@@ -132,6 +132,7 @@ class VoucherServiceImplTest {
 
         verify(voucherRepository).delete(voucher);
         verify(eventPublisher).publishEvent(any(WebhookEvent.class));
-        verify(domainEventPublisher).publish(eq(com.minzetsu.ecommerce.messaging.DomainEventType.VOUCHER_DELETED), eq(30L), eq(null), any());
+        verify(domainEventPublisher).publish(eq(com.minzetsu.ecommerce.messaging.event.DomainEventType.VOUCHER_DELETED), eq(30L), eq(null), any());
     }
 }
+

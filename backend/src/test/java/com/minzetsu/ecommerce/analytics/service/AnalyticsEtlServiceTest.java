@@ -2,8 +2,8 @@ package com.minzetsu.ecommerce.analytics.service;
 
 import com.minzetsu.ecommerce.analytics.entity.DailyProductMetric;
 import com.minzetsu.ecommerce.analytics.repository.DailyProductMetricRepository;
-import com.minzetsu.ecommerce.mongo.ClickstreamEventDocument;
-import com.minzetsu.ecommerce.mongo.ClickstreamEventRepository;
+import com.minzetsu.ecommerce.mongo.document.ClickstreamEventDocument;
+import com.minzetsu.ecommerce.mongo.repository.ClickstreamEventRepository;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -143,3 +143,4 @@ class AnalyticsEtlServiceTest {
         return doc;
     }
 }
+

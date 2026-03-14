@@ -15,6 +15,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.minzetsu.ecommerce.common.idempotency.repository.IdempotencyKeyRepository;
+import com.minzetsu.ecommerce.common.idempotency.service.IdempotencyService;
+import com.minzetsu.ecommerce.common.idempotency.entity.IdempotencyKey;
+
 
 @ExtendWith(MockitoExtension.class)
 class IdempotencyServiceTest {
@@ -129,3 +133,4 @@ class IdempotencyServiceTest {
         assertThat(saved.getResourceId()).isEqualTo(456L);
     }
 }
+

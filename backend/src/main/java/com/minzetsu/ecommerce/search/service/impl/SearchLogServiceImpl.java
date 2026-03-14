@@ -8,7 +8,7 @@ import com.minzetsu.ecommerce.search.mapper.SearchLogMapper;
 import com.minzetsu.ecommerce.search.repository.SearchLogRepository;
 import com.minzetsu.ecommerce.search.service.SearchLogService;
 import com.minzetsu.ecommerce.user.service.UserService;
-import com.minzetsu.ecommerce.mongo.ClickstreamEventService;
+import com.minzetsu.ecommerce.mongo.service.ClickstreamEventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -76,3 +76,4 @@ public class SearchLogServiceImpl implements SearchLogService {
         searchLogRepository.deleteById(id);
     }
 }
+

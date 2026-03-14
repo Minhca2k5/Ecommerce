@@ -8,3 +8,6 @@ public class NotFoundException extends AppException{
         super(message, HttpStatus.NOT_FOUND);
     }
 }
+
+
+

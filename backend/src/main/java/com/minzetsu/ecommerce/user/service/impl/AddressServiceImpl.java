@@ -1,6 +1,6 @@
 package com.minzetsu.ecommerce.user.service.impl;
 
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
@@ -151,3 +151,4 @@ public class AddressServiceImpl implements AddressService {
         );
     }
 }
+

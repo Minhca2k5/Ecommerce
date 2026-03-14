@@ -8,7 +8,7 @@ import com.minzetsu.ecommerce.cart.repository.CartItemRepository;
 import com.minzetsu.ecommerce.cart.repository.CartRepository;
 import com.minzetsu.ecommerce.cart.service.CartService;
 import com.minzetsu.ecommerce.cart.service.GetUrlForCartService;
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.AlreadyExistException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.user.entity.User;
@@ -170,3 +170,4 @@ public class CartServiceImpl implements CartService {
         return buildFullCartResponse(userCart);
     }
 }
+

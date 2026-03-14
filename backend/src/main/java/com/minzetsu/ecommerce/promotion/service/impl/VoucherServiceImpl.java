@@ -1,6 +1,6 @@
 package com.minzetsu.ecommerce.promotion.service.impl;
 
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.DeletionException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
@@ -17,8 +17,8 @@ import com.minzetsu.ecommerce.promotion.repository.VoucherRepository;
 import com.minzetsu.ecommerce.promotion.repository.VoucherSpecification;
 import com.minzetsu.ecommerce.promotion.repository.VoucherUseRepository;
 import com.minzetsu.ecommerce.promotion.service.VoucherService;
-import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
-import com.minzetsu.ecommerce.messaging.DomainEventType;
+import com.minzetsu.ecommerce.messaging.event.DomainEventPublisher;
+import com.minzetsu.ecommerce.messaging.event.DomainEventType;
 import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -215,3 +215,4 @@ public class VoucherServiceImpl implements VoucherService {
                 .toList();
     }
 }
+

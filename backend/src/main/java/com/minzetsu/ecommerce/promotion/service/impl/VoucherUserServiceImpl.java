@@ -1,6 +1,6 @@
 package com.minzetsu.ecommerce.promotion.service.impl;
 
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
 import com.minzetsu.ecommerce.order.service.OrderService;
 import com.minzetsu.ecommerce.promotion.dto.filter.VoucherUseFilter;
@@ -98,3 +98,4 @@ public class VoucherUserServiceImpl implements VoucherUseService {
         return voucherUseRepository.existsByOrderId(orderId);
     }
 }
+

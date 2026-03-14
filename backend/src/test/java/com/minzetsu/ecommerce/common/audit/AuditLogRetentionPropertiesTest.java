@@ -3,6 +3,8 @@ package com.minzetsu.ecommerce.common.audit;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.minzetsu.ecommerce.common.audit.config.AuditLogRetentionProperties;
+
 
 class AuditLogRetentionPropertiesTest {
 
@@ -26,3 +28,4 @@ class AuditLogRetentionPropertiesTest {
         assertThat(properties.getBatchSize()).isEqualTo(250);
     }
 }
+

@@ -18,3 +18,6 @@ public class ChatResponse {
         this.reply = reply;
     }
 }
+
+
+

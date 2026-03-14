@@ -1,6 +1,6 @@
 package com.minzetsu.ecommerce.user.service.impl;
 
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.user.dto.request.RoleRequest;
 import com.minzetsu.ecommerce.user.dto.response.RoleResponse;
@@ -74,3 +74,4 @@ public class RoleServiceImpl implements RoleService {
         return roleMapper.toResponse(role);
     }
 }
+

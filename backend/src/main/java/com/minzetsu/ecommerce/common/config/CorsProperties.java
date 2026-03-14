@@ -59,3 +59,6 @@ public class CorsProperties {
         this.allowCredentials = allowCredentials;
     }
 }
+
+
+

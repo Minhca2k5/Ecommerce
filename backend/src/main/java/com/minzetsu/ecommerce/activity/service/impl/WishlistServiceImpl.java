@@ -6,7 +6,7 @@ import com.minzetsu.ecommerce.activity.entity.Wishlist;
 import com.minzetsu.ecommerce.activity.mapper.WishlistMapper;
 import com.minzetsu.ecommerce.activity.repository.WishlistRepository;
 import com.minzetsu.ecommerce.activity.service.WishlistService;
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.AlreadyExistException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.product.entity.ProductImage;
@@ -124,3 +124,4 @@ public class WishlistServiceImpl implements WishlistService {
         return toResponseListWithUrl(wishlistRepository.findByProductNameByOrderByUpdatedAtDesc(productName, userId));
     }
 }
+

@@ -4,3 +4,6 @@ public interface SortableFilter {
     String getSortBy();
     String getSortDirection();
 }
+
+
+

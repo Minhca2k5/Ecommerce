@@ -1,6 +1,6 @@
 package com.minzetsu.ecommerce.common.audit.controller;
 
-import com.minzetsu.ecommerce.common.audit.AuditLogQueryService;
+import com.minzetsu.ecommerce.common.audit.service.AuditLogQueryService;
 import com.minzetsu.ecommerce.common.audit.dto.filter.AuditLogFilter;
 import com.minzetsu.ecommerce.common.audit.dto.response.AuditLogResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,3 +31,7 @@ public class AdminAuditLogController {
         return ResponseEntity.ok(auditLogQueryService.search(filter, pageable));
     }
 }
+
+
+
+

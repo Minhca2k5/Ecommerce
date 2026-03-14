@@ -1,6 +1,6 @@
 package com.minzetsu.ecommerce.inventory.service.impl;
 
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
 import com.minzetsu.ecommerce.inventory.dto.filter.WarehouseFilter;
@@ -111,3 +111,4 @@ public class WarehouseServiceImpl implements WarehouseService {
         return warehouseMapper.toResponse(warehouseRepository.save(warehouse));
     }
 }
+

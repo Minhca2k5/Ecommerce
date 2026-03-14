@@ -3,7 +3,7 @@ package com.minzetsu.ecommerce.product.service.impl;
 import com.minzetsu.ecommerce.activity.repository.RecentViewRepository;
 import com.minzetsu.ecommerce.activity.repository.WishlistRepository;
 import com.minzetsu.ecommerce.cart.repository.CartItemRepository;
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.DeletionException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
@@ -38,10 +38,10 @@ import com.minzetsu.ecommerce.review.dto.response.ReviewResponse;
 import com.minzetsu.ecommerce.review.mapper.ReviewMapper;
 import com.minzetsu.ecommerce.review.repository.ReviewRepository;
 import com.minzetsu.ecommerce.notification.event.WebhookEvent;
-import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
-import com.minzetsu.ecommerce.messaging.DomainEventType;
+import com.minzetsu.ecommerce.messaging.event.DomainEventPublisher;
+import com.minzetsu.ecommerce.messaging.event.DomainEventType;
 import com.minzetsu.ecommerce.search.service.ProductSearchService;
-import com.minzetsu.ecommerce.realtime.SseEmitterService;
+import com.minzetsu.ecommerce.realtime.service.SseEmitterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -512,3 +512,4 @@ public class ProductServiceImpl implements ProductService {
     }
 
 }
+

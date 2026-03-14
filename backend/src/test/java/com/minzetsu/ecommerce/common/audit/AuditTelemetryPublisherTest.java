@@ -16,6 +16,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import com.minzetsu.ecommerce.common.audit.config.AuditTelemetryProperties;
+import com.minzetsu.ecommerce.common.audit.telemetry.AuditTelemetryPublisher;
+import com.minzetsu.ecommerce.common.audit.entity.AuditLog;
+
 
 @ExtendWith(MockitoExtension.class)
 class AuditTelemetryPublisherTest {
@@ -76,3 +80,4 @@ class AuditTelemetryPublisherTest {
         assertThatCode(() -> publisher.publish(log)).doesNotThrowAnyException();
     }
 }
+

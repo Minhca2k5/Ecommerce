@@ -8,7 +8,7 @@ import com.minzetsu.ecommerce.analytics.repository.projection.TopProductAggregat
 import com.minzetsu.ecommerce.analytics.service.AdminAnalyticsService;
 import com.minzetsu.ecommerce.analytics.service.AnalyticsRealtimeCounterService;
 import com.minzetsu.ecommerce.common.exception.InvalidObjectException;
-import com.minzetsu.ecommerce.mongo.ClickstreamEventRepository;
+import com.minzetsu.ecommerce.mongo.repository.ClickstreamEventRepository;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.repository.ProductRepository;
 import java.math.BigDecimal;
@@ -261,3 +261,4 @@ public class AdminAnalyticsServiceImpl implements AdminAnalyticsService {
         private long uniqueUsers;
     }
 }
+

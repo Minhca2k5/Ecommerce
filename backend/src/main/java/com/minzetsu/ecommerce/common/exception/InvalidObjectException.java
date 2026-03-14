@@ -7,3 +7,6 @@ public class InvalidObjectException extends AppException{
         super(message, HttpStatus.BAD_REQUEST);
     }
 }
+
+
+

@@ -39,3 +39,6 @@ public class ChatConversationResponse {
         this.updatedAt = updatedAt;
     }
 }
+
+
+

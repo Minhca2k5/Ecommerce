@@ -84,3 +84,6 @@ public class GeneralExceptionHandler {
         return ResponseEntity.internalServerError().body(errorResponse);
     }
 }
+
+
+

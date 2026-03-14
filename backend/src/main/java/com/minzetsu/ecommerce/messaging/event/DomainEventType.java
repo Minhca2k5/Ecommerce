@@ -1,0 +1,20 @@
+package com.minzetsu.ecommerce.messaging.event;
+
+public enum DomainEventType {
+    ORDER_CREATED,
+    ORDER_STATUS_UPDATED,
+    PAYMENT_CREATED,
+    PAYMENT_SUCCEEDED,
+    PRODUCT_CREATED,
+    PRODUCT_UPDATED,
+    PRODUCT_DELETED,
+    CATEGORY_CREATED,
+    CATEGORY_UPDATED,
+    CATEGORY_DELETED,
+    VOUCHER_CREATED,
+    VOUCHER_UPDATED,
+    VOUCHER_DELETED
+}
+
+
+

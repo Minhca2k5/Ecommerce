@@ -18,3 +18,6 @@ public class ChatGroupMemberResponse {
     public String getFullName() { return fullName; }
     public String getRole() { return role; }
 }
+
+
+

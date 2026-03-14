@@ -8,3 +8,6 @@ public class AccountDisableException extends AppException {
         super(message, HttpStatus.FORBIDDEN);
     }
 }
+
+
+

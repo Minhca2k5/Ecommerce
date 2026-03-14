@@ -6,7 +6,7 @@ import com.minzetsu.ecommerce.analytics.repository.DailyProductMetricRepository;
 import com.minzetsu.ecommerce.analytics.repository.projection.FunnelAggregateView;
 import com.minzetsu.ecommerce.analytics.repository.projection.TopProductAggregateView;
 import com.minzetsu.ecommerce.analytics.service.AnalyticsRealtimeCounterService;
-import com.minzetsu.ecommerce.mongo.ClickstreamEventRepository;
+import com.minzetsu.ecommerce.mongo.repository.ClickstreamEventRepository;
 import com.minzetsu.ecommerce.product.entity.Product;
 import com.minzetsu.ecommerce.product.repository.ProductRepository;
 import java.time.LocalDate;
@@ -127,3 +127,4 @@ class AdminAnalyticsServiceImplTest {
         assertThat(resultP2.getOrders()).isEqualTo(1L);
     }
 }
+

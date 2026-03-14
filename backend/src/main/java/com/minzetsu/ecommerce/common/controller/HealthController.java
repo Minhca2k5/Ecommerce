@@ -24,3 +24,6 @@ public class HealthController {
         return ResponseEntity.status(httpStatus).body(Map.of("status", status));
     }
 }
+
+
+

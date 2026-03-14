@@ -3,8 +3,8 @@ package com.minzetsu.ecommerce.analytics.service;
 import com.minzetsu.ecommerce.analytics.entity.DailyProductMetric;
 import com.minzetsu.ecommerce.analytics.entity.DailyProductMetricId;
 import com.minzetsu.ecommerce.analytics.repository.DailyProductMetricRepository;
-import com.minzetsu.ecommerce.mongo.ClickstreamEventDocument;
-import com.minzetsu.ecommerce.mongo.ClickstreamEventRepository;
+import com.minzetsu.ecommerce.mongo.document.ClickstreamEventDocument;
+import com.minzetsu.ecommerce.mongo.repository.ClickstreamEventRepository;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -320,3 +320,4 @@ public class AnalyticsEtlService {
         }
     }
 }
+

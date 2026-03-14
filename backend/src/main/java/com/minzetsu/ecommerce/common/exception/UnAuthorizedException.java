@@ -7,3 +7,6 @@ public class UnAuthorizedException extends AppException{
         super(message, HttpStatus.FORBIDDEN);
     }
 }
+
+
+

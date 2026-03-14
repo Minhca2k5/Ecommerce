@@ -8,7 +8,7 @@ import com.minzetsu.ecommerce.cart.mapper.CartMapper;
 import com.minzetsu.ecommerce.cart.repository.CartItemRepository;
 import com.minzetsu.ecommerce.cart.repository.CartRepository;
 import com.minzetsu.ecommerce.inventory.service.InventoryService;
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.DeletionException;
 import com.minzetsu.ecommerce.common.exception.InvalidCredentialException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
@@ -191,3 +191,4 @@ public class UserServiceImpl implements UserService {
         );
     }
 }
+

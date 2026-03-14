@@ -4,11 +4,11 @@ import com.minzetsu.ecommerce.cart.entity.Cart;
 import com.minzetsu.ecommerce.cart.entity.CartItem;
 import com.minzetsu.ecommerce.cart.service.CartItemService;
 import com.minzetsu.ecommerce.cart.service.CartService;
-import com.minzetsu.ecommerce.common.idempotency.IdempotencyService;
+import com.minzetsu.ecommerce.common.idempotency.service.IdempotencyService;
 import com.minzetsu.ecommerce.common.exception.AppException;
 import com.minzetsu.ecommerce.common.utils.DatabaseRetryExecutor;
-import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
-import com.minzetsu.ecommerce.mongo.ClickstreamEventService;
+import com.minzetsu.ecommerce.messaging.event.DomainEventPublisher;
+import com.minzetsu.ecommerce.mongo.service.ClickstreamEventService;
 import com.minzetsu.ecommerce.order.config.CheckoutPricingProperties;
 import com.minzetsu.ecommerce.order.config.GuestCheckoutProperties;
 import com.minzetsu.ecommerce.order.dto.request.OrderRequest;
@@ -23,7 +23,7 @@ import com.minzetsu.ecommerce.product.entity.ProductStatus;
 import com.minzetsu.ecommerce.promotion.entity.Voucher;
 import com.minzetsu.ecommerce.promotion.entity.VoucherDiscountType;
 import com.minzetsu.ecommerce.promotion.service.VoucherService;
-import com.minzetsu.ecommerce.realtime.SseEmitterService;
+import com.minzetsu.ecommerce.realtime.service.SseEmitterService;
 import com.minzetsu.ecommerce.user.entity.User;
 import com.minzetsu.ecommerce.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -247,3 +247,4 @@ class OrderServiceImplDiscountTest {
 
     }
 }
+

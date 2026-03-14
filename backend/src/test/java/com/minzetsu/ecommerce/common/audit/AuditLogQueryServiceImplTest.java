@@ -22,6 +22,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.minzetsu.ecommerce.common.audit.repository.AuditLogRepository;
+import com.minzetsu.ecommerce.common.audit.service.AuditLogQueryServiceImpl;
+import com.minzetsu.ecommerce.common.audit.entity.AuditLog;
+
 
 @ExtendWith(MockitoExtension.class)
 class AuditLogQueryServiceImplTest {
@@ -106,3 +110,4 @@ class AuditLogQueryServiceImplTest {
         assertThat(pageableCaptor.getValue()).isEqualTo(sorted);
     }
 }
+

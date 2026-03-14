@@ -1,6 +1,6 @@
 package com.minzetsu.ecommerce.product.service.impl;
 
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
 import com.minzetsu.ecommerce.product.dto.filter.CategoryFilter;
@@ -18,8 +18,8 @@ import com.minzetsu.ecommerce.product.repository.CategorySpecification;
 import com.minzetsu.ecommerce.product.repository.ProductRepository;
 import com.minzetsu.ecommerce.product.repository.ProductSpecification;
 import com.minzetsu.ecommerce.product.service.CategoryService;
-import com.minzetsu.ecommerce.messaging.DomainEventPublisher;
-import com.minzetsu.ecommerce.messaging.DomainEventType;
+import com.minzetsu.ecommerce.messaging.event.DomainEventPublisher;
+import com.minzetsu.ecommerce.messaging.event.DomainEventType;
 import com.minzetsu.ecommerce.notification.event.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -230,3 +230,4 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryMapper.toResponseList(categoryRepository.findByParentId(parentId));
     }
 }
+

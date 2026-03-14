@@ -10,6 +10,11 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.minzetsu.ecommerce.common.audit.repository.AuditLogRepository;
+import com.minzetsu.ecommerce.common.audit.telemetry.AuditTelemetryPublisher;
+import com.minzetsu.ecommerce.common.audit.service.AuditLogServiceImpl;
+import com.minzetsu.ecommerce.common.audit.entity.AuditLog;
+
 
 @ExtendWith(MockitoExtension.class)
 class AuditLogServiceImplTest {
@@ -82,3 +87,4 @@ class AuditLogServiceImplTest {
         verify(telemetryPublisher, never()).publish(request);
     }
 }
+

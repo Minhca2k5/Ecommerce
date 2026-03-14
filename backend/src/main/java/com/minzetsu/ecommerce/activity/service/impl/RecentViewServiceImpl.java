@@ -6,10 +6,10 @@ import com.minzetsu.ecommerce.activity.entity.RecentView;
 import com.minzetsu.ecommerce.activity.mapper.RecentViewMapper;
 import com.minzetsu.ecommerce.activity.repository.RecentViewRepository;
 import com.minzetsu.ecommerce.activity.service.RecentViewService;
-import com.minzetsu.ecommerce.common.audit.AuditAction;
+import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
-import com.minzetsu.ecommerce.mongo.ClickstreamEventService;
+import com.minzetsu.ecommerce.mongo.service.ClickstreamEventService;
 import com.minzetsu.ecommerce.product.entity.ProductImage;
 import com.minzetsu.ecommerce.product.repository.ProductImageRepository;
 import com.minzetsu.ecommerce.product.service.ProductService;
@@ -131,3 +131,4 @@ public class RecentViewServiceImpl implements RecentViewService {
         return toResponseListWithUrl(recentViewRepository.findByProductNameOrderByUpdatedAtDesc(productName, userId));
     }
 }
+
