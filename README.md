@@ -40,6 +40,9 @@ This repository is an end-to-end E-commerce system:
 2. Run:
    - `cd backend`
    - `./mvnw spring-boot:run`
+3. Profiles:
+   - `SPRING_PROFILES_ACTIVE=dev` for local debug (`application-dev.properties`)
+   - `SPRING_PROFILES_ACTIVE=prod` for production-like settings (`application-prod.properties`)
 3. Swagger:
    - `http://localhost:8080/docs` (or `http://localhost:8080/swagger-ui/index.html`)
    - OpenAPI: `http://localhost:8080/v3/api-docs`
@@ -70,7 +73,7 @@ This repository is an end-to-end E-commerce system:
 
 ### Docker Compose (Phase 7 Kickoff)
 1. Create runtime env file at project root:
-   - `Copy-Item .env.deploy.example .env` (PowerShell)
+   - `Copy-Item .env.example .env` (PowerShell)
 2. Fill required secrets in `.env`:
    - `JWT_SECRET_KEY`
    - `MOMO_*`
@@ -78,6 +81,7 @@ This repository is an end-to-end E-commerce system:
    - `GUEST_CHECKOUT_*`
 3. Build and run full stack:
    - `docker compose up --build -d`
+   - Optional: set `SPRING_PROFILES_ACTIVE=dev` in `.env` for local dev profile
 4. Access services:
    - Frontend: `http://localhost:5173`
    - Backend Swagger: `http://localhost:8080/docs`

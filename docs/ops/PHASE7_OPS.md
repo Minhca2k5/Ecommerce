@@ -9,7 +9,7 @@ Run the platform in a production-ready way with repeatable deploy, basic observa
 - App services: `backend`, `frontend`
 - Data/infra services: `mysql`, `redis`, `rabbitmq`, `elasticsearch`, `mongodb`
 - Compose entrypoint: `docker-compose.yml`
-- Environment template: `.env.deploy.example` (copy to `.env`)
+- Environment template: `.env.example` (copy to `.env`)
 
 ## Environment Policy
 - Keep real secrets only in `.env` (do not commit).
@@ -22,7 +22,7 @@ Run the platform in a production-ready way with repeatable deploy, basic observa
 
 ## Deploy Baseline (Compose)
 1. Prepare env:
-   - `Copy-Item .env.deploy.example .env`
+   - `Copy-Item .env.example .env`
    - Fill real values in `.env`
 2. Build and start:
    - `docker compose up --build -d`
