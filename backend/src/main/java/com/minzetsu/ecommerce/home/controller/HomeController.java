@@ -1,6 +1,6 @@
 package com.minzetsu.ecommerce.home.controller;
 
-import com.minzetsu.ecommerce.home.dto.HomeResponse;
+import com.minzetsu.ecommerce.home.dto.response.HomeResponse;
 import com.minzetsu.ecommerce.home.service.HomeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,3 +25,5 @@ public class HomeController {
         return ResponseEntity.ok(data);
     }
 }
+
+

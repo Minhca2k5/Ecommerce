@@ -1,19 +1,19 @@
 package com.minzetsu.ecommerce.chatbot.controller;
 
 import lombok.RequiredArgsConstructor;
-import com.minzetsu.ecommerce.chatbot.dto.ChatRequest;
-import com.minzetsu.ecommerce.chatbot.dto.ChatResponse;
-import com.minzetsu.ecommerce.chatbot.dto.ChatMessageResponse;
-import com.minzetsu.ecommerce.chatbot.dto.ChatConversationResponse;
-import com.minzetsu.ecommerce.chatbot.dto.ChatConversationUpdateRequest;
-import com.minzetsu.ecommerce.chatbot.dto.ChatProjectCreateRequest;
-import com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse;
-import com.minzetsu.ecommerce.chatbot.dto.ChatMessageUpdateRequest;
-import com.minzetsu.ecommerce.chatbot.dto.ChatGroupInviteResponse;
-import com.minzetsu.ecommerce.chatbot.dto.ChatGroupResponse;
-import com.minzetsu.ecommerce.chatbot.dto.ChatGroupMemberRequest;
-import com.minzetsu.ecommerce.chatbot.dto.ChatGroupCreateRequest;
-import com.minzetsu.ecommerce.chatbot.dto.ChatGroupMemberResponse;
+import com.minzetsu.ecommerce.chatbot.dto.request.ChatRequest;
+import com.minzetsu.ecommerce.chatbot.dto.response.ChatResponse;
+import com.minzetsu.ecommerce.chatbot.dto.response.ChatMessageResponse;
+import com.minzetsu.ecommerce.chatbot.dto.response.ChatConversationResponse;
+import com.minzetsu.ecommerce.chatbot.dto.request.ChatConversationUpdateRequest;
+import com.minzetsu.ecommerce.chatbot.dto.request.ChatProjectCreateRequest;
+import com.minzetsu.ecommerce.chatbot.dto.response.ChatProjectResponse;
+import com.minzetsu.ecommerce.chatbot.dto.request.ChatMessageUpdateRequest;
+import com.minzetsu.ecommerce.chatbot.dto.response.ChatGroupInviteResponse;
+import com.minzetsu.ecommerce.chatbot.dto.response.ChatGroupResponse;
+import com.minzetsu.ecommerce.chatbot.dto.request.ChatGroupMemberRequest;
+import com.minzetsu.ecommerce.chatbot.dto.request.ChatGroupCreateRequest;
+import com.minzetsu.ecommerce.chatbot.dto.response.ChatGroupMemberResponse;
 import com.minzetsu.ecommerce.common.config.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -205,6 +205,8 @@ public class ChatbotController {
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }
 }
+
+
 
 
 

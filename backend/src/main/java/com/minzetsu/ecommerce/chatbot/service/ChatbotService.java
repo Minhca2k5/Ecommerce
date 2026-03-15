@@ -1,12 +1,12 @@
 package com.minzetsu.ecommerce.chatbot.service;
 
 import lombok.RequiredArgsConstructor;
-import com.minzetsu.ecommerce.chatbot.dto.ChatRequest;
-import com.minzetsu.ecommerce.chatbot.dto.ChatResponse;
-import com.minzetsu.ecommerce.chatbot.dto.ChatMessageResponse;
-import com.minzetsu.ecommerce.chatbot.dto.ChatConversationResponse;
-import com.minzetsu.ecommerce.chatbot.dto.ChatGroupResponse;
-import com.minzetsu.ecommerce.chatbot.dto.ChatGroupInviteResponse;
+import com.minzetsu.ecommerce.chatbot.dto.request.ChatRequest;
+import com.minzetsu.ecommerce.chatbot.dto.response.ChatResponse;
+import com.minzetsu.ecommerce.chatbot.dto.response.ChatMessageResponse;
+import com.minzetsu.ecommerce.chatbot.dto.response.ChatConversationResponse;
+import com.minzetsu.ecommerce.chatbot.dto.response.ChatGroupResponse;
+import com.minzetsu.ecommerce.chatbot.dto.response.ChatGroupInviteResponse;
 import com.minzetsu.ecommerce.notification.dto.request.NotificationCreateRequest;
 import com.minzetsu.ecommerce.notification.service.NotificationService;
 import com.minzetsu.ecommerce.mongo.service.ChatbotTranscriptService;
@@ -240,26 +240,26 @@ public class ChatbotService {
                 .collect(Collectors.toList());
     }
 
-    public List<com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse> listProjects(Long userId) {
+    public List<com.minzetsu.ecommerce.chatbot.dto.response.ChatProjectResponse> listProjects(Long userId) {
         return chatProjectRepository.findByUserIdOrderByUpdatedAtDesc(userId).stream()
-                .map(p -> new com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse(p.getId(), p.getName(), p.getUpdatedAt()))
+                .map(p -> new com.minzetsu.ecommerce.chatbot.dto.response.ChatProjectResponse(p.getId(), p.getName(), p.getUpdatedAt()))
                 .collect(Collectors.toList());
     }
 
-    public com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse createProject(Long userId, String name) {
+    public com.minzetsu.ecommerce.chatbot.dto.response.ChatProjectResponse createProject(Long userId, String name) {
         ChatProject p = new ChatProject();
         p.setUserId(userId);
         p.setName(sanitizeProjectName(name));
         ChatProject saved = chatProjectRepository.save(p);
-        return new com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse(saved.getId(), saved.getName(), saved.getUpdatedAt());
+        return new com.minzetsu.ecommerce.chatbot.dto.response.ChatProjectResponse(saved.getId(), saved.getName(), saved.getUpdatedAt());
     }
 
-    public com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse renameProject(Long userId, Long projectId, String name) {
+    public com.minzetsu.ecommerce.chatbot.dto.response.ChatProjectResponse renameProject(Long userId, Long projectId, String name) {
         ChatProject p = chatProjectRepository.findByUserIdAndId(userId, projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
         p.setName(sanitizeProjectName(name));
         ChatProject saved = chatProjectRepository.save(p);
-        return new com.minzetsu.ecommerce.chatbot.dto.ChatProjectResponse(saved.getId(), saved.getName(), saved.getUpdatedAt());
+        return new com.minzetsu.ecommerce.chatbot.dto.response.ChatProjectResponse(saved.getId(), saved.getName(), saved.getUpdatedAt());
     }
 
     public void deleteProject(Long userId, Long projectId) {
@@ -1240,11 +1240,11 @@ public class ChatbotService {
         }
     }
 
-    public java.util.List<com.minzetsu.ecommerce.chatbot.dto.ChatGroupMemberResponse> listGroupMembers(Long userId, Long groupId) {
+    public java.util.List<com.minzetsu.ecommerce.chatbot.dto.response.ChatGroupMemberResponse> listGroupMembers(Long userId, Long groupId) {
         requireGroupMember(userId, groupId);
         return chatGroupMemberRepository.findByGroupId(groupId).stream()
                 .map(m -> userRepository.findById(m.getUserId())
-                        .map(u -> new com.minzetsu.ecommerce.chatbot.dto.ChatGroupMemberResponse(
+                        .map(u -> new com.minzetsu.ecommerce.chatbot.dto.response.ChatGroupMemberResponse(
                                 u.getId(),
                                 u.getUsername(),
                                 u.getFullName(),
@@ -1336,6 +1336,8 @@ public class ChatbotService {
         }
     }
 }
+
+
 
 
 

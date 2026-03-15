@@ -27,3 +27,4 @@ public class ChatGroupInvite extends BaseEntity {
 
 
 
+

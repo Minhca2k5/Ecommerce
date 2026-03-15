@@ -20,3 +20,4 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
 
     boolean existsById(Long id);
 }
+

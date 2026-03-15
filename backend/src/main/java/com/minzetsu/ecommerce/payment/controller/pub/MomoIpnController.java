@@ -1,7 +1,7 @@
 package com.minzetsu.ecommerce.payment.controller.pub;
 
 import com.minzetsu.ecommerce.payment.momo.MomoPaymentService;
-import com.minzetsu.ecommerce.payment.momo.dto.MomoIpnRequest;
+import com.minzetsu.ecommerce.payment.momo.dto.request.MomoIpnRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -25,3 +25,5 @@ public class MomoIpnController {
         return ResponseEntity.ok().build();
     }
 }
+
+

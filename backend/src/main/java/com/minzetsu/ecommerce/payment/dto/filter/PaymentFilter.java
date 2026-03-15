@@ -25,3 +25,4 @@ public class PaymentFilter implements SortableFilter {
     private String sortBy;
     private String sortDirection;
 }
+

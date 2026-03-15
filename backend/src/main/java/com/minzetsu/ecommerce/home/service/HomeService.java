@@ -1,6 +1,6 @@
 package com.minzetsu.ecommerce.home.service;
 
-import com.minzetsu.ecommerce.home.dto.HomeResponse;
+import com.minzetsu.ecommerce.home.dto.response.HomeResponse;
 import com.minzetsu.ecommerce.product.dto.filter.CategoryFilter;
 import com.minzetsu.ecommerce.product.dto.filter.ProductFilter;
 import com.minzetsu.ecommerce.product.service.CategoryService;
@@ -73,3 +73,5 @@ public class HomeService {
         return cache.get("v1", HomeResponse.class);
     }
 }
+
+

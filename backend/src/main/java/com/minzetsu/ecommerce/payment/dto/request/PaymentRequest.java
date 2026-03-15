@@ -25,3 +25,4 @@ public class PaymentRequest {
     private Long voucherId;
     private BigDecimal discountAmount;
 }
+

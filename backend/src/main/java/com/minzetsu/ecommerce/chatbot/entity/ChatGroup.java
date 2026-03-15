@@ -21,3 +21,4 @@ public class ChatGroup extends BaseEntity {
 
 
 
+

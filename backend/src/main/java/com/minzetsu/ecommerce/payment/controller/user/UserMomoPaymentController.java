@@ -3,7 +3,7 @@ package com.minzetsu.ecommerce.payment.controller.user;
 import com.minzetsu.ecommerce.common.config.CustomUserDetails;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.payment.momo.MomoPaymentService;
-import com.minzetsu.ecommerce.payment.momo.dto.MomoCreateResponse;
+import com.minzetsu.ecommerce.payment.momo.dto.response.MomoCreateResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -43,3 +43,5 @@ public class UserMomoPaymentController {
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }
 }
+
+

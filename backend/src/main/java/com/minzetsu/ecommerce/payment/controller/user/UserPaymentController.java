@@ -74,3 +74,4 @@ public class UserPaymentController {
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }
 }
+

@@ -10,9 +10,9 @@ import com.minzetsu.ecommerce.order.service.OrderService;
 import com.minzetsu.ecommerce.payment.dto.request.PaymentRequest;
 import com.minzetsu.ecommerce.payment.dto.response.PaymentResponse;
 import com.minzetsu.ecommerce.payment.entity.PaymentStatus;
-import com.minzetsu.ecommerce.payment.momo.dto.MomoCreateRequest;
-import com.minzetsu.ecommerce.payment.momo.dto.MomoCreateResponse;
-import com.minzetsu.ecommerce.payment.momo.dto.MomoIpnRequest;
+import com.minzetsu.ecommerce.payment.momo.dto.request.MomoCreateRequest;
+import com.minzetsu.ecommerce.payment.momo.dto.response.MomoCreateResponse;
+import com.minzetsu.ecommerce.payment.momo.dto.request.MomoIpnRequest;
 import com.minzetsu.ecommerce.payment.service.PaymentService;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -193,3 +193,5 @@ public class MomoPaymentService {
         return value == null || value.isBlank();
     }
 }
+
+

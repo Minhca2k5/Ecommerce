@@ -26,3 +26,4 @@ public class PaymentResponse extends BaseDTO {
     private String orderCurrency;
     private String orderStatus;
 }
+
