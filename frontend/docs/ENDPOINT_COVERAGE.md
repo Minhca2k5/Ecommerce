@@ -1,19 +1,19 @@
-# Endpoint Coverage (Frontend Phase 2)
+# Endpoint Coverage (Frontend Phase 2 + UX Updates)
 
 This file lists the backend endpoints currently called by the React frontend, grouped by namespace.
 
 > Note: Paths below reflect usage in `frontend/src/**` and are intended as an audit/coverage summary.
 >
-> Status: Phase 2 Completed (December 21, 2025)
+> Status: Phase 2 Completed + UX updates (March 18, 2026)
 
 ## Public (`/api/public/**`)
 - `GET /api/public/home` (Home)
 - Products
   - `GET /api/public/products` (list + filters + paging)
-  - `GET /api/public/products/top-rating`
+  - `GET /api/public/products/top-rating` (Products page `Sort by: Top rated`)
   - `GET /api/public/products/most-favorite`
   - `GET /api/public/products/most-viewed`
-  - `GET /api/public/products/best-selling`
+  - `GET /api/public/products/best-selling` (Products page `Sort by: Best sellers`)
   - `GET /api/public/products/{productId}`
   - `GET /api/public/products/slug/{slug}`
   - `GET /api/public/products/{productId}/images`
@@ -61,7 +61,7 @@ This file lists the backend endpoints currently called by the React frontend, gr
   - `GET /api/users/me/orders/{orderId}`
   - `POST /api/users/me/orders`
   - `POST /api/users/me/orders/voucher-discount` (checkout discount preview)
-  - `GET /api/users/me/orders/{orderId}/items/all`
+  - `GET /api/users/me/orders/{orderId}/items/all` (Orders list preview hydration when item details are absent from list endpoint)
   - `GET /api/users/me/orders/{orderId}/payments`
   - `POST /api/users/me/orders/{orderId}/payments`
   - `GET /api/users/me/orders/{orderId}/payments/{paymentId}`

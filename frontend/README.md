@@ -1,9 +1,9 @@
-# Ecommerce Frontend (Phase 2)
+# Ecommerce Frontend (Phase 2 + UX Polish)
 
 React + TypeScript + Vite + TailwindCSS (shadcn-style primitives) UI để “visualize” toàn bộ backend APIs.
 
-> **Status:** Phase 2 Completed  
-> **Last Updated:** December 21, 2025
+> **Status:** Phase 2 Completed + ongoing UX polish (user/admin)  
+> **Last Updated:** March 18, 2026
 
 ## Requirements
 - Node.js 18+
@@ -66,3 +66,15 @@ Key files:
 
 ## Endpoint Coverage
 See `frontend/docs/ENDPOINT_COVERAGE.md`.
+
+## Recent UX + Behavior Updates (March 2026)
+- Orders list cards now show product-first preview (name + quantity) instead of generic order text.
+- Orders list can hydrate item previews via `/api/users/me/orders/{orderId}/items/all` if item details are missing in `/api/users/me/orders`.
+- User order status chips use friendly labels (Pending/Paid/Cancelled/...).
+- Products sort behavior:
+  - `Top rated` uses `/api/public/products/top-rating`.
+  - `Best sellers` uses `/api/public/products/best-selling`.
+  - This ensures visible list changes when switching sort options.
+- Home page promo cleanup:
+  - Removed duplicated promo category image section.
+  - Featured offers use stable ordering from active banners.

@@ -3,7 +3,7 @@
 > **Branch:** `phase6`  
 > **Status:** Phase 6 Completed (Data Reliability & Hybrid Realtime Analytics Serving), moving to Phase 7 (DevOps, Observability & Scale)  
 > **Author:** Phan Dinh Minh (Minzetsu)  
-> **Last Updated:** February 16, 2026
+> **Last Updated:** March 18, 2026
 
 ## Overview
 This repository is an end-to-end E-commerce system:
@@ -129,3 +129,15 @@ This repository is an end-to-end E-commerce system:
 ## Notes (Current Scope)
 - Local mode currently prioritizes chatbot stability: file + voice workflows are enabled; image analysis path is disabled by default in this phase.
 - Group invites are designed as in-app first, email as best-effort notification channel.
+
+## Frontend UX Updates (March 2026)
+- Home page promo cleanup:
+   - Removed duplicated promo image block and kept a single Featured offers section.
+   - Featured offers now use stable ordering (first active banners) instead of random reshuffle on each load.
+- Products page sorting:
+   - Sort modes Top rated and Best sellers now load dedicated ranking endpoints (`/api/public/products/top-rating`, `/api/public/products/best-selling`) so product order changes reliably.
+   - Existing search/category/deal filters continue to apply in ranked mode.
+- Orders page cards (user-facing):
+   - Replaced generic card title with product-first preview (product name + quantity).
+   - Added item hydration fallback from `/api/users/me/orders/{orderId}/items/all` when list endpoint does not include item details.
+   - User status badges now show friendly labels (for example: Pending, Paid, Cancelled).
