@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v17-001-unique-voucher-uses-order" author="codex">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="voucher_uses"/>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM information_schema.table_constraints
+                WHERE constraint_name = 'uk_voucher_uses_order'
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM (
+                    SELECT order_id, COUNT(*) c
+                    FROM voucher_uses
+                    GROUP BY order_id
+                    HAVING COUNT(*) &gt; 1
+                ) t
+            </sqlCheck>
+        </preConditions>
+        <addUniqueConstraint
+                tableName="voucher_uses"
+                columnNames="order_id"
+                constraintName="uk_voucher_uses_order"/>
+        <rollback>
+            <dropUniqueConstraint tableName="voucher_uses" constraintName="uk_voucher_uses_order"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

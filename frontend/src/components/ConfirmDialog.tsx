@@ -27,12 +27,12 @@ export default function ConfirmDialog({
       <div className="space-y-4">
         {description ? <div className="text-sm text-muted-foreground">{description}</div> : null}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button variant="outline" className="rounded-xl" onClick={onClose} disabled={isLoading}>
+          <Button variant="outline" className="rounded-md" onClick={onClose} disabled={isLoading}>
             {cancelText}
           </Button>
           <Button
             className={[
-              "rounded-xl",
+              "rounded-md",
               variant === "danger"
                 ? "bg-rose-600 text-white hover:bg-rose-600/90"
                 : "bg-primary text-primary-foreground hover:bg-primary/90",
@@ -47,4 +47,5 @@ export default function ConfirmDialog({
     </Modal>
   );
 }
+
 

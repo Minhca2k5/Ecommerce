@@ -214,11 +214,11 @@ export default function CartPage() {
   if (error) {
     return (
       <EmptyState
-        title="Couldn't load cart"
+        title="Could not load cart"
         description={error}
         action={
-          <Button onClick={() => window.location.reload()} className="rounded-xl bg-primary text-primary-foreground">
-            Retry
+          <Button onClick={() => window.location.reload()} className="rounded-md bg-primary text-primary-foreground">
+            Try again
           </Button>
         }
       />
@@ -229,9 +229,9 @@ export default function CartPage() {
     return (
       <EmptyState
         title="Your cart is empty"
-        description="Add products you love, then come back to checkout."
+        description="Add a few items to get started."
         action={
-          <Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground">
+          <Button asChild className="h-10 rounded-md bg-primary text-primary-foreground">
             <Link to="/products">Continue shopping</Link>
           </Button>
         }
@@ -243,13 +243,13 @@ export default function CartPage() {
     <div className="space-y-6">
       <section className="page-section">
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="text-2xl font-semibold">Your cart</div>
+          <div className="text-2xl font-semibold">Cart</div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" className="h-10 rounded-xl bg-background" onClick={() => setIsClearOpen(true)}>
+            <Button variant="outline" className="h-10 rounded-md bg-background" onClick={() => setIsClearOpen(true)}>
               Clear cart
             </Button>
             <Button
-              className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+              className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => navigate("/checkout")}
             >
               {isGuest ? "Guest checkout" : "Checkout"}
@@ -265,16 +265,16 @@ export default function CartPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex gap-2">
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search in cart..." className="rounded-xl" />
-              <Button variant="outline" className="rounded-xl bg-background" onClick={onSearch} disabled={!cartId}>
+              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search items" className="rounded-md" />
+              <Button variant="outline" className="rounded-md bg-background" onClick={onSearch} disabled={!cartId}>
                 Search
               </Button>
             </div>
 
             <div className="space-y-3">
               {items.map((item) => (
-                <div key={String(item.id ?? item.productId)} className="pressable group flex gap-3 rounded-xl border bg-background p-3 shadow-sm transition hover:shadow-md">
-                  <div className="h-20 w-20 overflow-hidden rounded-xl border bg-muted">
+                <div key={String(item.id ?? item.productId)} className="pressable group flex gap-3 rounded-md border bg-background p-3 shadow-sm transition hover:shadow-md">
+                  <div className="h-20 w-20 overflow-hidden rounded-md border bg-muted">
                     <SafeImage
                       src={item.url ?? ""}
                       alt={item.productName || "Product"}
@@ -293,25 +293,27 @@ export default function CartPage() {
 
                     <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div className="inline-flex items-center gap-2">
-                        <Button type="button" variant="outline" className="h-9 w-9 rounded-xl bg-background px-0" onClick={() => bumpQty(item, -1)}>
+                        <Button type="button" variant="outline" className="h-9 w-9 rounded-md bg-background px-0" onClick={() => bumpQty(item, -1)}>
                           -
                         </Button>
                         <input
+                          aria-label="Quantity"
+                          title="Quantity"
                           value={String(item.quantity ?? 1)}
                           onChange={(e) => setQtyAbsolute(item, Number(e.target.value || "1"))}
-                          className="h-9 w-14 rounded-xl border bg-background text-center text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          className="h-9 w-14 rounded-md border bg-background text-center text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                           inputMode="numeric"
                         />
-                        <Button type="button" variant="outline" className="h-9 w-9 rounded-xl bg-background px-0" onClick={() => bumpQty(item, 1)}>
+                        <Button type="button" variant="outline" className="h-9 w-9 rounded-md bg-background px-0" onClick={() => bumpQty(item, 1)}>
                           +
                         </Button>
                       </div>
 
                       <div className="flex gap-2">
-                        <Button asChild variant="outline" className="rounded-xl bg-background">
-                          <Link to={`/products/${item.productId ?? ""}`}>View</Link>
+                        <Button asChild variant="outline" className="rounded-md bg-background">
+                          <Link to={`/products/${item.productId ?? ""}`}>Details</Link>
                         </Button>
-                        <Button variant="outline" className="rounded-xl border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(item)}>
+                        <Button variant="outline" className="rounded-md border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(item)}>
                           Remove
                         </Button>
                       </div>
@@ -340,16 +342,21 @@ export default function CartPage() {
               <span className="text-muted-foreground">Discount</span>
               <span>-{money(summary.discount, currency)}</span>
             </div>
+            {summary.discount > 0 ? (
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">
+                You save {money(summary.discount, currency)} today
+              </div>
+            ) : null}
             <div className="h-px bg-border" />
             <div className="flex items-center justify-between text-base font-semibold">
               <span>Total</span>
               <span>{money(summary.total, currency)}</span>
             </div>
             <Button
-              className="h-10 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+              className="h-10 w-full rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => navigate("/checkout")}
             >
-              {isGuest ? "Proceed as guest" : "Proceed to checkout"}
+              {isGuest ? "Guest checkout" : "Checkout"} · {money(summary.total, currency)}
             </Button>
           </CardContent>
         </Card>
@@ -378,3 +385,4 @@ export default function CartPage() {
     </div>
   );
 }
+

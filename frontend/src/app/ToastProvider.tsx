@@ -53,7 +53,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             className={[
-              "pointer-events-auto w-full max-w-md overflow-hidden rounded-xl border bg-background shadow-md",
+              "pointer-events-auto w-full max-w-md overflow-hidden rounded-md border bg-background shadow-md",
               "animate-in fade-in slide-in-from-top-2 duration-200",
               t.variant === "success" ? "border-emerald-500/30" : "",
               t.variant === "error" ? "border-rose-500/30" : "",
@@ -92,3 +92,4 @@ export function useToast() {
   if (!ctx) throw new Error("useToast must be used within ToastProvider");
   return ctx;
 }
+

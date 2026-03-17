@@ -50,7 +50,7 @@ export default function ChooseRolePage() {
         <CardContent className="relative space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Role</label>
-            <select value={selected} onChange={(e) => setSelected(e.target.value)} className="h-10 w-full rounded-xl border bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <select title="Select option" value={selected} onChange={(e) => setSelected(e.target.value)} className="h-10 w-full rounded-md border bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
               {availableRoles.map((r) => (
                 <option key={r} value={r}>
                   {r}
@@ -60,7 +60,7 @@ export default function ChooseRolePage() {
           </div>
 
           <Button
-            className="h-10 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.99]"
+            className="h-10 w-full rounded-md bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.99]"
             onClick={() => {
               const role = selected.trim() || availableRoles[0];
               setSelectedRole(role);
@@ -75,3 +75,4 @@ export default function ChooseRolePage() {
     </div>
   );
 }
+

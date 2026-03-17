@@ -99,17 +99,17 @@ export default function RegisterPage() {
         <CardHeader className="relative"><CardTitle>{otpRequested ? "Verify email" : "Create account"}</CardTitle></CardHeader>
         <CardContent className="relative">
           <form onSubmit={onSubmit} className="space-y-4">
-            <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" className="rounded-xl" />
-            <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="rounded-xl" />
-            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name (optional)" className="rounded-xl" />
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone (optional)" className="rounded-xl" />
-            <Input value={password} onChange={(e) => setPassword(e.target.value)} type={showPassword ? "text" : "password"} placeholder="Password" className="rounded-xl" />
-            <Input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} type={showPassword ? "text" : "password"} placeholder="Confirm password" className="rounded-xl" />
+            <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" className="rounded-md" />
+            <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="rounded-md" />
+            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name (optional)" className="rounded-md" />
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone (optional)" className="rounded-md" />
+            <Input value={password} onChange={(e) => setPassword(e.target.value)} type={showPassword ? "text" : "password"} placeholder="Password" className="rounded-md" />
+            <Input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} type={showPassword ? "text" : "password"} placeholder="Confirm password" className="rounded-md" />
             <button type="button" onClick={() => setShowPassword((v) => !v)} className="text-xs text-muted-foreground">{showPassword ? "Hide" : "Show"} password</button>
 
             {otpRequested ? (
               <>
-                <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="6-digit verification code" className="rounded-xl" />
+                <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="6-digit verification code" className="rounded-md" />
                 <div className={`text-xs ${otpExpired ? "text-danger" : "text-muted-foreground"}`}>
                   {otpExpired
                     ? "Verification code expired. Please request a new code."
@@ -117,9 +117,9 @@ export default function RegisterPage() {
                 </div>
               </>
             ) : null}
-            {error ? <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
+            {error ? <div className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
 
-            <Button type="submit" disabled={!canSubmit} className="h-10 w-full rounded-xl bg-primary text-primary-foreground">
+            <Button type="submit" disabled={!canSubmit} className="h-10 w-full rounded-md bg-primary text-primary-foreground">
               {isLoading ? (otpRequested ? "Verifying..." : "Sending code...") : (otpRequested ? "Verify and create" : "Send verification code")}
             </Button>
 
@@ -132,3 +132,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

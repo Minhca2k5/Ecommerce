@@ -53,7 +53,7 @@ export default function ProfilePage() {
         title="Couldn’t load profile"
         description={error}
         action={
-          <Button onClick={() => window.location.reload()} className="rounded-xl bg-primary text-primary-foreground">
+          <Button onClick={() => window.location.reload()} className="rounded-md bg-primary text-primary-foreground">
             Retry
           </Button>
         }
@@ -70,13 +70,13 @@ export default function ProfilePage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-2xl font-semibold">{title}</div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline" className="rounded-xl">
+          <Button asChild variant="outline" className="rounded-md">
             <Link to="/me/edit">Edit profile</Link>
           </Button>
-          <Button asChild variant="outline" className="rounded-xl">
+          <Button asChild variant="outline" className="rounded-md">
             <Link to="/me/password">Change password</Link>
           </Button>
-          <Button asChild className="rounded-xl bg-primary text-primary-foreground">
+          <Button asChild className="rounded-md bg-primary text-primary-foreground">
             <Link to="/me/addresses">Address book</Link>
           </Button>
         </div>
@@ -90,19 +90,19 @@ export default function ProfilePage() {
           </div>
         </CardHeader>
         <CardContent className="relative grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-xs text-muted-foreground">Username</div>
             <div className="mt-1 text-base font-medium">{me.username || "—"}</div>
           </div>
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-xs text-muted-foreground">Email</div>
             <div className="mt-1 text-base font-medium">{me.email || "—"}</div>
           </div>
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-xs text-muted-foreground">Full name</div>
             <div className="mt-1 text-base font-medium">{me.fullName || "—"}</div>
           </div>
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-xs text-muted-foreground">Phone</div>
             <div className="mt-1 text-base font-medium">{me.phone || "—"}</div>
           </div>
@@ -119,7 +119,7 @@ export default function ProfilePage() {
           </div>
           <Button
             variant="outline"
-            className="rounded-xl"
+            className="rounded-md"
             onClick={() => {
               auth.logout();
               toast.push({ variant: "success", title: "Logged out", message: "You have been logged out." });
@@ -132,3 +132,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

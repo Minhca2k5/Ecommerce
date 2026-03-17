@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils";
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
-    "group flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition",
+    "group flex items-center gap-2 rounded-md px-3 py-2 text-sm transition",
     isActive
-      ? "bg-primary/10 text-primary ring-1 ring-primary/20"
+      ? "bg-primary text-primary-foreground shadow-sm"
       : "text-muted-foreground hover:bg-muted hover:text-foreground",
   );
 
@@ -28,7 +28,7 @@ export default function AdminLayout() {
       <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6">
         <aside className="hidden w-64 shrink-0 lg:block">
           <div className="sticky top-24 space-y-4">
-            <div className="rounded-xl border bg-background p-2 shadow-sm">
+            <div className="rounded-md border bg-background p-2 shadow-sm">
               {groups.map((g) => (
                 <div key={g} className="py-2">
                   <div className="space-y-1">
@@ -36,7 +36,7 @@ export default function AdminLayout() {
                       .filter((i) => i.group === g)
                       .map((i) => (
                         <NavLink key={i.to} to={i.to} className={linkClass} end={i.to === "/admin"}>
-                          <i.icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                          <i.icon className={cn("h-4 w-4", i.to === activeTo ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
                           <span>{i.label}</span>
                         </NavLink>
                       ))}
@@ -52,8 +52,7 @@ export default function AdminLayout() {
             <div className="min-w-0">
               <div className="text-2xl font-semibold tracking-tight">Admin dashboard</div>
               <div className="mt-3 lg:hidden">
-                <select
-                  className="w-full rounded-xl border bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                <select title="Select option" className="w-full rounded-md border bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                   value={activeTo}
                   onChange={(e) => navigate(e.target.value)}
                 >
@@ -79,3 +78,4 @@ export default function AdminLayout() {
     </div>
   );
 }
+

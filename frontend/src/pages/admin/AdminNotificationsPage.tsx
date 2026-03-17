@@ -104,7 +104,7 @@ export default function AdminNotificationsPage() {
         referenceType: form.referenceType.trim() || null,
       };
       if (!payload.userId || !payload.title || !payload.message || !payload.type) {
-        toast.push({ variant: "error", title: "Invalid form", message: "userId/title/message/type are required for create." });
+        toast.push({ variant: "error", title: "Missing required fields", message: "User ID, title, message, and type are required." });
         return;
       }
       try {
@@ -146,27 +146,27 @@ export default function AdminNotificationsPage() {
             <CardTitle>Notifications</CardTitle>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+            <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
               Refresh
             </Button>
-            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
+            <Button className="h-9 rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               New notification
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <select value={qIsRead} onChange={(e) => setQIsRead(e.target.value)} className="h-10 rounded-xl border bg-background px-3 text-sm">
+            <select title="Select option" value={qIsRead} onChange={(e) => setQIsRead(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
               <option value="">All read states</option>
               <option value="true">Read</option>
               <option value="false">Unread</option>
             </select>
-            <select value={qIsHidden} onChange={(e) => setQIsHidden(e.target.value)} className="h-10 rounded-xl border bg-background px-3 text-sm">
+            <select title="Select option" value={qIsHidden} onChange={(e) => setQIsHidden(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
               <option value="">All visibility</option>
               <option value="true">Hidden</option>
               <option value="false">Visible</option>
             </select>
-            <Input value={qReferenceType} onChange={(e) => setQReferenceType(e.target.value)} placeholder="Reference type" className="rounded-xl" />
+            <Input value={qReferenceType} onChange={(e) => setQReferenceType(e.target.value)} placeholder="Reference type" className="rounded-md" />
           </div>
 
           <div className="table-shell">
@@ -191,7 +191,7 @@ export default function AdminNotificationsPage() {
                 ) : !items.length ? (
                   <tr className="border-t">
                     <td className="px-4 py-6 text-center text-muted-foreground" colSpan={4}>
-                      No notifications found.
+                      No notifications match your current filters.
                     </td>
                   </tr>
                 ) : (
@@ -207,12 +207,26 @@ export default function AdminNotificationsPage() {
                         </td>
                         <td className="px-4 py-3">{getNumber(n, "userId") ?? "-"}</td>
                         <td className="px-4 py-3">
-                          <span className="rounded-full border bg-background px-3 py-1 text-sm">{isRead ? "Read" : "Unread"}</span>
-                          <span className="ml-2 rounded-full border bg-background px-3 py-1 text-sm">{isHidden ? "Hidden" : "Visible"}</span>
+                          <span
+                            className={[
+                              "rounded-full border px-3 py-1 text-sm",
+                              isRead ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" : "border-amber-500/30 bg-amber-500/10 text-amber-700",
+                            ].join(" ")}
+                          >
+                            {isRead ? "Read" : "Unread"}
+                          </span>
+                          <span
+                            className={[
+                              "ml-2 rounded-full border px-3 py-1 text-sm",
+                              isHidden ? "border-slate-500/30 bg-slate-500/10 text-slate-700" : "border-sky-500/30 bg-sky-500/10 text-sky-700",
+                            ].join(" ")}
+                          >
+                            {isHidden ? "Hidden" : "Visible"}
+                          </span>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => openEdit(n)} disabled={!id}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => openEdit(n)} disabled={!id}>
                               Edit
                             </Button>
                           </div>
@@ -230,19 +244,19 @@ export default function AdminNotificationsPage() {
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
-              <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
+              <select title="Select option" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-background px-3 text-sm">
                 {[10, 20, 30, 50].map((n) => (
                   <option key={n} value={String(n)}>
                     {n}/page
                   </option>
                 ))}
               </select>
-              <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+              <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                 Prev
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-xl"
+                className="h-9 rounded-md"
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               >
@@ -255,19 +269,19 @@ export default function AdminNotificationsPage() {
 
       <Modal isOpen={isFormOpen} title={editingId ? `Edit notification #${editingId}` : "New notification"} onClose={() => setIsFormOpen(false)}>
         <div className="grid gap-3">
-          {!editingId ? <Input value={form.userId} onChange={(e) => setForm((f) => ({ ...f, userId: e.target.value }))} placeholder="User ID *" className="rounded-xl" /> : null}
-          <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Title *" className="rounded-xl" />
+          {!editingId ? <Input value={form.userId} onChange={(e) => setForm((f) => ({ ...f, userId: e.target.value }))} placeholder="User ID *" className="rounded-md" /> : null}
+          <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Title *" className="rounded-md" />
           <textarea
             value={form.message}
             onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
             placeholder="Message *"
-            className="min-h-24 w-full rounded-xl border bg-background px-3 py-2 text-sm"
+            className="min-h-24 w-full rounded-md border bg-background px-3 py-2 text-sm"
           />
           <div className="grid gap-3 md:grid-cols-2">
-            <Input value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))} placeholder="Type *" className="rounded-xl" />
-            <Input value={form.referenceType} onChange={(e) => setForm((f) => ({ ...f, referenceType: e.target.value }))} placeholder="Reference type" className="rounded-xl" />
+            <Input value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))} placeholder="Type *" className="rounded-md" />
+            <Input value={form.referenceType} onChange={(e) => setForm((f) => ({ ...f, referenceType: e.target.value }))} placeholder="Reference type" className="rounded-md" />
           </div>
-          <Input value={form.referenceId} onChange={(e) => setForm((f) => ({ ...f, referenceId: e.target.value }))} placeholder="Reference ID" className="rounded-xl" />
+          <Input value={form.referenceId} onChange={(e) => setForm((f) => ({ ...f, referenceId: e.target.value }))} placeholder="Reference ID" className="rounded-md" />
           {editingId ? (
             <div className="flex flex-wrap gap-6 text-sm">
               <label className="flex items-center gap-2">
@@ -281,10 +295,10 @@ export default function AdminNotificationsPage() {
             </div>
           ) : null}
           <div className="mt-2 flex justify-end gap-2">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
+            <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
               Save
             </Button>
           </div>
@@ -293,3 +307,4 @@ export default function AdminNotificationsPage() {
     </>
   );
 }
+

@@ -188,19 +188,19 @@ export default function AdminUsersPage() {
             <CardTitle>Users</CardTitle>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+            <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
               Refresh
             </Button>
-            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
+            <Button className="h-9 rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               New user
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={qUsername} onChange={(e) => setQUsername(e.target.value)} placeholder="Username" className="rounded-xl" />
-            <Input value={qEmail} onChange={(e) => setQEmail(e.target.value)} placeholder="Email" className="rounded-xl" />
-            <select value={qEnabled} onChange={(e) => setQEnabled(e.target.value)} className="h-10 rounded-xl border bg-background px-3 text-sm">
+            <Input value={qUsername} onChange={(e) => setQUsername(e.target.value)} placeholder="Username" className="rounded-md" />
+            <Input value={qEmail} onChange={(e) => setQEmail(e.target.value)} placeholder="Email" className="rounded-md" />
+            <select title="Select option" value={qEnabled} onChange={(e) => setQEnabled(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
               <option value="">All</option>
               <option value="true">Enabled</option>
               <option value="false">Disabled</option>
@@ -229,7 +229,7 @@ export default function AdminUsersPage() {
                 ) : !items.length ? (
                   <tr className="border-t">
                     <td className="px-4 py-6 text-center text-muted-foreground" colSpan={4}>
-                      No users found.
+                      No user matches your current filters.
                     </td>
                   </tr>
                 ) : (
@@ -252,15 +252,15 @@ export default function AdminUsersPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => openDetails(id)} disabled={!id}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => openDetails(id)} disabled={!id}>
                               Details
                             </Button>
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => void openCart(id)} disabled={!id}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => void openCart(id)} disabled={!id}>
                               Cart
                             </Button>
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl action-danger"
+                              className="h-9 rounded-md action-danger"
                               onClick={() => setDeleteId(id)}
                               disabled={!id}
                             >
@@ -281,19 +281,19 @@ export default function AdminUsersPage() {
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
-              <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
+              <select title="Select option" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-background px-3 text-sm">
                 {[10, 20, 30, 50].map((n) => (
                   <option key={n} value={String(n)}>
                     {n}/page
                   </option>
                 ))}
               </select>
-              <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+              <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                 Prev
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-xl"
+                className="h-9 rounded-md"
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               >
@@ -308,32 +308,32 @@ export default function AdminUsersPage() {
         <div className="grid gap-3">
           <div className="grid gap-3 md:grid-cols-2">
             <div className="flex gap-2">
-              <Input value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))} placeholder="Username *" className="rounded-xl" />
-              <Button variant="outline" className="h-10 rounded-xl" onClick={() => void checkExists("username", form.username)}>
+              <Input value={form.username} onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))} placeholder="Username *" className="rounded-md" />
+              <Button variant="outline" className="h-10 rounded-md" onClick={() => void checkExists("username", form.username)}>
                 Check
               </Button>
             </div>
             <div className="flex gap-2">
-              <Input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="Email *" className="rounded-xl" />
-              <Button variant="outline" className="h-10 rounded-xl" onClick={() => void checkExists("email", form.email)}>
+              <Input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="Email *" className="rounded-md" />
+              <Button variant="outline" className="h-10 rounded-md" onClick={() => void checkExists("email", form.email)}>
                 Check
               </Button>
             </div>
           </div>
-          <Input value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} placeholder="Password *" className="rounded-xl" />
+          <Input value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} placeholder="Password *" className="rounded-md" />
           <div className="grid gap-3 md:grid-cols-2">
-            <Input value={form.fullName} onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))} placeholder="Full name" className="rounded-xl" />
-            <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="Phone" className="rounded-xl" />
+            <Input value={form.fullName} onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))} placeholder="Full name" className="rounded-md" />
+            <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="Phone" className="rounded-md" />
           </div>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.enabled} onChange={(e) => setForm((f) => ({ ...f, enabled: e.target.checked }))} />
             Enabled
           </label>
           <div className="mt-2 flex justify-end gap-2">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
+            <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
               Create
             </Button>
           </div>
@@ -342,21 +342,21 @@ export default function AdminUsersPage() {
 
       <Modal isOpen={isDetailsOpen} title={detailsId ? `User #${detailsId}` : "User"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">{getString(details ?? {}, "username") ?? "-"}</div>
             <div className="mt-1 text-sm text-muted-foreground">{getString(details ?? {}, "email") ?? "-"}</div>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
-            <div className="rounded-xl border bg-background p-4">
+            <div className="rounded-md border bg-background p-4">
               <div className="text-sm text-muted-foreground">Full name</div>
               <div className="mt-1 text-sm font-semibold">{getString(details ?? {}, "fullName") ?? "-"}</div>
             </div>
-            <div className="rounded-xl border bg-background p-4">
+            <div className="rounded-md border bg-background p-4">
               <div className="text-sm text-muted-foreground">Phone</div>
               <div className="mt-1 text-sm font-semibold">{getString(details ?? {}, "phone") ?? "-"}</div>
             </div>
           </div>
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">Roles</div>
             <div className="mt-2 flex flex-wrap gap-2">
               {asArray((details ?? {})["roles"]).length ? (
@@ -371,7 +371,7 @@ export default function AdminUsersPage() {
             </div>
           </div>
           <div className="flex justify-end">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsDetailsOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsDetailsOpen(false)}>
               Close
             </Button>
           </div>
@@ -382,10 +382,10 @@ export default function AdminUsersPage() {
         <div className="space-y-3">
           {isCartLoading ? <div className="text-sm text-muted-foreground">Loading...</div> : null}
           {cartError ? (
-            <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{cartError}</div>
+            <div className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{cartError}</div>
           ) : null}
           {cart ? (
-            <div className="rounded-xl border bg-background p-4">
+            <div className="rounded-md border bg-background p-4">
               <div className="text-sm font-semibold">Cart #{getNumber(cart, "id") ?? "-"}</div>
               <div className="mt-1 text-sm text-muted-foreground">
                 Currency: {getString(cart, "currency") ?? "-"}  -  Items: {getNumber(cart, "itemCount") ?? getNumber(cart, "itemsCount") ?? cartItems.length}
@@ -395,14 +395,14 @@ export default function AdminUsersPage() {
 
           <div className="flex items-center justify-between gap-2">
             <div className="text-sm font-medium">Items</div>
-            <Button variant="outline" className="h-9 rounded-xl bg-background" disabled={isCartLoading || !cart} onClick={() => void loadCartItemsAll()}>
+            <Button variant="outline" className="h-9 rounded-md bg-background" disabled={isCartLoading || !cart} onClick={() => void loadCartItemsAll()}>
               Load items (all)
             </Button>
           </div>
           {cartItems.length ? (
             <div className="space-y-2">
               {cartItems.slice(0, 20).map((it, idx) => (
-                <div key={String((it as any)?.id ?? idx)} className="flex items-start justify-between gap-3 rounded-xl border bg-background p-3">
+                <div key={String((it as any)?.id ?? idx)} className="flex items-start justify-between gap-3 rounded-md border bg-background p-3">
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold">{getString(it, "productName") ?? "Item"}</div>
                     <div className="mt-1 text-sm text-muted-foreground">
@@ -414,11 +414,11 @@ export default function AdminUsersPage() {
               ))}
                           </div>
           ) : (
-            <div className="text-sm text-muted-foreground">No items loaded.</div>
+            <div className="text-sm text-muted-foreground">No cart items loaded yet. Click "Load items (all)" to fetch details.</div>
           )}
 
           <div className="flex justify-end">
-            <Button variant="outline" className="h-10 rounded-xl bg-background" onClick={() => setIsCartOpen(false)}>
+            <Button variant="outline" className="h-10 rounded-md bg-background" onClick={() => setIsCartOpen(false)}>
               Close
             </Button>
           </div>
@@ -441,4 +441,5 @@ export default function AdminUsersPage() {
     </>
   );
 }
+
 

@@ -17,7 +17,27 @@ type PageResponse<T> = {
 
 type AdminPayment = Record<string, unknown>;
 
+function dedupePayments(rows: AdminPayment[]) {
+  const map = new Map<number, AdminPayment>();
+  for (const row of rows) {
+    const id = getNumber(row, "id");
+    if (!id) continue;
+    if (!map.has(id)) map.set(id, row);
+  }
+  return Array.from(map.values());
+}
+
 const paymentStatuses = ["INITIATED", "SUCCEEDED", "FAILED"] as const;
+
+const paymentStatusMeta: Record<string, { label: string; badgeClass: string }> = {
+  INITIATED: { label: "Pending", badgeClass: "border-amber-500/30 bg-amber-500/10 text-amber-700" },
+  SUCCEEDED: { label: "Paid", badgeClass: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" },
+  FAILED: { label: "Failed", badgeClass: "border-rose-500/30 bg-rose-500/10 text-rose-700" },
+};
+
+function getPaymentStatusMeta(status: string) {
+  return paymentStatusMeta[status] ?? { label: "Unknown", badgeClass: "border bg-background text-muted-foreground" };
+}
 
 function normalizePaymentStatus(raw: string) {
   const value = (raw || "").toUpperCase();
@@ -60,7 +80,7 @@ export default function AdminPaymentsPage() {
     setIsLoading(true);
     try {
       const res = await adminGet<PageResponse<AdminPayment>>(`/api/admin/payments${query}`);
-      setItems(asArray(res?.content) as AdminPayment[]);
+      setItems(dedupePayments(asArray(res?.content) as AdminPayment[]));
       setTotalPages(Number(res?.totalPages ?? 1) || 1);
     } catch (e) {
       toast.push({ variant: "error", title: "Load failed", message: getErrorMessage(e, "Failed to load payments.") });
@@ -103,23 +123,23 @@ export default function AdminPaymentsPage() {
           <div>
             <CardTitle>Payments</CardTitle>
           </div>
-          <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+          <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
             Refresh
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-4">
-            <Input value={qOrderId} onChange={(e) => setQOrderId(e.target.value)} placeholder="Order ID" className="rounded-xl" />
-            <select value={qStatus} onChange={(e) => setQStatus(e.target.value)} className="h-10 rounded-xl border bg-background px-3 text-sm">
+            <Input value={qOrderId} onChange={(e) => setQOrderId(e.target.value)} placeholder="Order ID" className="rounded-md" />
+            <select aria-label="Filter payment status" title="Filter payment status" value={qStatus} onChange={(e) => setQStatus(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
               <option value="">All statuses</option>
               {paymentStatuses.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {getPaymentStatusMeta(s).label}
                 </option>
               ))}
             </select>
-            <Input value={qMethod} onChange={(e) => setQMethod(e.target.value)} placeholder="Method" className="rounded-xl" />
-            <Input value={qCurrency} onChange={(e) => setQCurrency(e.target.value)} placeholder="Currency" className="rounded-xl" />
+            <Input value={qMethod} onChange={(e) => setQMethod(e.target.value)} placeholder="Method" className="rounded-md" />
+            <Input value={qCurrency} onChange={(e) => setQCurrency(e.target.value)} placeholder="Currency" className="rounded-md" />
           </div>
 
           <div className="table-shell">
@@ -146,7 +166,7 @@ export default function AdminPaymentsPage() {
                 ) : !items.length ? (
                   <tr className="border-t">
                     <td className="px-4 py-6 text-center text-muted-foreground" colSpan={6}>
-                      No payments found.
+                      No payments match your current filters.
                     </td>
                   </tr>
                 ) : (
@@ -154,6 +174,7 @@ export default function AdminPaymentsPage() {
                     const id = getNumber(p, "id") ?? 0;
                     const orderId = getNumber(p, "orderId");
                     const status = normalizePaymentStatus(getString(p, "status") ?? "");
+                    const statusMeta = getPaymentStatusMeta(status);
                     const method = getString(p, "method") ?? "-";
                     const currency = getString(p, "currency") ?? "VND";
                     const amount = Number(p["amount"] ?? 0);
@@ -165,24 +186,26 @@ export default function AdminPaymentsPage() {
                         </td>
                         <td className="px-4 py-3">{orderId ?? "-"}</td>
                         <td className="px-4 py-3">
-                          <span className="rounded-full border bg-background px-3 py-1 text-sm">{status}</span>
+                          <span className={["rounded-full border px-3 py-1 text-sm", statusMeta.badgeClass].join(" ")}>{statusMeta.label}</span>
                         </td>
                         <td className="px-4 py-3">{method}</td>
                         <td className="px-4 py-3">{formatCurrency(amount, currency)}</td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => openDetails(id)} disabled={!id}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => openDetails(id)} disabled={!id}>
                               Details
                             </Button>
                             <select
+                              aria-label={`Update status for payment ${id}`}
+                              title={`Update status for payment ${id}`}
                               value={status}
                               onChange={(e) => void updateStatus(id, e.target.value)}
-                              className="h-9 rounded-xl border bg-background px-3 text-sm"
+                              className="h-9 rounded-md border bg-background px-3 text-sm"
                               disabled={!id}
                             >
                               {paymentStatuses.map((s) => (
                                 <option key={s} value={s}>
-                                  {s}
+                                  {getPaymentStatusMeta(s).label}
                                 </option>
                               ))}
                             </select>
@@ -201,19 +224,19 @@ export default function AdminPaymentsPage() {
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
-              <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
+              <select aria-label="Payments page size" title="Payments page size" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-background px-3 text-sm">
                 {[10, 20, 30, 50].map((n) => (
                   <option key={n} value={String(n)}>
                     {n}/page
                   </option>
                 ))}
               </select>
-              <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+              <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                 Prev
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-xl"
+                className="h-9 rounded-md"
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               >
@@ -226,7 +249,7 @@ export default function AdminPaymentsPage() {
 
       <Modal isOpen={isDetailsOpen} title={detailsId ? `Payment #${detailsId}` : "Payment"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">
               {formatCurrency(Number((details ?? {})["amount"] ?? 0), getString(details ?? {}, "currency") ?? "VND")}
             </div>
@@ -235,20 +258,30 @@ export default function AdminPaymentsPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">Status</div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span
+                className={[
+                  "rounded-full border px-3 py-1 text-sm",
+                  getPaymentStatusMeta(normalizePaymentStatus(getString(details ?? {}, "status") ?? "")).badgeClass,
+                ].join(" ")}
+              >
+                {getPaymentStatusMeta(normalizePaymentStatus(getString(details ?? {}, "status") ?? "")).label}
+              </span>
               <select
+                aria-label="Payment status quick update"
+                title="Payment status quick update"
                 value={normalizePaymentStatus(getString(details ?? {}, "status") ?? "")}
                 onChange={(e) => {
                   if (detailsId) void updateStatus(detailsId, e.target.value);
                 }}
-                className="h-10 rounded-xl border bg-background px-3 text-sm"
+                className="h-10 rounded-md border bg-background px-3 text-sm"
                 disabled={!detailsId}
               >
                 {paymentStatuses.map((s) => (
                   <option key={s} value={s}>
-                    {s}
+                    {getPaymentStatusMeta(s).label}
                   </option>
                 ))}
               </select>
@@ -257,7 +290,7 @@ export default function AdminPaymentsPage() {
           </div>
 
           <div className="flex justify-end">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsDetailsOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsDetailsOpen(false)}>
               Close
             </Button>
           </div>
@@ -266,3 +299,4 @@ export default function AdminPaymentsPage() {
     </>
   );
 }
+

@@ -113,7 +113,7 @@ export default function ProfileEditPage() {
         title="Couldn’t load profile"
         description={error}
         action={
-          <Button onClick={() => window.location.reload()} className="h-10 rounded-xl bg-primary text-primary-foreground">
+          <Button onClick={() => window.location.reload()} className="h-10 rounded-md bg-primary text-primary-foreground">
             Retry
           </Button>
         }
@@ -129,7 +129,7 @@ export default function ProfileEditPage() {
             <div className="text-2xl font-semibold">Edit profile</div>
             <div className="mt-1 text-sm text-muted-foreground">Update your personal details.</div>
           </div>
-          <Button asChild variant="outline" className="h-10 rounded-xl bg-background">
+          <Button asChild variant="outline" className="h-10 rounded-md bg-background">
             <Link to="/me">Back</Link>
           </Button>
         </div>
@@ -144,37 +144,37 @@ export default function ProfileEditPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Username</label>
-                <Input className="rounded-xl bg-background" value={username} onChange={(e) => setUsername(e.target.value)} />
+                <Input className="rounded-md bg-background" value={username} onChange={(e) => setUsername(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Email</label>
-                <Input className="rounded-xl bg-background" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input className="rounded-md bg-background" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Full name</label>
-                <Input className="rounded-xl bg-background" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                <Input className="rounded-md bg-background" value={fullName} onChange={(e) => setFullName(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Phone</label>
-                <Input className="rounded-xl bg-background" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <Input className="rounded-md bg-background" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
             </div>
 
             {error ? (
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{error}</div>
+              <div className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{error}</div>
             ) : null}
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" className="h-10 rounded-xl bg-background" onClick={() => navigate("/me")}>
+              <Button type="button" variant="outline" className="h-10 rounded-md bg-background" onClick={() => navigate("/me")}>
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={!canSave}
-                className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {isSaving ? "Saving..." : "Save changes"}
               </Button>
@@ -194,7 +194,7 @@ export default function ProfileEditPage() {
           <Button
             type="button"
             onClick={() => setIsDeleteOpen(true)}
-            className="h-10 rounded-xl bg-rose-600 text-white hover:bg-rose-600/90"
+            className="h-10 rounded-md bg-rose-600 text-white hover:bg-rose-600/90"
           >
             Delete account
           </Button>
@@ -214,3 +214,4 @@ export default function ProfileEditPage() {
     </div>
   );
 }
+

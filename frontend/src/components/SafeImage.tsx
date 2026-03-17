@@ -4,11 +4,31 @@ import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useState } from "react";
 
 function resolveUrl(src: string) {
-  if (!src.trim()) return "";
-  if (isAbsoluteUrl(src)) return src;
-  if (src.startsWith("//")) return `${window.location.protocol}${src}`;
-  if (src.startsWith("/")) return `${getApiBaseUrl()}${src}`;
-  return src;
+  const trimmed = src.trim();
+  if (!trimmed) return "";
+
+  const normalized = trimmed.replace(/^['"]+|['"]+$/g, "").replace(/\\+/g, "/");
+  if (!normalized) return "";
+
+  if (
+    isAbsoluteUrl(normalized) ||
+    normalized.startsWith("data:") ||
+    normalized.startsWith("blob:")
+  ) {
+    return normalized;
+  }
+
+  if (normalized.startsWith("//")) {
+    return `${window.location.protocol}${normalized}`;
+  }
+
+  const base = getApiBaseUrl();
+  if (normalized.startsWith("/")) {
+    return `${base}${normalized}`;
+  }
+
+  const slashNormalized = normalized.replace(/^\.\//, "").replace(/^\\+/, "");
+  return `${base}/${slashNormalized}`;
 }
 
 export default function SafeImage({

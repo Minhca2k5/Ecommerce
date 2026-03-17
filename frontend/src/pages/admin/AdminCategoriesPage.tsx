@@ -134,15 +134,15 @@ export default function AdminCategoriesPage() {
           <div>
             <CardTitle>Categories</CardTitle>
           </div>
-          <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
+          <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
             New category
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={qName} onChange={(e) => setQName(e.target.value)} placeholder="Search name..." className="rounded-xl" />
-            <Input value={qSlug} onChange={(e) => setQSlug(e.target.value)} placeholder="Slug..." className="rounded-xl" />
-            <Input value={qParentId} onChange={(e) => setQParentId(e.target.value)} placeholder="Parent ID..." className="rounded-xl" />
+            <Input value={qName} onChange={(e) => setQName(e.target.value)} placeholder="Search category name" className="rounded-md" />
+            <Input value={qSlug} onChange={(e) => setQSlug(e.target.value)} placeholder="Search slug" className="rounded-md" />
+            <Input value={qParentId} onChange={(e) => setQParentId(e.target.value)} placeholder="Filter by parent ID" className="rounded-md" />
           </div>
 
           <div className="table-shell">
@@ -165,7 +165,7 @@ export default function AdminCategoriesPage() {
                 ) : items.length === 0 ? (
                   <tr>
                     <td className="px-4 py-6 text-muted-foreground" colSpan={4}>
-                      No categories found.
+                      No categories match your current filters.
                     </td>
                   </tr>
                 ) : (
@@ -183,15 +183,15 @@ export default function AdminCategoriesPage() {
                         <td className="px-4 py-3">{parentId ? `#${parentId}` : "-"}</td>
                         <td className="px-4 py-3 text-right">
                           <div className="inline-flex gap-2">
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => openDetails(id)}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => openDetails(id)}>
                               Details
                             </Button>
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => openEdit(c)}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => openEdit(c)}>
                               Edit
                             </Button>
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl action-danger"
+                              className="h-9 rounded-md action-danger"
                               onClick={() => setDeleteId(id)}
                             >
                               Delete
@@ -207,21 +207,23 @@ export default function AdminCategoriesPage() {
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <div />
+            <div className="text-sm text-muted-foreground">
+              Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
+            </div>
             <div className="flex items-center gap-2">
-              <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
+              <select title="Select option" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-background px-3 text-sm">
                 {[10, 20, 50, 100].map((n) => (
                   <option key={n} value={String(n)}>
                     {n}/page
                   </option>
                 ))}
               </select>
-              <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+              <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                 Prev
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-xl"
+                className="h-9 rounded-md"
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               >
@@ -234,14 +236,14 @@ export default function AdminCategoriesPage() {
 
       <Modal isOpen={isFormOpen} title={editingId ? `Edit category #${editingId}` : "New category"} onClose={() => setIsFormOpen(false)}>
         <div className="grid gap-3">
-          <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Name *" className="rounded-xl" />
-          <Input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="Slug *" className="rounded-xl" />
-          <Input value={form.parentId} onChange={(e) => setForm((f) => ({ ...f, parentId: e.target.value }))} placeholder="Parent ID (optional)" className="rounded-xl" />
+          <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Name *" className="rounded-md" />
+          <Input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="Slug *" className="rounded-md" />
+          <Input value={form.parentId} onChange={(e) => setForm((f) => ({ ...f, parentId: e.target.value }))} placeholder="Parent ID (optional)" className="rounded-md" />
           <div className="mt-2 flex justify-end gap-2">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
+            <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
               Save
             </Button>
           </div>
@@ -250,7 +252,7 @@ export default function AdminCategoriesPage() {
 
       <Modal isOpen={isDetailsOpen} title="Category details" onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-4">
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">{getString(details, "name") ?? "Category"}</div>
             <div className="mt-1 text-sm text-muted-foreground">{getString(details, "slug") ?? "-"}</div>
           </div>
@@ -268,12 +270,12 @@ export default function AdminCategoriesPage() {
                   );
                 })
               ) : (
-                <div className="text-sm text-muted-foreground">No subcategories.</div>
+                <div className="text-sm text-muted-foreground">No subcategories yet.</div>
               )}
             </div>
           </div>
           <div className="flex justify-end">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsDetailsOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsDetailsOpen(false)}>
               Close
             </Button>
           </div>
@@ -296,3 +298,4 @@ export default function AdminCategoriesPage() {
     </>
   );
 }
+

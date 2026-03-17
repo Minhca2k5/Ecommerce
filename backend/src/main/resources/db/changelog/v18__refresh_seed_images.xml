@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v18-001-refresh-seed-images" author="codex">
+        <validCheckSum>9:70bfcc6f4c6a855ed63d8b6a13eed35a</validCheckSum>
+        <validCheckSum>9:2cd09eac654b1c56dfad3e923bb07faf</validCheckSum>
+        <comment>Refresh demo product and banner images with product-specific photos.</comment>
+
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p1/900/900" />
+            <where>id = 1</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p2/900/900" />
+            <where>id = 2</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p3/900/900" />
+            <where>id = 3</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p4/900/900" />
+            <where>id = 4</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p5/900/900" />
+            <where>id = 5</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p6/900/900" />
+            <where>id = 6</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p7/900/900" />
+            <where>id = 7</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p8/900/900" />
+            <where>id = 8</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p9/900/900" />
+            <where>id = 9</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p10/900/900" />
+            <where>id = 10</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p11/900/900" />
+            <where>id = 11</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p12/900/900" />
+            <where>id = 12</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p13/900/900" />
+            <where>id = 13</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p14/900/900" />
+            <where>id = 14</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p15/900/900" />
+            <where>id = 15</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p16/900/900" />
+            <where>id = 16</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p17/900/900" />
+            <where>id = 17</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p18/900/900" />
+            <where>id = 18</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p19/900/900" />
+            <where>id = 19</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p20/900/900" />
+            <where>id = 20</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p21/900/900" />
+            <where>id = 21</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p22/900/900" />
+            <where>id = 22</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p23/900/900" />
+            <where>id = 23</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p24/900/900" />
+            <where>id = 24</where>
+        </update>
+        <update tableName="product_images">
+            <column name="url" value="https://picsum.photos/seed/ecom-p25/900/900" />
+            <where>id = 25</where>
+        </update>
+
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-1/1400/600" />
+            <where>id = 1</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-2/1400/600" />
+            <where>id = 2</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-3/1400/600" />
+            <where>id = 3</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-4/1400/600" />
+            <where>id = 4</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-5/1400/600" />
+            <where>id = 5</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-6/1400/600" />
+            <where>id = 6</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-7/1400/600" />
+            <where>id = 7</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-8/1400/600" />
+            <where>id = 8</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-9/1400/600" />
+            <where>id = 9</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-10/1400/600" />
+            <where>id = 10</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-11/1400/600" />
+            <where>id = 11</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-12/1400/600" />
+            <where>id = 12</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-13/1400/600" />
+            <where>id = 13</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-14/1400/600" />
+            <where>id = 14</where>
+        </update>
+        <update tableName="banners">
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-15/1400/600" />
+            <where>id = 15</where>
+        </update>
+    </changeSet>
+</databaseChangeLog>

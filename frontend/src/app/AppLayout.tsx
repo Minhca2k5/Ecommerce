@@ -13,8 +13,8 @@ import { cn } from "@/lib/utils";
 
 const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   isActive
-    ? "rounded-lg bg-primary/15 px-3 py-1.5 text-primary ring-1 ring-primary/30 shadow-sm"
-    : "rounded-lg bg-white/70 px-3 py-1.5 text-muted-foreground ring-1 ring-transparent hover:bg-primary/10 hover:text-primary";
+    ? "rounded-md bg-primary px-3 py-1.5 text-primary-foreground font-semibold"
+    : "rounded-md px-3 py-1.5 text-white/80 hover:bg-white/10 hover:text-white";
 
 export default function AppLayout() {
   const auth = useAuth();
@@ -25,6 +25,7 @@ export default function AppLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
   const menuRef = useRef<HTMLDivElement | null>(null);
   const notifRef = useRef<HTMLDivElement | null>(null);
   const isAdminRoute = location.pathname === "/admin" || location.pathname.startsWith("/admin/");
@@ -105,42 +106,69 @@ export default function AppLayout() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap">
           <Link
             to={isAdminRoute ? "/admin" : "/"}
-            className="shrink-0 text-lg font-bold tracking-tight text-primary"
+            className="shrink-0 text-lg font-bold tracking-tight text-white"
           >
             Ecommerce
           </Link>
 
+          {!isAdminRoute ? (
+            <form
+              className="order-3 w-full sm:order-none sm:w-[360px] md:w-[420px]"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const q = searchQuery.trim();
+                if (!q) return;
+                navigate(`/products?name=${encodeURIComponent(q)}`);
+              }}
+            >
+              <div className="flex items-center overflow-hidden rounded-md border border-white/10 bg-white">
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search products"
+                  className="h-9 w-full px-3 text-sm text-foreground outline-none"
+                />
+                <button
+                  type="submit"
+                  className="h-9 bg-primary px-4 text-sm font-semibold text-primary-foreground"
+                >
+                  Search
+                </button>
+              </div>
+            </form>
+          ) : null}
+
           <nav className="w-full flex flex-wrap items-center gap-2 text-sm sm:w-auto sm:ml-auto sm:flex-nowrap sm:justify-end">
             <NavLink to={isAdminRoute ? "/admin" : "/"} end className={navLinkClassName}>
               <span className="inline-flex items-center gap-2 transition-colors">
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 10.5l9-7 9 7" />
-                  <path d="M5 10v10h14V10" />
-                </svg>
-                Home
-              </span>
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 10.5l9-7 9 7" />
+                    <path d="M5 10v10h14V10" />
+                  </svg>
+                  Home
+                </span>
             </NavLink>
 
             {!isAdminRoute ? (
               <>
                 <NavLink to="/categories" className={navLinkClassName}>
                   <span className="inline-flex items-center gap-2 transition-colors">
-                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M4 6h7v7H4z" />
-                      <path d="M13 6h7v7h-7z" />
-                      <path d="M4 15h7v5H4z" />
-                      <path d="M13 15h7v5h-7z" />
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 6h7v7H4z" />
+                    <path d="M13 6h7v7h-7z" />
+                    <path d="M4 15h7v5H4z" />
+                    <path d="M13 15h7v5h-7z" />
                     </svg>
                     Categories
                   </span>
                 </NavLink>
                 <NavLink to="/products" className={navLinkClassName}>
                   <span className="inline-flex items-center gap-2 transition-colors">
-                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M6 7h12l-1 13H7L6 7z" />
-                      <path d="M9 7a3 3 0 0 1 6 0" />
-                    </svg>
-                    Products
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M6 7h12l-1 13H7L6 7z" />
+                    <path d="M9 7a3 3 0 0 1 6 0" />
+                  </svg>
+                  Products
                   </span>
                 </NavLink>
               </>
@@ -171,7 +199,7 @@ export default function AppLayout() {
                       setIsMenuOpen(false);
                       setIsNotifOpen((v) => !v);
                     }}
-                    className="relative cursor-pointer rounded-lg px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground ring-1 ring-transparent hover:ring-primary/10"
+                    className="relative cursor-pointer rounded-md px-3 py-1.5 text-white/80 hover:bg-white/10 hover:text-white"
                     aria-label="Notifications"
                   >
                     <span className="inline-flex items-center gap-2 transition-colors">
@@ -189,16 +217,16 @@ export default function AppLayout() {
                   </button>
 
                   {isNotifOpen ? (
-                    <div className="absolute right-0 mt-2 w-80 overflow-hidden rounded-xl border bg-background shadow-md animate-in fade-in zoom-in-95">
+                    <div className="absolute right-0 mt-2 w-80 overflow-hidden rounded-md border bg-background shadow-md animate-in fade-in zoom-in-95">
                       <div className="flex items-center justify-between gap-2 p-3">
                         <div className="text-sm font-medium">Notifications</div>
-                        <button
-                          type="button"
-                          className="cursor-pointer rounded-lg px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-                          onClick={() => notifications.markAllRead()}
-                        >
-                          Mark all read
-                        </button>
+                          <button
+                            type="button"
+                            className="cursor-pointer rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                            onClick={() => notifications.markAllRead()}
+                          >
+                            Mark all as read
+                          </button>
                       </div>
                       <div className="max-h-80 overflow-auto border-t">
                         {(notifications.items ?? []).filter((n) => !n.isHidden).slice(0, 6).map((n) => (
@@ -258,15 +286,15 @@ export default function AppLayout() {
                                     e.stopPropagation();
                                     try {
                                       await declineGroupInvite(Number(n.referenceId));
-                                      toast.push({ variant: "success", title: "Invite refused", message: "Bạn đã từ chối lời mời." });
+                                      toast.push({ variant: "success", title: "Invite declined", message: "You declined the invite." });
                                       const id = Number(n.id ?? 0);
                                       if (id) notifications.markRead(id);
                                     } catch (err) {
-                                      toast.push({ variant: "error", title: "Refuse failed", message: getErrorMessage(err, "Please try again.") });
+                                      toast.push({ variant: "error", title: "Decline failed", message: getErrorMessage(err, "Please try again.") });
                                     }
                                   }}
                                 >
-                                  Refuse
+                                  Decline
                                 </button>
                               </div>
                             ) : null}
@@ -279,7 +307,7 @@ export default function AppLayout() {
                       <div className="border-t p-2">
                         <button
                           type="button"
-                          className="w-full cursor-pointer rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                          className="w-full cursor-pointer rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                           onClick={() => {
                             setIsNotifOpen(false);
                             navigate("/notifications");
@@ -311,10 +339,10 @@ export default function AppLayout() {
                 <button
                   type="button"
                   onClick={() => setIsMenuOpen((v) => !v)}
-                  className="rounded-lg px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground ring-1 ring-transparent hover:ring-primary/10"
+                  className="rounded-md px-3 py-1.5 text-white/80 hover:bg-white/10 hover:text-white"
                 >
                   <span className="inline-flex items-center gap-2 transition-colors">
-                    <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-[10px] font-semibold text-white">
+                    <span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-[10px] font-semibold text-white ring-2 ring-white shadow-sm">
                       {(displayName || "A").slice(0, 1).toUpperCase()}
                     </span>
                     <span className="max-w-[10rem] truncate">{displayName}</span>
@@ -326,7 +354,7 @@ export default function AppLayout() {
 
                 {isMenuOpen ? (
                   <div
-                    className="absolute right-0 mt-2 w-64 overflow-hidden rounded-xl border bg-background shadow-md animate-in fade-in zoom-in-95"
+                    className="absolute right-0 mt-2 w-64 overflow-hidden rounded-md border bg-background shadow-md animate-in fade-in zoom-in-95"
                     onMouseLeave={() => setIsMenuOpen(false)}
                   >
                     <div className="p-3">
@@ -334,13 +362,12 @@ export default function AppLayout() {
                     </div>
                     <div className="border-t p-2">
                       {availableRoles.length > 1 ? (
-                        <div className="mb-2 rounded-xl border bg-background/50 p-2">
+                        <div className="mb-2 rounded-md border bg-background/50 p-2">
                           <div className="px-1 pb-2 text-xs font-medium text-muted-foreground">Role</div>
                           <div className="flex items-center gap-2">
-                            <select
-                              value={roleDraft}
+                            <select title="Select option" value={roleDraft}
                               onChange={(e) => setRoleDraft(e.target.value)}
-                              className="h-9 w-full rounded-xl border bg-background px-3 text-sm"
+                              className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                             >
                               {availableRoles.map((r) => (
                                 <option key={r} value={r}>
@@ -357,7 +384,7 @@ export default function AppLayout() {
                                 toast.push({ variant: "success", title: "Role switched", message: `Switched to ${nextRole}.` });
                                 navigate(defaultRouteForRole(nextRole), { replace: true });
                               }}
-                              className="h-9 shrink-0 rounded-xl border bg-background px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                              className="h-9 shrink-0 rounded-md border bg-background px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                             >
                               Switch
                             </button>
@@ -370,7 +397,7 @@ export default function AppLayout() {
                           setIsMenuOpen(false);
                           navigate(isAdminRoute ? "/admin/profile" : "/me");
                         }}
-                        className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                        className="w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
                         Profile
                       </button>
@@ -382,7 +409,7 @@ export default function AppLayout() {
                               setIsMenuOpen(false);
                               navigate("/me/addresses");
                             }}
-                            className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                            className="w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                           >
                             Addresses
                           </button>
@@ -392,7 +419,7 @@ export default function AppLayout() {
                               setIsMenuOpen(false);
                               navigate("/me/wishlist");
                             }}
-                            className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                            className="w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                           >
                             Wishlist
                           </button>
@@ -402,7 +429,7 @@ export default function AppLayout() {
                               setIsMenuOpen(false);
                               navigate("/orders");
                             }}
-                            className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                            className="w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                           >
                             Orders
                           </button>
@@ -412,7 +439,7 @@ export default function AppLayout() {
                               setIsMenuOpen(false);
                               navigate("/me/vouchers");
                             }}
-                            className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                            className="w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                           >
                             My vouchers
                           </button>
@@ -422,7 +449,7 @@ export default function AppLayout() {
                               setIsMenuOpen(false);
                               navigate("/me/voucher-uses");
                             }}
-                            className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                            className="w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                           >
                             Voucher uses
                           </button>
@@ -432,7 +459,7 @@ export default function AppLayout() {
                               setIsMenuOpen(false);
                               navigate("/me/search-logs");
                             }}
-                            className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                            className="w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                           >
                             Search logs
                           </button>
@@ -446,7 +473,7 @@ export default function AppLayout() {
                           toast.push({ variant: "success", title: "Logged out", message: "See you again soon." });
                           navigate(isAdminRoute ? "/admin" : "/", { replace: true });
                         }}
-                        className="w-full rounded-xl px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                        className="w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
                         Logout
                       </button>
@@ -468,7 +495,7 @@ export default function AppLayout() {
       {!isAdminRoute ? <ChatbotWidget /> : null}
       <footer className="border-t">
         <div className="mx-auto max-w-6xl px-4 py-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/80 px-3 py-1 text-sm text-muted-foreground">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3 py-1 text-sm text-muted-foreground">
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <circle cx="12" cy="12" r="8" />
@@ -477,12 +504,13 @@ export default function AppLayout() {
                 <path d="M8.5 14.5c1.2 1 2.5 1.5 3.5 1.5s2.3-.5 3.5-1.5" />
               </svg>
             </span>
-            Always happy to help
+            Need help? We are here.
           </div>
         </div>
       </footer>
     </div>
   );
 }
+
 
 

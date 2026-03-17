@@ -71,11 +71,13 @@ export default function ChatbotWidget() {
   const [activeProjectId, setActiveProjectId] = useState<number | null>(null);
   const [activeGroupId, setActiveGroupId] = useState<number | null>(null);
   const [lastByScope, setLastByScope] = useState<Record<string, number | null>>({});
+  const lastByScopeRef = useRef<Record<string, number | null>>({});
   const sendingRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const selfSenderName = auth.user?.fullName?.trim() ? auth.user.fullName : auth.user?.username ?? "You";
   const useGroupSseRender = scope === "group";
+  const contextKey = `${scope}:${activeProjectId ?? "-"}:${activeGroupId ?? "-"}`;
 
   const activeGroup = useMemo(() => groups.find((g) => g.id === activeGroupId) ?? null, [groups, activeGroupId]);
 
@@ -122,9 +124,9 @@ export default function ChatbotWidget() {
         return !alreadyKept || Number(c.id) === Number(activeConversationId ?? 0);
       });
       setConversations(filtered.map((c) => ({ ...c, scopeLabel: scope === "project" ? "PROJECT" : scope === "group" ? "GROUP" : "PERSONAL" } as any)));
-      if (list.length > 0) {
+      if (filtered.length > 0) {
         const key = `${scope}:${activeProjectId ?? "-"}:${activeGroupId ?? "-"}`;
-        const remembered = lastByScope[key];
+        const remembered = lastByScopeRef.current[key];
         const chosen = remembered && filtered.some((x) => x.id === remembered) ? remembered : filtered[0]?.id;
         setActiveConversationId(chosen);
       } else {
@@ -224,6 +226,14 @@ export default function ChatbotWidget() {
 
   async function startNewChat() {
     try {
+      if (scope === "project" && !activeProjectId) {
+        toast.push({ variant: "default", title: "Select a project", message: "Choose a project before creating a project chat." });
+        return;
+      }
+      if (scope === "group" && !activeGroupId) {
+        toast.push({ variant: "default", title: "Select a group", message: "Choose a group before creating a group chat." });
+        return;
+      }
       if (activeConversationId && items.length === 0 && !message.trim() && !pendingFile) {
         return;
       }
@@ -456,6 +466,10 @@ export default function ChatbotWidget() {
   }, [open, scope, activeProjectId, activeGroupId]);
 
   useEffect(() => {
+    lastByScopeRef.current = lastByScope;
+  }, [lastByScope]);
+
+  useEffect(() => {
     if (!open || !activeConversationId) return;
     void loadHistory(activeConversationId);
   }, [open, activeConversationId]);
@@ -513,6 +527,13 @@ export default function ChatbotWidget() {
     setLastByScope((prev) => ({ ...prev, [key]: activeConversationId }));
   }, [activeConversationId, scope, activeProjectId, activeGroupId]);
 
+  function switchScope(next: Scope) {
+    if (scope === next) return;
+    setActiveConversationId(null);
+    setItems([]);
+    setScope(next);
+  }
+
   return (
     <>
       <div
@@ -544,10 +565,10 @@ export default function ChatbotWidget() {
       </div>
 
       {open ? createPortal(
-        <div className="fixed bottom-24 right-6 z-50 w-[360px] sm:w-[760px]">
-          <div className="rounded-xl border bg-background shadow-md">
-            <div className="flex items-center justify-between border-b px-4 py-3">
-              <div className="text-sm font-semibold">Chatbot</div>
+        <div className="fixed bottom-24 right-6 z-50 w-[min(96vw,980px)]">
+          <div className="overflow-hidden rounded-md border bg-background shadow-2xl">
+            <div className="flex items-center justify-between border-b bg-card px-4 py-3">
+              <div className="text-sm font-semibold tracking-tight">Chatbot</div>
               <div className="flex items-center gap-2">
                 <button type="button" onClick={startNewChat} className="rounded-lg px-2 py-1 text-xs hover:bg-muted">New chat</button>
                 <button type="button" onClick={onRenameActiveChat} className="rounded-lg px-2 py-1 text-xs hover:bg-muted">Rename</button>
@@ -556,24 +577,24 @@ export default function ChatbotWidget() {
               </div>
             </div>
 
-            <div className="flex min-h-[420px]">
-              <div className="w-[260px] border-r px-3 py-3 text-xs space-y-3 hidden sm:block">
+            <div className="flex min-h-[540px]">
+              <div className="hidden w-[280px] border-r bg-card/60 px-3 py-3 text-xs sm:block space-y-3">
                 <div className="space-y-2">
                   <div className="font-semibold text-muted-foreground">Scope</div>
                   <div className="flex gap-2">
-                    <button className={`rounded px-2 py-1 border ${scope === "personal" ? "bg-primary/10 border-primary" : ""}`} onClick={() => setScope("personal")}>Personal</button>
-                    <button className={`rounded px-2 py-1 border ${scope === "project" ? "bg-primary/10 border-primary" : ""}`} onClick={() => setScope("project")}>Project</button>
-                    <button className={`rounded px-2 py-1 border ${scope === "group" ? "bg-primary/10 border-primary" : ""}`} onClick={() => setScope("group")}>Group</button>
+                    <button className={`rounded-md px-2 py-1 border ${scope === "personal" ? "bg-primary text-primary-foreground border-primary" : "bg-background"}`} onClick={() => switchScope("personal")}>Personal</button>
+                    <button className={`rounded-md px-2 py-1 border ${scope === "project" ? "bg-primary text-primary-foreground border-primary" : "bg-background"}`} onClick={() => switchScope("project")}>Project</button>
+                    <button className={`rounded-md px-2 py-1 border ${scope === "group" ? "bg-primary text-primary-foreground border-primary" : "bg-background"}`} onClick={() => switchScope("group")}>Group</button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="font-semibold text-muted-foreground">Projects</div>
-                  <button className="rounded border px-2 py-1 w-full text-left" onClick={onCreateProject}>+ New project</button>
+                  <button className="w-full rounded-md border bg-background px-2 py-1 text-left" onClick={onCreateProject}>+ New project</button>
                   <div className="max-h-24 overflow-auto space-y-1">
                     {projects.map((p) => (
-                      <div key={p.id} className={`flex items-center gap-1 rounded border px-2 py-1 ${activeProjectId===p.id ? "bg-primary/10 border-primary" : ""}`}>
-                        <button onClick={() => { setActiveProjectId(p.id); setScope("project"); }} className="min-w-0 flex-1 text-left truncate">{p.name}</button>
+                      <div key={p.id} className={`flex items-center gap-1 rounded-md border px-2 py-1 ${activeProjectId===p.id && scope === "project" ? "bg-primary/10 border-primary" : "bg-background"}`}>
+                        <button onClick={() => { setActiveConversationId(null); setItems([]); setActiveProjectId(p.id); switchScope("project"); }} className="min-w-0 flex-1 text-left truncate">{p.name}</button>
                         <button onClick={() => void onDeleteProject(p.id)} className="rounded px-1 text-red-500 hover:bg-red-50">x</button>
                       </div>
                     ))}
@@ -583,13 +604,13 @@ export default function ChatbotWidget() {
                 <div className="space-y-2">
                   <div className="font-semibold text-muted-foreground">Groups</div>
                   <div className="flex gap-1">
-                    <button className="rounded border px-2 py-1" onClick={onCreateGroup}>+ Group</button>
-                    {activeGroup?.role === "OWNER" ? <button className="rounded border px-2 py-1" onClick={onInviteMember}>Invite</button> : null}
-                    {activeGroup?.role === "OWNER" ? <button className="rounded border px-2 py-1" onClick={onRemoveMember}>Remove</button> : null}
-                    {activeGroup?.role === "OWNER" ? <button className="rounded border px-2 py-1 text-red-500" onClick={onDeleteGroup}>Delete</button> : null}
+                    <button className="rounded-md border bg-background px-2 py-1" onClick={onCreateGroup}>+ Group</button>
+                    {activeGroup?.role === "OWNER" ? <button className="rounded-md border bg-background px-2 py-1" onClick={onInviteMember}>Invite</button> : null}
+                    {activeGroup?.role === "OWNER" ? <button className="rounded-md border bg-background px-2 py-1" onClick={onRemoveMember}>Remove</button> : null}
+                    {activeGroup?.role === "OWNER" ? <button className="rounded-md border bg-background px-2 py-1 text-red-500" onClick={onDeleteGroup}>Delete</button> : null}
                   </div>
                   <div className="max-h-24 overflow-auto space-y-1">
-                    {groups.map((g) => <button key={g.id} onClick={() => { setActiveGroupId(g.id); setScope("group"); }} className={`w-full rounded border px-2 py-1 text-left ${activeGroupId===g.id ? "bg-primary/10 border-primary" : ""}`}>{g.name} ({g.role})</button>)}
+                    {groups.map((g) => <button key={g.id} onClick={() => { setActiveConversationId(null); setItems([]); setActiveGroupId(g.id); switchScope("group"); }} className={`w-full rounded-md border px-2 py-1 text-left ${activeGroupId===g.id && scope === "group" ? "bg-primary/10 border-primary" : "bg-background"}`}>{g.name} ({g.role})</button>)}
                   </div>
                   {activeGroup ? (
                     <div className="rounded border px-2 py-2">
@@ -613,7 +634,7 @@ export default function ChatbotWidget() {
                         <div>Group #{i.groupId}</div>
                         <div className="mt-1 flex gap-1">
                           <button className="rounded border px-2 py-1" onClick={() => onAcceptInvite(i.id)}>Accept</button>
-                          <button className="rounded border px-2 py-1 text-red-500" onClick={() => onDeclineInvite(i.id)}>Refuse</button>
+                          <button className="rounded border px-2 py-1 text-red-500" onClick={() => onDeclineInvite(i.id)}>Decline</button>
                         </div>
                       </div>
                     ))}
@@ -622,29 +643,29 @@ export default function ChatbotWidget() {
                 </div>
               </div>
 
-              <div className="flex flex-1 flex-col">
-                <div className="border-b px-3 py-2 text-xs text-muted-foreground">{scope.toUpperCase()} {scope === "project" && activeProjectId ? `#${activeProjectId}` : ""}{scope === "group" && activeGroup ? ` - ${activeGroup.name}` : ""}</div>
-                <div className="border-b px-3 py-2 overflow-x-auto flex gap-2">
+              <div className="flex min-w-0 flex-1 flex-col bg-background">
+                <div className="border-b bg-card/40 px-3 py-2 text-xs text-muted-foreground">{scope.toUpperCase()} {scope === "project" && activeProjectId ? `#${activeProjectId}` : ""}{scope === "group" && activeGroup ? ` - ${activeGroup.name}` : ""}</div>
+                <div className="flex gap-2 overflow-x-auto border-b bg-card/30 px-3 py-2">
                   {conversations.map((c) => (
-                    <button key={c.id} type="button" className={`rounded-full border px-3 py-1 text-xs ${activeConversationId===c.id ? "bg-primary/10 border-primary" : ""}`} onClick={() => { setActiveConversationId(c.id); setLastByScope((prev) => ({ ...prev, [`${scope}:${activeProjectId ?? "-"}:${activeGroupId ?? "-"}`]: c.id })); }}>{c.title} <span className="opacity-70">[{c.scopeLabel ?? (scope === "project" ? "PROJECT" : scope === "group" ? "GROUP" : "PERSONAL")}]</span></button>
+                    <button key={c.id} type="button" className={`rounded-full border px-3 py-1 text-xs whitespace-nowrap ${activeConversationId===c.id ? "bg-primary/10 border-primary" : "bg-background"}`} onClick={() => { setActiveConversationId(c.id); setLastByScope((prev) => ({ ...prev, [contextKey]: c.id })); }}>{c.title} <span className="opacity-70">[{c.scopeLabel ?? (scope === "project" ? "PROJECT" : scope === "group" ? "GROUP" : "PERSONAL")}]</span></button>
                   ))}
                 </div>
-                <div className="max-h-80 flex-1 overflow-auto px-4 py-3">
+                <div className="max-h-[420px] flex-1 overflow-auto px-4 py-3">
                   {isLoading ? <div className="text-sm text-muted-foreground">Loading...</div> : items.length ? (
                     <div className="space-y-2">
                       {items.map((item, idx) => (
-                        <div key={`${item.role}-${idx}`} className={`rounded-xl px-3 py-2 text-sm whitespace-pre-wrap ${item.role === "user" ? "ml-auto max-w-[80%] bg-primary text-primary-foreground" : "mr-auto max-w-[80%] bg-muted"}`}>
+                        <div key={`${item.role}-${idx}`} className={`rounded-md px-3 py-2 text-sm whitespace-pre-wrap ${item.role === "user" ? "ml-auto max-w-[80%] bg-primary text-primary-foreground" : "mr-auto max-w-[80%] bg-muted"}`}>
                           {scope === "group" && item.role === "user" && item.senderName ? <div className="mb-1 text-[11px] opacity-80">{item.senderName}</div> : null}
                           {normalizeDisplayText(item.content)}
                         </div>
                       ))}
                       {isSending ? (
-                        <div className="mr-auto max-w-[80%] rounded-xl bg-muted px-3 py-2 text-sm text-muted-foreground">
+                        <div className="mr-auto max-w-[80%] rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
                           <span>Thinking</span>
                           <span className="ml-2 inline-flex items-center gap-1">
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "120ms" }} />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "240ms" }} />
+                            <span className="typing-dot typing-dot-1" />
+                            <span className="typing-dot typing-dot-2" />
+                            <span className="typing-dot typing-dot-3" />
                           </span>
                         </div>
                       ) : null}
@@ -653,30 +674,30 @@ export default function ChatbotWidget() {
                     <div className="space-y-2">
                       <div className="text-sm text-muted-foreground">Ask something...</div>
                       {isSending ? (
-                        <div className="mr-auto max-w-[80%] rounded-xl bg-muted px-3 py-2 text-sm text-muted-foreground">
+                        <div className="mr-auto max-w-[80%] rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
                           <span>Thinking</span>
                           <span className="ml-2 inline-flex items-center gap-1">
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "120ms" }} />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "240ms" }} />
+                            <span className="typing-dot typing-dot-1" />
+                            <span className="typing-dot typing-dot-2" />
+                            <span className="typing-dot typing-dot-3" />
                           </span>
                         </div>
                       ) : null}
                     </div>
                   )}
                 </div>
-                <div className="border-t px-3 py-2">
+                <div className="border-t bg-card/30 px-3 py-2">
                   {(pendingFile) ? (
                     <div className="mb-2 flex flex-wrap gap-2 text-xs">
                       {pendingFile ? <span className="rounded-full border px-2 py-1">File: {pendingFile.name} <button onClick={() => setPendingFile(null)}>x</button></span> : null}
                     </div>
                   ) : null}
                   <div className="flex items-center gap-2">
-                  <input className="h-9 flex-1 rounded-xl border bg-background px-3 text-sm" placeholder="Ask something..." value={message} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void onSend(); } }} disabled={isSending} />
-                  <button type="button" onClick={onSend} disabled={isSending} className="h-9 rounded-xl bg-primary px-3 text-sm text-primary-foreground hover:bg-primary/90">{isSending ? "..." : "Send"}</button>
-                  <button type="button" onClick={onVoiceInput} className="h-9 rounded-xl border px-2 text-xs">Mic</button>
-                  <button type="button" onClick={() => fileInputRef.current?.click()} className="h-9 rounded-xl border px-2 text-xs">File</button>
-                  <input ref={fileInputRef} type="file" className="hidden" accept=".txt,.md,.json,.xml,.yml,.yaml,.csv,.log,.pdf,.docx" onChange={(e) => { const f = e.target.files?.[0]; if (f) setPendingFile(f); e.currentTarget.value = ""; }} />
+                  <input className="h-10 flex-1 rounded-md border bg-background px-3 text-sm" placeholder="Ask something..." value={message} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void onSend(); } }} disabled={isSending} />
+                  <button type="button" onClick={onSend} disabled={isSending} className="h-9 rounded-md bg-primary px-3 text-sm text-primary-foreground hover:bg-primary/90">{isSending ? "..." : "Send"}</button>
+                  <button type="button" onClick={onVoiceInput} className="h-9 rounded-md border px-2 text-xs">Mic</button>
+                  <button type="button" onClick={() => fileInputRef.current?.click()} className="h-9 rounded-md border px-2 text-xs">File</button>
+                  <input ref={fileInputRef} type="file" title="Attach file" aria-label="Attach file" className="hidden" accept=".txt,.md,.json,.xml,.yml,.yaml,.csv,.log,.pdf,.docx" onChange={(e) => { const f = e.target.files?.[0]; if (f) setPendingFile(f); e.currentTarget.value = ""; }} />
                 </div>
                 </div>
               </div>
@@ -686,4 +707,5 @@ export default function ChatbotWidget() {
     </>
   );
 }
+
 

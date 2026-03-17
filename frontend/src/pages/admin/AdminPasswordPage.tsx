@@ -50,7 +50,7 @@ export default function AdminPasswordPage() {
           <div className="text-2xl font-semibold">Change password</div>
           <div className="mt-1 text-sm text-muted-foreground">Keep your account secure with a strong password.</div>
         </div>
-        <Button asChild variant="outline" className="rounded-xl">
+        <Button asChild variant="outline" className="rounded-md">
           <Link to="/admin/profile">Back</Link>
         </Button>
       </div>
@@ -63,33 +63,33 @@ export default function AdminPasswordPage() {
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Old password</label>
-              <Input className="rounded-xl" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} type={showPassword ? "text" : "password"} autoComplete="current-password" />
+              <Input className="rounded-md" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} type={showPassword ? "text" : "password"} autoComplete="current-password" />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">New password</label>
-              <Input className="rounded-xl" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type={showPassword ? "text" : "password"} autoComplete="new-password" placeholder="At least 6 characters" />
+              <Input className="rounded-md" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type={showPassword ? "text" : "password"} autoComplete="new-password" placeholder="At least 6 characters" />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Confirm password</label>
-              <Input className="rounded-xl" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} type={showPassword ? "text" : "password"} autoComplete="new-password" placeholder="Re-enter new password" />
+              <Input className="rounded-md" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} type={showPassword ? "text" : "password"} autoComplete="new-password" placeholder="Re-enter new password" />
               {confirmPassword.length > 0 && confirmPassword !== newPassword ? <div className="text-sm text-danger">Passwords do not match.</div> : null}
             </div>
 
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => setShowPassword((v) => !v)} className="rounded-xl border bg-background px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+              <button type="button" onClick={() => setShowPassword((v) => !v)} className="rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
                 {showPassword ? "Hide passwords" : "Show passwords"}
               </button>
             </div>
 
-            {error ? <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
+            {error ? <div className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate("/admin/profile")}>
+              <Button type="button" variant="outline" className="rounded-md" onClick={() => navigate("/admin/profile")}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={!canSubmit} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button type="submit" disabled={!canSubmit} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
                 {isSaving ? "Updating..." : "Update password"}
               </Button>
             </div>
@@ -99,4 +99,5 @@ export default function AdminPasswordPage() {
     </div>
   );
 }
+
 

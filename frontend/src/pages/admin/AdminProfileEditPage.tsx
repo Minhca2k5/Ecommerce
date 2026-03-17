@@ -90,7 +90,7 @@ export default function AdminProfileEditPage() {
           <div className="text-2xl font-semibold">Edit profile</div>
           <div className="mt-1 text-sm text-muted-foreground">Update your personal details.</div>
         </div>
-        <Button asChild variant="outline" className="rounded-xl">
+        <Button asChild variant="outline" className="rounded-md">
           <Link to="/admin/profile">Back</Link>
         </Button>
       </div>
@@ -104,32 +104,32 @@ export default function AdminProfileEditPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Username</label>
-                <Input className="rounded-xl" value={username} onChange={(e) => setUsername(e.target.value)} />
+                <Input className="rounded-md" value={username} onChange={(e) => setUsername(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Email</label>
-                <Input className="rounded-xl" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input className="rounded-md" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Full name</label>
-                <Input className="rounded-xl" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                <Input className="rounded-md" value={fullName} onChange={(e) => setFullName(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Phone</label>
-                <Input className="rounded-xl" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <Input className="rounded-md" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
             </div>
 
-            {error ? <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
+            {error ? <div className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate("/admin/profile")}>
+              <Button type="button" variant="outline" className="rounded-md" onClick={() => navigate("/admin/profile")}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={!canSave} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button type="submit" disabled={!canSave} className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
                 {isSaving ? "Saving..." : "Save changes"}
               </Button>
             </div>
@@ -139,4 +139,5 @@ export default function AdminProfileEditPage() {
     </div>
   );
 }
+
 

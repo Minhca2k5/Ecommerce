@@ -143,22 +143,22 @@ export default function AdminInventoriesPage() {
             <CardTitle>Inventories</CardTitle>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+            <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
               Refresh
             </Button>
-            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
+            <Button className="h-9 rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               New inventory
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={qProductId} onChange={(e) => setQProductId(e.target.value)} placeholder="Product ID" className="rounded-xl" />
-            <Input value={qWarehouseId} onChange={(e) => setQWarehouseId(e.target.value)} placeholder="Warehouse ID" className="rounded-xl" />
-            <select value={qHasAvailable} onChange={(e) => setQHasAvailable(e.target.value)} className="h-10 rounded-xl border bg-background px-3 text-sm">
-              <option value="">All</option>
-              <option value="true">Has available stock</option>
-              <option value="false">No available stock</option>
+            <Input value={qProductId} onChange={(e) => setQProductId(e.target.value)} placeholder="Product ID" className="rounded-md" />
+            <Input value={qWarehouseId} onChange={(e) => setQWarehouseId(e.target.value)} placeholder="Warehouse ID" className="rounded-md" />
+            <select title="Select option" value={qHasAvailable} onChange={(e) => setQHasAvailable(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">All availability states</option>
+              <option value="true">In stock</option>
+              <option value="false">Out of stock</option>
             </select>
           </div>
 
@@ -186,7 +186,7 @@ export default function AdminInventoriesPage() {
                 ) : !items.length ? (
                   <tr className="border-t">
                     <td className="px-4 py-6 text-center text-muted-foreground" colSpan={6}>
-                      No inventories found.
+                      No inventory rows match your current filters.
                     </td>
                   </tr>
                 ) : (
@@ -201,17 +201,17 @@ export default function AdminInventoriesPage() {
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
                           <div className="font-medium">#{id}</div>
-                          <div className="text-sm text-muted-foreground">{hasAvailable === undefined ? "" : hasAvailable ? "Available" : "No available"}</div>
+                          <div className="text-sm text-muted-foreground">{hasAvailable === undefined ? "" : hasAvailable ? "In stock" : "Out of stock"}</div>
                         </td>
                         <td className="px-4 py-3">{productId ?? "-"}</td>
                         <td className="px-4 py-3">{warehouseId ?? "-"}</td>
                         <td className="px-4 py-3">
-                          <button className="rounded-xl border bg-background px-3 py-1 text-sm hover:bg-muted" onClick={() => openQty(inv, "stock")}>
+                          <button className="rounded-md border bg-background px-3 py-1 text-sm hover:bg-muted" onClick={() => openQty(inv, "stock")}>
                             {stockQty}
                           </button>
                         </td>
                         <td className="px-4 py-3">
-                          <button className="rounded-xl border bg-background px-3 py-1 text-sm hover:bg-muted" onClick={() => openQty(inv, "reserved")}>
+                          <button className="rounded-md border bg-background px-3 py-1 text-sm hover:bg-muted" onClick={() => openQty(inv, "reserved")}>
                             {reservedQty}
                           </button>
                         </td>
@@ -219,7 +219,7 @@ export default function AdminInventoriesPage() {
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl action-danger"
+                              className="h-9 rounded-md action-danger"
                               onClick={() => setDeleteId(id)}
                               disabled={!id}
                             >
@@ -240,19 +240,19 @@ export default function AdminInventoriesPage() {
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
-              <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
+              <select title="Select option" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-background px-3 text-sm">
                 {[10, 20, 30, 50].map((n) => (
                   <option key={n} value={String(n)}>
                     {n}/page
                   </option>
                 ))}
               </select>
-              <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+              <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                 Prev
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-xl"
+                className="h-9 rounded-md"
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               >
@@ -266,32 +266,32 @@ export default function AdminInventoriesPage() {
       <Modal isOpen={isFormOpen} title="New inventory" onClose={() => setIsFormOpen(false)}>
         <div className="grid gap-3">
           <div className="grid gap-3 md:grid-cols-2">
-            <Input value={form.productId} onChange={(e) => setForm((f) => ({ ...f, productId: e.target.value }))} placeholder="Product ID *" className="rounded-xl" />
-            <Input value={form.warehouseId} onChange={(e) => setForm((f) => ({ ...f, warehouseId: e.target.value }))} placeholder="Warehouse ID *" className="rounded-xl" />
+            <Input value={form.productId} onChange={(e) => setForm((f) => ({ ...f, productId: e.target.value }))} placeholder="Product ID *" className="rounded-md" />
+            <Input value={form.warehouseId} onChange={(e) => setForm((f) => ({ ...f, warehouseId: e.target.value }))} placeholder="Warehouse ID *" className="rounded-md" />
           </div>
           <div className="grid gap-3 md:grid-cols-2">
-            <Input value={form.stockQty} onChange={(e) => setForm((f) => ({ ...f, stockQty: e.target.value }))} placeholder="Stock qty" className="rounded-xl" />
-            <Input value={form.reservedQty} onChange={(e) => setForm((f) => ({ ...f, reservedQty: e.target.value }))} placeholder="Reserved qty" className="rounded-xl" />
+            <Input value={form.stockQty} onChange={(e) => setForm((f) => ({ ...f, stockQty: e.target.value }))} placeholder="Stock qty" className="rounded-md" />
+            <Input value={form.reservedQty} onChange={(e) => setForm((f) => ({ ...f, reservedQty: e.target.value }))} placeholder="Reserved qty" className="rounded-md" />
           </div>
           <div className="mt-2 flex justify-end gap-2">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={create}>
+            <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={create}>
               Create
             </Button>
           </div>
         </div>
       </Modal>
 
-      <Modal isOpen={isQtyOpen} title={editQtyId ? `Update ${editQtyType} for #${editQtyId}` : "Update quantity"} onClose={() => setIsQtyOpen(false)}>
+      <Modal isOpen={isQtyOpen} title={editQtyId ? `Update ${editQtyType} quantity for #${editQtyId}` : "Update quantity"} onClose={() => setIsQtyOpen(false)}>
         <div className="grid gap-3">
-          <Input value={editQtyValue} onChange={(e) => setEditQtyValue(e.target.value)} placeholder="Quantity" className="rounded-xl" />
+          <Input value={editQtyValue} onChange={(e) => setEditQtyValue(e.target.value)} placeholder="Quantity" className="rounded-md" />
           <div className="mt-2 flex justify-end gap-2">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsQtyOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsQtyOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={saveQty}>
+            <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={saveQty}>
               Save
             </Button>
           </div>
@@ -314,3 +314,4 @@ export default function AdminInventoriesPage() {
     </>
   );
 }
+

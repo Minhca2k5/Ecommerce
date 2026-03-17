@@ -7,6 +7,163 @@
         http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
 
-    <changeSet id="v2-020-seed-banners" author="minh" xmlns="http://www.liquibase.org/xml/ns/dbchangelog"><!-- Banner 1: Sale smartphone --><insert tableName="banners"><column name="id" valueNumeric="1" /><column name="title" value="Siêu sale Smartphone X20" /><column name="image_url" value="https://picsum.photos/seed/banner-smartphone-x20/1400/600" /><column name="target_url" value="/products/slug/smartphone-x20" /><column name="position" valueNumeric="1" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><!-- Banner 2: Laptop Pro --><insert tableName="banners"><column name="id" valueNumeric="2" /><column name="title" value="Laptop Pro 14&quot; - Giảm sốc" /><column name="image_url" value="https://picsum.photos/seed/banner-laptop-pro-14/1400/600" /><column name="target_url" value="/products/slug/laptop-pro-14" /><column name="position" valueNumeric="2" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><!-- Banner 3: Sách lập trình --><insert tableName="banners"><column name="id" valueNumeric="3" /><column name="title" value="Góc dev: Clean Code &amp; Design Patterns" /><column name="image_url" value="https://picsum.photos/seed/banner-dev-books/1400/600" /><column name="target_url" value="/categories/slug/programming-books" /><column name="position" valueNumeric="3" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><insert tableName="banners"><column name="id" valueNumeric="4" /><column name="title" value="Trending: Electronics" /><column name="image_url" value="https://picsum.photos/seed/banner-electronics/1400/600" /><column name="target_url" value="/categories/slug/electronics" /><column name="position" valueNumeric="4" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><insert tableName="banners"><column name="id" valueNumeric="5" /><column name="title" value="New arrivals: Laptops" /><column name="image_url" value="https://picsum.photos/seed/banner-laptops/1400/600" /><column name="target_url" value="/categories/slug/laptops" /><column name="position" valueNumeric="5" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><insert tableName="banners"><column name="id" valueNumeric="6" /><column name="title" value="Hot deals: Audio" /><column name="image_url" value="https://picsum.photos/seed/banner-audio/1400/600" /><column name="target_url" value="/categories/slug/audio" /><column name="position" valueNumeric="6" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><insert tableName="banners"><column name="id" valueNumeric="7" /><column name="title" value="Style up: Fashion" /><column name="image_url" value="https://picsum.photos/seed/banner-fashion/1400/600" /><column name="target_url" value="/categories/slug/fashion" /><column name="position" valueNumeric="7" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><insert tableName="banners"><column name="id" valueNumeric="8" /><column name="title" value="Book picks: Fiction" /><column name="image_url" value="https://picsum.photos/seed/banner-fiction/1400/600" /><column name="target_url" value="/categories/slug/fiction" /><column name="position" valueNumeric="8" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><insert tableName="banners"><column name="id" valueNumeric="9" /><column name="title" value="Accessories you need" /><column name="image_url" value="https://picsum.photos/seed/banner-accessories/1400/600" /><column name="target_url" value="/categories/slug/accessories" /><column name="position" valueNumeric="9" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><insert tableName="banners"><column name="id" valueNumeric="10" /><column name="title" value="Skincare glow up" /><column name="image_url" value="https://picsum.photos/seed/banner-skincare/1400/600" /><column name="target_url" value="/categories/slug/skincare" /><column name="position" valueNumeric="10" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><insert tableName="banners"><column name="id" valueNumeric="11" /><column name="title" value="New: Tablet Pro 11&quot;" /><column name="image_url" value="https://picsum.photos/seed/banner-tablet-pro-11/1400/600" /><column name="target_url" value="/products/slug/tablet-pro-11" /><column name="position" valueNumeric="11" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><insert tableName="banners"><column name="id" valueNumeric="12" /><column name="title" value="New: Action Camera Go" /><column name="image_url" value="https://picsum.photos/seed/banner-action-camera-go/1400/600" /><column name="target_url" value="/products/slug/action-camera-go" /><column name="position" valueNumeric="12" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><insert tableName="banners"><column name="id" valueNumeric="13" /><column name="title" value="Sneakers Street" /><column name="image_url" value="https://picsum.photos/seed/banner-sneakers/1400/600" /><column name="target_url" value="/products/slug/sneakers-street" /><column name="position" valueNumeric="13" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><insert tableName="banners"><column name="id" valueNumeric="14" /><column name="title" value="Hoodie Classic" /><column name="image_url" value="https://picsum.photos/seed/banner-hoodie/1400/600" /><column name="target_url" value="/products/slug/hoodie-classic" /><column name="position" valueNumeric="14" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><insert tableName="banners"><column name="id" valueNumeric="15" /><column name="title" value="The Lost Planet (Fiction)" /><column name="image_url" value="https://picsum.photos/seed/banner-lost-planet/1400/600" /><column name="target_url" value="/products/slug/the-lost-planet" /><column name="position" valueNumeric="15" /><column name="is_active" valueBoolean="true" /><column name="start_at" valueDate="2025-01-01T00:00:00" /><column name="end_at" valueDate="2026-01-01T00:00:00" /></insert><rollback><delete tableName="banners"><where>id BETWEEN 1 AND 15</where></delete></rollback></changeSet>
-
+    <changeSet id="v2-020-seed-banners" author="minh" xmlns="http://www.liquibase.org/xml/ns/dbchangelog">
+        <validCheckSum>9:169b051e3a7de6bcc7b6c8fc0a3e01d3</validCheckSum>
+        <validCheckSum>ANY</validCheckSum>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="1" />
+            <column name="title" value="Smartphone X20 - Big deals" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-1/1400/600" />
+            <column name="target_url" value="/products/slug/smartphone-x20" />
+            <column name="position" valueNumeric="1" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="2" />
+            <column name="title" value="Laptop Pro 14 - Hot price" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-2/1400/600" />
+            <column name="target_url" value="/products/slug/laptop-pro-14" />
+            <column name="position" valueNumeric="2" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="3" />
+            <column name="title" value="Developer picks: Clean Code &amp; Patterns" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-3/1400/600" />
+            <column name="target_url" value="/categories/slug/programming-books" />
+            <column name="position" valueNumeric="3" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="4" />
+            <column name="title" value="Trending: Electronics" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-4/1400/600" />
+            <column name="target_url" value="/categories/slug/electronics" />
+            <column name="position" valueNumeric="4" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="5" />
+            <column name="title" value="New arrivals: Laptops" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-5/1400/600" />
+            <column name="target_url" value="/categories/slug/laptops" />
+            <column name="position" valueNumeric="5" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="6" />
+            <column name="title" value="Hot deals: Audio" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-6/1400/600" />
+            <column name="target_url" value="/categories/slug/audio" />
+            <column name="position" valueNumeric="6" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="7" />
+            <column name="title" value="Style up: Fashion" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-7/1400/600" />
+            <column name="target_url" value="/categories/slug/fashion" />
+            <column name="position" valueNumeric="7" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="8" />
+            <column name="title" value="Book picks: Fiction" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-8/1400/600" />
+            <column name="target_url" value="/categories/slug/fiction" />
+            <column name="position" valueNumeric="8" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="9" />
+            <column name="title" value="Accessories you need" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-9/1400/600" />
+            <column name="target_url" value="/categories/slug/accessories" />
+            <column name="position" valueNumeric="9" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="10" />
+            <column name="title" value="Skincare glow up" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-10/1400/600" />
+            <column name="target_url" value="/categories/slug/skincare" />
+            <column name="position" valueNumeric="10" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="11" />
+            <column name="title" value="New: Tablet Pro 11" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-11/1400/600" />
+            <column name="target_url" value="/products/slug/tablet-pro-11" />
+            <column name="position" valueNumeric="11" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="12" />
+            <column name="title" value="New: Action Camera Go" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-12/1400/600" />
+            <column name="target_url" value="/products/slug/action-camera-go" />
+            <column name="position" valueNumeric="12" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="13" />
+            <column name="title" value="Sneakers Street" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-13/1400/600" />
+            <column name="target_url" value="/products/slug/sneakers-street" />
+            <column name="position" valueNumeric="13" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="14" />
+            <column name="title" value="Hoodie Classic" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-14/1400/600" />
+            <column name="target_url" value="/products/slug/hoodie-classic" />
+            <column name="position" valueNumeric="14" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <insert tableName="banners">
+            <column name="id" valueNumeric="15" />
+            <column name="title" value="The Lost Planet (Fiction)" />
+            <column name="image_url" value="https://picsum.photos/seed/ecom-banner-15/1400/600" />
+            <column name="target_url" value="/products/slug/the-lost-planet" />
+            <column name="position" valueNumeric="15" />
+            <column name="is_active" valueBoolean="true" />
+            <column name="start_at" valueDate="2025-01-01T00:00:00" />
+            <column name="end_at" valueDate="2026-01-01T00:00:00" />
+        </insert>
+        <rollback>
+            <delete tableName="banners">
+                <where>id BETWEEN 1 AND 15</where>
+            </delete>
+        </rollback>
+    </changeSet>
 </databaseChangeLog>

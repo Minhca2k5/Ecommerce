@@ -53,8 +53,8 @@ export default function NotificationsPage() {
         title="No notifications"
         description="You're all caught up."
         action={
-          <Button className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => navigate("/")}>
-            Go home
+          <Button className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => navigate("/")}>
+            Home
           </Button>
         }
       />
@@ -67,10 +67,10 @@ export default function NotificationsPage() {
                 <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="text-2xl font-semibold">Notifications</div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" className="h-10 rounded-xl bg-background" onClick={() => notifications.markAllRead()}>
-              Mark all read
+            <Button variant="outline" className="h-10 rounded-md bg-background" onClick={() => notifications.markAllRead()}>
+              Mark all as read
             </Button>
-            <Button variant="outline" className="h-10 rounded-xl border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10" onClick={() => notifications.clear()}>
+            <Button variant="outline" className="h-10 rounded-md border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10" onClick={() => notifications.clear()}>
               Clear all
             </Button>
           </div>
@@ -119,14 +119,14 @@ export default function NotificationsPage() {
             <CardContent className="relative">
               <div className={["text-sm", n.isRead ? "text-muted-foreground" : "text-foreground/90"].join(" ")}>
                 {isInviteNotification(n) && n.isRead
-                  ? "Lời mời này đã được xử lý."
+                  ? "This invite has been handled."
                   : n.message}
               </div>
               <div className="mt-3 flex justify-between">
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-xl bg-background"
+                  className="rounded-md bg-background"
                   onClick={(e) => {
                     e.stopPropagation();
                     const id = Number(n.id ?? 0);
@@ -140,7 +140,7 @@ export default function NotificationsPage() {
                     <>
                       <Button
                         type="button"
-                        className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                        className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
                         onClick={async (e) => {
                           e.stopPropagation();
                           const id = Number(n.id ?? 0);
@@ -153,7 +153,7 @@ export default function NotificationsPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="h-10 rounded-xl border-rose-500/20 text-rose-700"
+                        className="h-10 rounded-md border-rose-500/20 text-rose-700"
                         onClick={async (e) => {
                           e.stopPropagation();
                           const id = Number(n.id ?? 0);
@@ -161,13 +161,13 @@ export default function NotificationsPage() {
                           try { await declineGroupInvite(Number(n.referenceId)); } catch {}
                         }}
                       >
-                        Refuse
+                        Decline
                       </Button>
                     </>
                   ) : (
                     <Button
                       type="button"
-                      className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                      className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
                       onClick={(e) => {
                         e.stopPropagation();
                         const id = Number(n.id ?? 0);
@@ -188,3 +188,4 @@ export default function NotificationsPage() {
     </div>
   );
 }
+

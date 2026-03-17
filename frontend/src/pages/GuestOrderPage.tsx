@@ -11,6 +11,25 @@ import { createGuestMomoPayment } from "@/lib/momoApi";
 import { getGuestOrder, type OrderResponse } from "@/lib/orderApi";
 import { listGuestPayments, type PaymentResponse } from "@/lib/paymentApi";
 
+const paymentStatusLabel: Record<string, string> = {
+  INITIATED: "Pending",
+  PENDING: "Pending",
+  SUCCEEDED: "Paid",
+  SUCCESS: "Paid",
+  FAILED: "Failed",
+  CANCELED: "Canceled",
+};
+
+const orderStatusLabel: Record<string, string> = {
+  PENDING: "Awaiting payment",
+  PAID: "Paid",
+  PROCESSING: "Preparing order",
+  SHIPPED: "On delivery",
+  DELIVERED: "Delivered",
+  CANCELED: "Canceled",
+  FAILED: "Payment failed",
+};
+
 export default function GuestOrderPage() {
   const toast = useToast();
   const { orderId: orderIdRaw } = useParams();
@@ -61,9 +80,9 @@ export default function GuestOrderPage() {
       window.open(payUrl, "_blank");
       const updated = await listGuestPayments(orderId, accessToken).catch(() => []);
       setPayments(updated);
-      toast.push({ variant: "success", title: "MoMo created", message: "Complete payment in the new tab." });
+      toast.push({ variant: "success", title: "MoMo ready", message: "Complete payment in the new tab, then return here to check status." });
     } catch (e) {
-      toast.push({ variant: "error", title: "MoMo failed", message: getErrorMessage(e, "Could not start MoMo payment.") });
+      toast.push({ variant: "error", title: "Could not open MoMo", message: getErrorMessage(e, "Could not start MoMo payment.") });
     } finally {
       setIsMomoLoading(false);
     }
@@ -84,7 +103,7 @@ export default function GuestOrderPage() {
         title="Guest order unavailable"
         description={error || "Order not found."}
         action={
-          <Button asChild className="rounded-xl bg-primary text-primary-foreground">
+          <Button asChild className="rounded-md bg-primary text-primary-foreground">
             <Link to="/products">Back to products</Link>
           </Button>
         }
@@ -101,7 +120,7 @@ export default function GuestOrderPage() {
           <div className="text-sm text-muted-foreground">Guest order</div>
           <div className="text-2xl font-semibold">Order #{order.id}</div>
           <div className="mt-1 text-sm text-muted-foreground">
-            Status: {(order.status || "PENDING").toUpperCase()} - Total: {formatCurrency(Number(order.totalAmount || 0), currency)}
+            Status: {orderStatusLabel[(order.status || "PENDING").toUpperCase()] || "Awaiting update"} - Total: {formatCurrency(Number(order.totalAmount || 0), currency)}
           </div>
         </div>
       </section>
@@ -114,7 +133,7 @@ export default function GuestOrderPage() {
           <CardContent className="space-y-2">
             {(order.items || []).length ? (
               (order.items || []).map((it, idx) => (
-                <div key={String(it.id || idx)} className="rounded-xl border bg-background px-3 py-2 text-sm">
+                <div key={String(it.id || idx)} className="rounded-md border bg-background px-3 py-2 text-sm">
                   <div className="font-medium">{it.productName || "Product"}</div>
                   <div className="text-xs text-muted-foreground">
                     Qty: {it.quantity || 1} - {formatCurrency(Number(it.lineTotal || 0), currency)}
@@ -136,12 +155,12 @@ export default function GuestOrderPage() {
               <Button
                 onClick={onPayWithMomo}
                 disabled={isMomoLoading}
-                className="h-10 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                className="h-10 w-full rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                {isMomoLoading ? "Opening MoMo..." : "Pay with MoMo"}
+                {isMomoLoading ? "Opening MoMo..." : "Pay now with MoMo"}
               </Button>
               <div className="text-xs text-muted-foreground">
-                Save this link to view your order later: it contains your guest access token.
+                Keep this page link to check your order later. It already includes your secure guest access token.
               </div>
             </CardContent>
           </Card>
@@ -153,17 +172,17 @@ export default function GuestOrderPage() {
             <CardContent className="space-y-2">
               {payments.length ? (
                 payments.map((p) => (
-                  <div key={String(p.id)} className="rounded-xl border bg-background px-3 py-2 text-sm">
+                  <div key={String(p.id)} className="rounded-md border bg-background px-3 py-2 text-sm">
                     <div className="font-medium">
                       {p.method || "Payment"} - {formatCurrency(Number(p.amount || 0), p.orderCurrency || currency)}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Status: {(p.status || "INITIATED").toUpperCase()} - Txn: {p.providerTxnId || "-"}
+                      Status: {paymentStatusLabel[(p.status || "INITIATED").toUpperCase()] || "Awaiting update"} - Transaction: {p.providerTxnId || "-"}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-sm text-muted-foreground">No payments yet.</div>
+                <div className="text-sm text-muted-foreground">No payment attempt yet.</div>
               )}
             </CardContent>
           </Card>
@@ -172,3 +191,4 @@ export default function GuestOrderPage() {
     </div>
   );
 }
+

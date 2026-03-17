@@ -344,7 +344,7 @@ export default function ProductDetailPage() {
             </Link>
           </Button>
           <Button
-            className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+            className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => addToCart(resolvedId, 1)}
             disabled={!resolvedId || isWorking || Boolean(error) || isLoading}
           >
@@ -353,14 +353,14 @@ export default function ProductDetailPage() {
           {auth.isAuthenticated ? (
             <Button
               variant="outline"
-              className="h-10 rounded-xl bg-background"
+              className="h-10 rounded-md bg-background"
               onClick={onAddWishlist}
               disabled={!resolvedId || isWishlistWorking || Boolean(error) || isLoading}
             >
               Wishlist
             </Button>
           ) : null}
-          <Button asChild variant="outline" className="h-10 rounded-xl bg-background">
+          <Button asChild variant="outline" className="h-10 rounded-md bg-background">
             <Link to={`/products?categoryId=${getNumber(product, "categoryId") ?? ""}`}>
               <span className="inline-flex items-center gap-2">
                 <svg
@@ -391,7 +391,7 @@ export default function ProductDetailPage() {
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-3">
-            <div className="group overflow-hidden rounded-xl border bg-background shadow-sm transition hover:shadow-md">
+            <div className="group overflow-hidden rounded-md border bg-background shadow-sm transition hover:shadow-md">
               <div className="aspect-square">
                 <SafeImage
                   src={activeImageUrl}
@@ -409,7 +409,7 @@ export default function ProductDetailPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-9 rounded-xl bg-background"
+                    className="h-9 rounded-md bg-background"
                     onClick={() => void openImageDetails()}
                     disabled={!activeImageId}
                   >
@@ -430,7 +430,7 @@ export default function ProductDetailPage() {
                           setActiveImageUrl(url);
                           setActiveImageId(imgId ?? null);
                         }}
-                        className={`h-16 w-16 shrink-0 snap-start overflow-hidden rounded-xl border bg-background transition ${
+                        className={`h-16 w-16 shrink-0 snap-start overflow-hidden rounded-md border bg-background transition ${
                           active ? "border-primary ring-2 ring-primary/30" : "hover:border-foreground/20"
                         }`}
                         title={active ? "Selected" : "Select image"}
@@ -466,7 +466,7 @@ export default function ProductDetailPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {auth.isAuthenticated ? (
-                  <div className="rounded-xl border bg-background p-3">
+                  <div className="rounded-md border bg-background p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-sm font-medium">Write a review</div>
@@ -494,13 +494,13 @@ export default function ProductDetailPage() {
                       <textarea
                         value={myComment}
                         onChange={(e) => setMyComment(e.target.value)}
-                        className="min-h-20 w-full rounded-xl border bg-background px-3 py-2 text-sm"
+                        className="min-h-20 w-full rounded-md border bg-background px-3 py-2 text-sm"
                         placeholder="Write a short comment..."
                       />
                       <Button
                         disabled={isSavingReview}
                         onClick={onSaveReview}
-                        className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                        className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         {isSavingReview ? "Posting..." : "Post"}
                       </Button>
@@ -529,7 +529,7 @@ export default function ProductDetailPage() {
                       return (
                         <div
                           key={String(idx)}
-                          className="group rounded-xl border bg-card p-3 transition hover:shadow-md"
+                          className="group rounded-md border bg-card p-3 transition hover:shadow-md"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="text-sm font-medium">{displayName}</div>
@@ -585,12 +585,14 @@ export default function ProductDetailPage() {
                               <textarea
                                 value={editDraftComment}
                                 onChange={(e) => setEditDraftComment(e.target.value)}
-                                className="min-h-16 w-full rounded-xl border bg-background px-3 py-2 text-sm"
+                                placeholder="Update your review"
+                                title="Review comment"
+                                className="min-h-16 w-full rounded-md border bg-background px-3 py-2 text-sm"
                               />
                               <div className="flex gap-2">
                                 <Button
                                   disabled={isSavingReview}
-                                  className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                                  className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
                                   onClick={async () => {
                                     if (!reviewId) return;
                                     setIsSavingReview(true);
@@ -618,7 +620,7 @@ export default function ProductDetailPage() {
                                 >
                                   Save
                                 </Button>
-                                <Button type="button" variant="outline" className="rounded-xl" onClick={() => setEditingReviewId(null)}>
+                                <Button type="button" variant="outline" className="rounded-md" onClick={() => setEditingReviewId(null)}>
                                   Cancel
                                 </Button>
                               </div>
@@ -656,10 +658,10 @@ export default function ProductDetailPage() {
         <div className="space-y-3">
           {isImageDetailLoading ? <div className="text-sm text-muted-foreground">Loading...</div> : null}
           {imageDetailError ? (
-            <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{imageDetailError}</div>
+            <div className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{imageDetailError}</div>
           ) : null}
           {imageDetail ? (
-            <div className="rounded-xl border bg-background p-3 text-sm">
+            <div className="rounded-md border bg-background p-3 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Image</span>
                 <span className="font-medium">Details</span>
@@ -671,7 +673,7 @@ export default function ProductDetailPage() {
               <div className="mt-2 break-all text-xs text-muted-foreground">{getString(imageDetail, "url", "imageUrl") ?? "-"}</div>
             </div>
           ) : null}
-          <Button variant="outline" className="h-10 w-full rounded-xl bg-background" onClick={() => setIsImageDetailOpen(false)}>
+          <Button variant="outline" className="h-10 w-full rounded-md bg-background" onClick={() => setIsImageDetailOpen(false)}>
             Close
           </Button>
         </div>
@@ -679,3 +681,4 @@ export default function ProductDetailPage() {
     </div>
   );
 }
+

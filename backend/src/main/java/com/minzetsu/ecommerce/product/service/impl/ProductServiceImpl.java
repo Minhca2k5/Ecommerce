@@ -17,6 +17,7 @@ import com.minzetsu.ecommerce.product.dto.request.ProductCreateRequest;
 import com.minzetsu.ecommerce.product.dto.request.ProductUpdateRequest;
 import com.minzetsu.ecommerce.product.dto.response.AdminProductImageResponse;
 import com.minzetsu.ecommerce.product.dto.response.AdminProductResponse;
+import com.minzetsu.ecommerce.product.dto.response.FlashSaleResponse;
 import com.minzetsu.ecommerce.product.dto.response.ProductImageResponse;
 import com.minzetsu.ecommerce.product.dto.response.ProductResponse;
 import com.minzetsu.ecommerce.product.entity.Category;
@@ -57,6 +58,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -86,6 +91,10 @@ public class ProductServiceImpl implements ProductService {
     private final SseEmitterService sseEmitterService;
     @Value("${days}")
     private Integer days;
+    @Value("${flash-sale.end-hour:23}")
+    private Integer flashSaleEndHour;
+    @Value("${flash-sale.end-minute:59}")
+    private Integer flashSaleEndMinute;
 
     private void assignUrlToResponse(Long productId, Object response) {
         Optional<ProductImage> mainImage = productImageRepository.findByIsPrimaryTrueAndProductId(productId);
@@ -107,8 +116,7 @@ public class ProductServiceImpl implements ProductService {
                 .collect(Collectors.toMap(
                         image -> image.getProduct().getId(),
                         ProductImage::getUrl,
-                        (existing, ignored) -> existing
-                ));
+                        (existing, ignored) -> existing));
     }
 
     private void applyUrlsToAdminResponses(List<AdminProductResponse> responses) {
@@ -128,11 +136,13 @@ public class ProductServiceImpl implements ProductService {
         Map<Long, String> urlMap = getPrimaryImageUrlMap(productIds);
         responses.forEach(response -> response.setUrl(urlMap.get(response.getId())));
     }
+
     private void handleFields(Long productId, Object response) {
         ProductRatingView ratingView = reviewRepository.getProductRatingViewByProductId(productId, days);
         Double recentlyAverageRating = ratingView.getAverageRating();
         Integer recentlyReviewCount = ratingView.getTotalRatings();
-        Integer recentlyTotalSoldQuantity = orderItemRepository.getTotalQuantitySoldByProductIdLastDays(productId, days);
+        Integer recentlyTotalSoldQuantity = orderItemRepository.getTotalQuantitySoldByProductIdLastDays(productId,
+                days);
         Integer recentlyTotalViewedQuantity = recentViewRepository.countByProductIdLastDays(productId, days);
         Integer recentlyFavoriteCount = wishlistRepository.countByProductIdLastDays(productId, days);
         if (response instanceof AdminProductResponse adminResponse) {
@@ -167,8 +177,7 @@ public class ProductServiceImpl implements ProductService {
             Product product,
             List<ReviewResponse> reviews,
             List<InventoryResponse> inventories,
-            List<AdminProductImageResponse> images
-    ) {
+            List<AdminProductImageResponse> images) {
         AdminProductResponse response = productMapper.toFullAdminResponse(product, reviews, inventories, images);
         Long productId = response.getId();
         assignUrlToResponse(productId, response);
@@ -193,8 +202,7 @@ public class ProductServiceImpl implements ProductService {
             Product product,
             List<ReviewResponse> reviews,
             List<InventoryResponse> inventories,
-            List<ProductImageResponse> images
-    ) {
+            List<ProductImageResponse> images) {
         ProductResponse response = productMapper.toFullResponse(product, reviews, images);
         List<InventoryResponse> activeInventories = inventories.stream()
                 .filter(InventoryResponse::getIsActive)
@@ -229,7 +237,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = {"home", "productDetail"}, allEntries = true)
+    @CacheEvict(cacheNames = { "home", "productDetail" }, allEntries = true)
     @AuditAction(action = "PRODUCT_DELETED", entityType = "PRODUCT", idParamIndex = 0)
     public void deleteProduct(Long id) {
         Product product = getExistingProduct(id);
@@ -245,8 +253,7 @@ public class ProductServiceImpl implements ProductService {
                 "PRODUCT_DELETED",
                 "PRODUCT",
                 id,
-                null
-        ));
+                null));
         domainEventPublisher.publish(DomainEventType.PRODUCT_DELETED, id, null, Map.of());
     }
 
@@ -269,7 +276,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = {"home", "productDetail"}, allEntries = true)
+    @CacheEvict(cacheNames = { "home", "productDetail" }, allEntries = true)
     @AuditAction(action = "PRODUCT_STATUS_UPDATED", entityType = "PRODUCT", idParamIndex = 1)
     public void updateProductStatus(ProductStatus status, Long id) {
         if (!existsById(id)) {
@@ -280,14 +287,13 @@ public class ProductServiceImpl implements ProductService {
                 "PRODUCT_STATUS_UPDATED",
                 "PRODUCT",
                 id,
-                null
-        ));
+                null));
         domainEventPublisher.publish(DomainEventType.PRODUCT_UPDATED, id, null, Map.of("status", status.name()));
     }
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = {"home", "productDetail"}, allEntries = true)
+    @CacheEvict(cacheNames = { "home", "productDetail" }, allEntries = true)
     @AuditAction(action = "PRODUCT_CREATED", entityType = "PRODUCT")
     public AdminProductResponse createAdminProductResponse(ProductCreateRequest request) {
         Long categoryId = request.getCategoryId();
@@ -304,8 +310,7 @@ public class ProductServiceImpl implements ProductService {
                 "PRODUCT_CREATED",
                 "PRODUCT",
                 saved.getId(),
-                null
-        ));
+                null));
         domainEventPublisher.publish(DomainEventType.PRODUCT_CREATED, saved.getId(), null, Map.of());
         sseEmitterService.sendToAdmins("product-created", Map.of("productId", saved.getId()));
         sseEmitterService.sendToAdmins("new-arrival", Map.of("productId", saved.getId()));
@@ -314,7 +319,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = {"home", "productDetail"}, allEntries = true)
+    @CacheEvict(cacheNames = { "home", "productDetail" }, allEntries = true)
     @AuditAction(action = "PRODUCT_UPDATED", entityType = "PRODUCT", idParamIndex = 1)
     public AdminProductResponse updateAdminProductResponse(ProductUpdateRequest request, Long id) {
         Product product = getExistingProduct(id);
@@ -324,8 +329,7 @@ public class ProductServiceImpl implements ProductService {
                 "PRODUCT_UPDATED",
                 "PRODUCT",
                 saved.getId(),
-                null
-        ));
+                null));
         domainEventPublisher.publish(DomainEventType.PRODUCT_UPDATED, saved.getId(), null, Map.of());
         sseEmitterService.sendToAdmins("product-updated", Map.of("productId", saved.getId()));
         return toAdminResponse(saved);
@@ -335,9 +339,12 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public AdminProductResponse getFullAdminProductResponseById(Long id) {
         Product product = getExistingProduct(id);
-        List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(id));
-        List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(id));
-        List<AdminProductImageResponse> images = productImageMapper.toAdminResponseList(productImageRepository.findByProductId(id));
+        List<InventoryResponse> inventories = inventoryMapper
+                .toAdminResponseList(inventoryRepository.findByProductId(id));
+        List<ReviewResponse> reviews = reviewMapper
+                .toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(id));
+        List<AdminProductImageResponse> images = productImageMapper
+                .toAdminResponseList(productImageRepository.findByProductId(id));
         return toFullAdminResponse(product, reviews, inventories, images);
     }
 
@@ -376,9 +383,12 @@ public class ProductServiceImpl implements ProductService {
         try {
             Product product = getExistingProduct(id);
             validateActiveProduct(product);
-            List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(id));
-            List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(id));
-            List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(id));
+            List<InventoryResponse> inventories = inventoryMapper
+                    .toAdminResponseList(inventoryRepository.findByProductId(id));
+            List<ReviewResponse> reviews = reviewMapper
+                    .toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(id));
+            List<ProductImageResponse> images = productImageMapper
+                    .toResponseList(productImageRepository.findByProductId(id));
             return toFullUserResponse(product, reviews, inventories, images);
         } catch (NotFoundException | UnAuthorizedException ex) {
             throw ex;
@@ -399,9 +409,12 @@ public class ProductServiceImpl implements ProductService {
             Product product = getExistingProductBySlug(slug);
             validateActiveProduct(product);
             Long productId = product.getId();
-            List<InventoryResponse> inventories = inventoryMapper.toAdminResponseList(inventoryRepository.findByProductId(productId));
-            List<ReviewResponse> reviews = reviewMapper.toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(productId));
-            List<ProductImageResponse> images = productImageMapper.toResponseList(productImageRepository.findByProductId(productId));
+            List<InventoryResponse> inventories = inventoryMapper
+                    .toAdminResponseList(inventoryRepository.findByProductId(productId));
+            List<ReviewResponse> reviews = reviewMapper
+                    .toResponseList(reviewRepository.findByProductIdOrderByUpdatedAtDesc(productId));
+            List<ProductImageResponse> images = productImageMapper
+                    .toResponseList(productImageRepository.findByProductId(productId));
             return toFullUserResponse(product, reviews, inventories, images);
         } catch (NotFoundException | UnAuthorizedException ex) {
             throw ex;
@@ -417,60 +430,100 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponse> getTopRatingProductResponses(Integer days, Integer limit) {
-        List<ProductRatingView> views =
-                reviewRepository.getProductRatingViewsByAverageRatingLastDaysAndLimit(days, limit);
+        List<ProductRatingView> views = reviewRepository.getProductRatingViewsByAverageRatingLastDaysAndLimit(days,
+                limit);
 
         return buildRankedUserResponses(
                 views,
                 ProductRatingView::getProductId,
-                (res, v) -> res.setRecentlyAverageRating(v.getAverageRating())
-        );
+                (res, v) -> res.setRecentlyAverageRating(v.getAverageRating()));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponse> getMostFavoriteProductResponses(Integer days, Integer limit) {
-        List<ProductMostFavoriteView> views =
-                wishlistRepository.getProductMostFavoriteViewsByTotalFavoriteLastDaysAndLimit(days, limit);
+        List<ProductMostFavoriteView> views = wishlistRepository
+                .getProductMostFavoriteViewsByTotalFavoriteLastDaysAndLimit(days, limit);
 
         return buildRankedUserResponses(
                 views,
                 ProductMostFavoriteView::getProductId,
-                (res, v) -> res.setRecentlyFavoriteCount(v.getTotalFavorites())
-        );
+                (res, v) -> res.setRecentlyFavoriteCount(v.getTotalFavorites()));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponse> getMostViewedProductResponses(Integer days, Integer limit) {
-        List<ProductMostViewedView> views =
-                recentViewRepository.getProductMostViewedViewsByTotalViewedLastDaysAndLimit(days, limit);
+        List<ProductMostViewedView> views = recentViewRepository
+                .getProductMostViewedViewsByTotalViewedLastDaysAndLimit(days, limit);
 
         return buildRankedUserResponses(
                 views,
                 ProductMostViewedView::getProductId,
-                (res, v) -> res.setRecentlyTotalViewedQuantity(v.getTotalViews())
-        );
+                (res, v) -> res.setRecentlyTotalViewedQuantity(v.getTotalViews()));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponse> getBestSellingProductResponses(Integer days, Integer limit) {
-        List<ProductBestSellingView> views =
-                orderItemRepository.getProductBestSellingViewsByTotalQuantitySoldLastDaysAndLimit(days, limit);
+        List<ProductBestSellingView> views = orderItemRepository
+                .getProductBestSellingViewsByTotalQuantitySoldLastDaysAndLimit(days, limit);
 
         return buildRankedUserResponses(
                 views,
                 ProductBestSellingView::getProductId,
-                (res, v) -> res.setRecentlyTotalSoldQuantity(v.getTotalSold())
-        );
+                (res, v) -> res.setRecentlyTotalSoldQuantity(v.getTotalSold()));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public FlashSaleResponse getFlashSale(Integer days, Integer limit) {
+        List<ProductResponse> products = getBestSellingProductResponses(days, limit);
+
+        int soldToday = products.stream()
+                .map(ProductResponse::getRecentlyTotalSoldQuantity)
+                .filter(Objects::nonNull)
+                .mapToInt(Integer::intValue)
+                .sum();
+
+        int soldTarget = Math.max(20, ((soldToday + 5 + 9) / 10) * 10);
+        int leftCount = Math.max(0, soldTarget - soldToday);
+        int soldPercent = soldTarget > 0
+                ? Math.min(100, (int) Math.round((soldToday * 100.0) / soldTarget))
+                : 0;
+
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDate today = LocalDate.now(zoneId);
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfCampaign = today.atTime(
+                Math.max(0, Math.min(23, flashSaleEndHour)),
+                Math.max(0, Math.min(59, flashSaleEndMinute)));
+        Instant startAt = startOfDay.atZone(zoneId).toInstant();
+        Instant endAt = endOfCampaign.atZone(zoneId).toInstant();
+        Instant now = Instant.now();
+
+        boolean ended = now.isAfter(endAt) || leftCount <= 0 || products.isEmpty();
+
+        return FlashSaleResponse.builder()
+                .status(ended ? "ENDED" : "ACTIVE")
+                .headline(ended ? "Flash sale has ended" : "Grab deals before they are gone")
+                .description(ended
+                        ? "The next promotion will be available soon."
+                        : "Free shipping on select items today.")
+                .startAt(startAt)
+                .endAt(endAt)
+                .soldToday(soldToday)
+                .soldTarget(soldTarget)
+                .leftCount(leftCount)
+                .soldPercent(soldPercent)
+                .products(products)
+                .build();
     }
 
     private <T> List<ProductResponse> buildRankedUserResponses(
             List<T> views,
             Function<T, Long> idExtractor,
-            BiConsumer<ProductResponse, T> metricSetter
-    ) {
+            BiConsumer<ProductResponse, T> metricSetter) {
         List<Long> productIds = views.stream()
                 .map(idExtractor)
                 .toList();
@@ -488,9 +541,7 @@ public class ProductServiceImpl implements ProductService {
         List<ProductResponse> responses = toUserResponseListWithUrls(orderedProducts);
 
         IntStream.range(0, responses.size())
-                .forEach(i ->
-                        metricSetter.accept(responses.get(i), views.get(i))
-                );
+                .forEach(i -> metricSetter.accept(responses.get(i), views.get(i)));
 
         return responses;
     }
@@ -512,4 +563,3 @@ public class ProductServiceImpl implements ProductService {
     }
 
 }
-

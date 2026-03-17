@@ -101,23 +101,23 @@ export default function AdminAddressesPage() {
           <div>
             <CardTitle>Addresses</CardTitle>
           </div>
-          <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+          <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
             Refresh
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={qUserId} onChange={(e) => setQUserId(e.target.value)} placeholder="User ID" className="rounded-xl" />
-            <Input value={qCity} onChange={(e) => setQCity(e.target.value)} placeholder="City" className="rounded-xl" />
-            <Input value={qCountry} onChange={(e) => setQCountry(e.target.value)} placeholder="Country" className="rounded-xl" />
+            <Input value={qUserId} onChange={(e) => setQUserId(e.target.value)} placeholder="User ID" className="rounded-md" />
+            <Input value={qCity} onChange={(e) => setQCity(e.target.value)} placeholder="Filter by city" className="rounded-md" />
+            <Input value={qCountry} onChange={(e) => setQCountry(e.target.value)} placeholder="Filter by country" className="rounded-md" />
           </div>
 
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">Default address lookup</div>
             <div className="mt-3 grid gap-2 md:grid-cols-3">
-              <Input value={defaultUserId} onChange={(e) => setDefaultUserId(e.target.value)} placeholder="User ID" className="rounded-xl" />
-              <Button variant="outline" className="h-10 rounded-xl md:col-span-1" onClick={() => void loadDefault()}>
-                Load default
+              <Input value={defaultUserId} onChange={(e) => setDefaultUserId(e.target.value)} placeholder="User ID" className="rounded-md" />
+              <Button variant="outline" className="h-10 rounded-md md:col-span-1" onClick={() => void loadDefault()}>
+                Find default address
               </Button>
               <div className="md:col-span-1 text-sm text-muted-foreground">{defaultAddress ? renderLine(defaultAddress) : "—"}</div>
             </div>
@@ -144,7 +144,7 @@ export default function AdminAddressesPage() {
                 ) : !items.length ? (
                   <tr className="border-t">
                     <td className="px-4 py-6 text-center text-muted-foreground" colSpan={3}>
-                      No addresses found.
+                      No addresses match your current filters.
                     </td>
                   </tr>
                 ) : (
@@ -159,7 +159,7 @@ export default function AdminAddressesPage() {
                         </td>
                         <td className="px-4 py-3">{userId ?? "-"}</td>
                         <td className="px-4 py-3 text-right">
-                          <Button variant="outline" className="h-9 rounded-xl" onClick={() => openDetails(id)} disabled={!id}>
+                          <Button variant="outline" className="h-9 rounded-md" onClick={() => openDetails(id)} disabled={!id}>
                             Details
                           </Button>
                         </td>
@@ -176,19 +176,19 @@ export default function AdminAddressesPage() {
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
-              <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
+              <select title="Select option" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-background px-3 text-sm">
                 {[10, 20, 30, 50].map((n) => (
                   <option key={n} value={String(n)}>
                     {n}/page
                   </option>
                 ))}
               </select>
-              <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+              <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                 Prev
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-xl"
+                className="h-9 rounded-md"
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               >
@@ -201,7 +201,7 @@ export default function AdminAddressesPage() {
 
       <Modal isOpen={isDetailsOpen} title={detailsId ? `Address #${detailsId}` : "Address"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">{renderLine(details)}</div>
             <div className="mt-1 text-sm text-muted-foreground">User: {getNumber(details ?? {}, "userId") ?? "-"}</div>
           </div>
@@ -212,14 +212,14 @@ export default function AdminAddressesPage() {
               ["Country", getString(details ?? {}, "country")],
               ["Zipcode", getString(details ?? {}, "zipcode")],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-xl border bg-background p-4">
+              <div key={label} className="rounded-md border bg-background p-4">
                 <div className="text-sm text-muted-foreground">{label}</div>
                 <div className="mt-1 text-sm font-semibold">{value || "-"}</div>
               </div>
             ))}
           </div>
           <div className="flex justify-end">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsDetailsOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsDetailsOpen(false)}>
               Close
             </Button>
           </div>
@@ -228,3 +228,4 @@ export default function AdminAddressesPage() {
     </>
   );
 }
+

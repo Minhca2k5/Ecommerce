@@ -142,18 +142,18 @@ export default function AdminBannersPage() {
             <CardTitle>Banners</CardTitle>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+            <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
               Refresh
             </Button>
-            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
+            <Button className="h-9 rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               New banner
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={qTitle} onChange={(e) => setQTitle(e.target.value)} placeholder="Title contains" className="rounded-xl" />
-            <select value={qActive} onChange={(e) => setQActive(e.target.value)} className="h-10 rounded-xl border bg-background px-3 text-sm">
+            <Input value={qTitle} onChange={(e) => setQTitle(e.target.value)} placeholder="Title contains" className="rounded-md" />
+            <select title="Select option" value={qActive} onChange={(e) => setQActive(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
               <option value="">All</option>
               <option value="true">Active</option>
               <option value="false">Inactive</option>
@@ -200,7 +200,7 @@ export default function AdminBannersPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <SafeImage src={imageUrl} alt="banner" fallbackKey={id} className="h-12 w-24 rounded-xl border object-cover" />
+                          <SafeImage src={imageUrl} alt="banner" fallbackKey={id} className="h-12 w-24 rounded-md border object-cover" />
                         </td>
                         <td className="px-4 py-3">
                           <span className={["rounded-full border px-3 py-1 text-sm", active ? "bg-emerald-500/10 text-emerald-700" : "bg-rose-500/10 text-rose-700"].join(" ")}>
@@ -209,12 +209,12 @@ export default function AdminBannersPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => openEdit(b)} disabled={!id}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => openEdit(b)} disabled={!id}>
                               Edit
                             </Button>
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl action-danger"
+                              className="h-9 rounded-md action-danger"
                               onClick={() => setDeleteId(id)}
                               disabled={!id}
                             >
@@ -235,19 +235,19 @@ export default function AdminBannersPage() {
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
-              <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
+              <select title="Select option" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-background px-3 text-sm">
                 {[10, 20, 30, 50].map((n) => (
                   <option key={n} value={String(n)}>
                     {n}/page
                   </option>
                 ))}
               </select>
-              <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+              <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                 Prev
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-xl"
+                className="h-9 rounded-md"
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               >
@@ -260,25 +260,25 @@ export default function AdminBannersPage() {
 
       <Modal isOpen={isFormOpen} title={editingId ? `Edit banner #${editingId}` : "New banner"} onClose={() => setIsFormOpen(false)}>
         <div className="grid gap-3">
-          <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Title *" className="rounded-xl" />
-          <Input value={form.imageUrl} onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))} placeholder="Image URL *" className="rounded-xl" />
-          <Input value={form.targetUrl} onChange={(e) => setForm((f) => ({ ...f, targetUrl: e.target.value }))} placeholder="Target URL" className="rounded-xl" />
+          <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Title *" className="rounded-md" />
+          <Input value={form.imageUrl} onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))} placeholder="Image URL *" className="rounded-md" />
+          <Input value={form.targetUrl} onChange={(e) => setForm((f) => ({ ...f, targetUrl: e.target.value }))} placeholder="Target URL" className="rounded-md" />
           <div className="grid gap-3 md:grid-cols-2">
-            <Input value={form.position} onChange={(e) => setForm((f) => ({ ...f, position: e.target.value }))} placeholder="Position" className="rounded-xl" />
+            <Input value={form.position} onChange={(e) => setForm((f) => ({ ...f, position: e.target.value }))} placeholder="Position" className="rounded-md" />
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} />
               Active
             </label>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
-            <Input value={form.startAt} onChange={(e) => setForm((f) => ({ ...f, startAt: e.target.value }))} placeholder="Start at (string)" className="rounded-xl" />
-            <Input value={form.endAt} onChange={(e) => setForm((f) => ({ ...f, endAt: e.target.value }))} placeholder="End at (string)" className="rounded-xl" />
+            <Input value={form.startAt} onChange={(e) => setForm((f) => ({ ...f, startAt: e.target.value }))} placeholder="Start at (string)" className="rounded-md" />
+            <Input value={form.endAt} onChange={(e) => setForm((f) => ({ ...f, endAt: e.target.value }))} placeholder="End at (string)" className="rounded-md" />
           </div>
           <div className="mt-2 flex justify-end gap-2">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
+            <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
               Save
             </Button>
           </div>
@@ -301,3 +301,4 @@ export default function AdminBannersPage() {
     </>
   );
 }
+

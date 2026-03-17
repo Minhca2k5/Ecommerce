@@ -7,6 +7,7 @@ import { categoryMetaBySlug, defaultCategoryMeta } from "@/lib/categoryMeta";
 import type { SpringPage } from "@/lib/pagination";
 import { getNumber, getString } from "@/lib/safe";
 import { getErrorMessage } from "@/lib/errors";
+import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -45,37 +46,48 @@ export default function CategoriesPage() {
   }, []);
 
   const categories = data?.content ?? [];
+  const featured = categories.find((c) => getString(c, "slug") === "fashion") ?? categories[0];
+  const featuredId = featured ? getNumber(featured, "id") : null;
+  const featuredSlug = featured ? getString(featured, "slug") : null;
+  const featuredMeta = featured
+    ? (featuredSlug && categoryMetaBySlug[featuredSlug as keyof typeof categoryMetaBySlug]) || defaultCategoryMeta
+    : null;
+  const featuredName = featured ? getString(featured, "name", "title") ?? "Category" : null;
 
   return (
     <div className="space-y-8">
-      <section className="relative overflow-hidden rounded-2xl border border-primary/15 bg-white/85 p-8 shadow-sm">
-        <div className="pointer-events-none absolute -left-10 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
-        <div className="pointer-events-none absolute -right-6 top-6 h-40 w-40 rounded-full bg-amber-400/15 blur-3xl" />
-        <div className="relative z-10 max-w-2xl space-y-4">
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-            Collections
-          </span>
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Browse by category</h1>
+      <section className="market-hero grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        <div className="relative z-10 space-y-5">
+          <div className="space-y-3">
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Shop by category</h1>
             <p className="text-base text-muted-foreground">
-              Curated lanes for every shopping mood. Dive into a category to see what&apos;s trending and ready to ship.
+              Pick a lane and start shopping in seconds.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/products"
-              className="inline-flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground"
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
             >
-              Explore all products
+              Shop all
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 12h14" />
                 <path d="M13 6l6 6-6 6" />
               </svg>
             </Link>
-            <div className="inline-flex items-center gap-2 rounded-xl border border-primary/15 bg-white/70 px-4 py-2 text-sm text-muted-foreground">
-              Updated daily with new arrivals
+            <div className="inline-flex items-center gap-2 rounded-md border border-border bg-white px-4 py-2 text-sm text-muted-foreground">
+              New arrivals daily
             </div>
           </div>
+        </div>
+        <div className="hero-media">
+          <img
+            src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80"
+            alt="Trending fashion"
+            loading="lazy"
+          />
+          <div className="hero-media__overlay" />
+          <div className="hero-media__badge">Trending now</div>
         </div>
       </section>
 
@@ -90,8 +102,42 @@ export default function CategoriesPage() {
       ) : categories.length === 0 ? (
         <EmptyState title="No categories" description="Try again later." />
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((c) => {
+        <div className="grid gap-4 lg:grid-cols-3">
+          {featured && featuredMeta && featuredName ? (
+            <Link to={`/categories/${featuredId ?? 0}`} className="block lg:col-span-2 lg:row-span-2">
+              <Card className="category-card pressable group relative h-full overflow-hidden border transition">
+                <div className="relative h-56 overflow-hidden sm:h-64 lg:h-full">
+                  <img
+                    src={featuredMeta.imageUrl}
+                    alt={featuredName}
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/55 via-slate-900/15 to-transparent" />
+                  <span className={cn(
+                    "absolute left-5 top-5 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]",
+                    featuredMeta.accentClassName
+                  )}>
+                    {featuredMeta.badge ?? "Hot pick"}
+                  </span>
+                  <div className="absolute bottom-5 left-5 right-5 space-y-3 text-white">
+                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-white/80">Featured</div>
+                    <h2 className="text-3xl font-semibold">{featuredName}</h2>
+                    <p className="max-w-md text-sm text-white/85">{featuredMeta.description}</p>
+                    <div className="inline-flex items-center gap-2 rounded-md bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20">
+                      Explore category
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M5 12h14" />
+                        <path d="M13 6l6 6-6 6" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </Link>
+          ) : null}
+
+          {categories.filter((c) => getNumber(c, "id") !== featuredId).map((c) => {
             const id = getNumber(c, "id") ?? 0;
             const name = getString(c, "name", "title") ?? "Category";
             const slug = getString(c, "slug");
@@ -100,14 +146,29 @@ export default function CategoriesPage() {
             return (
               <Link key={id} to={href} className="block cursor-pointer">
                 <Card className="category-card pressable group relative overflow-hidden border transition">
-                  <div className={`absolute inset-0 ${meta.gradientClassName}`} />
-                  <div className="absolute -right-10 -top-16 h-32 w-32 rounded-full bg-white/60 blur-2xl" />
-                  <CardHeader className="relative z-10 space-y-4 pb-2">
+                  <div className="relative h-36 overflow-hidden">
+                    <img
+                      src={meta.imageUrl}
+                      alt={name}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/45 via-slate-900/5 to-transparent" />
+                  </div>
+                  <CardHeader className="space-y-3 pb-2">
                     <div className="flex items-start justify-between gap-3">
                       <CategoryIcon
                         name={meta.icon}
-                        className="border-white/60 bg-white/85 shadow-md group-hover:-translate-y-0.5 transition"
+                        className="border-white/60 bg-white shadow-sm"
                       />
+                      {meta.badge ? (
+                        <span className={cn(
+                          "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
+                          meta.accentClassName
+                        )}>
+                          {meta.badge}
+                        </span>
+                      ) : null}
                     </div>
                     <div className="space-y-2">
                       <CardTitle className="text-lg">{name}</CardTitle>
@@ -116,8 +177,8 @@ export default function CategoriesPage() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="relative z-10 pt-2">
-                    <div className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold text-primary transition group-hover:text-primary-foreground category-cta group-hover:bg-primary">
+                  <CardContent className="pt-2">
+                    <div className="inline-flex items-center gap-2 rounded-md border border-primary/20 px-3 py-2 text-sm font-semibold text-primary transition group-hover:-translate-y-0.5 group-hover:bg-primary group-hover:text-primary-foreground">
                       Explore category
                       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M5 12h14" />

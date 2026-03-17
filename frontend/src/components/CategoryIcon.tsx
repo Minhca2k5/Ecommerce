@@ -10,7 +10,7 @@ function Icon({
   return (
     <span
       className={cn(
-        "inline-flex h-11 w-11 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary shadow-sm",
+        "inline-flex h-11 w-11 items-center justify-center rounded-md border border-border bg-white text-primary shadow-sm",
         className
       )}
       aria-hidden="true"

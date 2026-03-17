@@ -92,10 +92,10 @@ export default function AdminRolesPage() {
             <CardTitle>Roles</CardTitle>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+            <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
               Refresh
             </Button>
-            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
+            <Button className="h-9 rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               New role
             </Button>
           </div>
@@ -103,14 +103,14 @@ export default function AdminRolesPage() {
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
             <div className="md:col-span-2">
-              <Input value={lookupName} onChange={(e) => setLookupName(e.target.value)} placeholder="Lookup by name (e.g. ADMIN)" className="rounded-xl" />
+              <Input value={lookupName} onChange={(e) => setLookupName(e.target.value)} placeholder="Lookup by name (e.g. ADMIN)" className="rounded-md" />
             </div>
-            <Button variant="outline" className="h-10 rounded-xl" onClick={() => void lookup()}>
+            <Button variant="outline" className="h-10 rounded-md" onClick={() => void lookup()}>
               Lookup
             </Button>
           </div>
           {lookupResult ? (
-            <div className="rounded-xl border bg-background p-4 text-sm">
+            <div className="rounded-md border bg-background p-4 text-sm">
               Resolved: <span className="font-semibold">{getString(lookupResult, "name") ?? "-"}</span> (id: {getNumber(lookupResult, "id") ?? "-"})
             </div>
           ) : null}
@@ -152,7 +152,7 @@ export default function AdminRolesPage() {
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl action-danger"
+                              className="h-9 rounded-md action-danger"
                               onClick={() => setDeleteId(id)}
                               disabled={!id}
                             >
@@ -172,12 +172,12 @@ export default function AdminRolesPage() {
 
       <Modal isOpen={isFormOpen} title="New role" onClose={() => setIsFormOpen(false)}>
         <div className="grid gap-3">
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Role name *" className="rounded-xl" />
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Role name *" className="rounded-md" />
           <div className="mt-2 flex justify-end gap-2">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={create}>
+            <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={create}>
               Create
             </Button>
           </div>
@@ -200,3 +200,4 @@ export default function AdminRolesPage() {
     </>
   );
 }
+

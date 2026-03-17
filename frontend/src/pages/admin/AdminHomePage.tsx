@@ -15,6 +15,45 @@ type Totals = {
   payments: number | null;
 };
 
+const statusLabels: Record<string, string> = {
+  PENDING: "Awaiting payment",
+  PAID: "Paid",
+  PROCESSING: "Preparing",
+  SHIPPED: "On delivery",
+  DELIVERED: "Delivered",
+  CANCELED: "Canceled",
+  FAILED: "Payment failed",
+  UNKNOWN: "Unknown",
+};
+
+function widthClass(value: number, max: number) {
+  const pct = Math.round((value / Math.max(1, max)) * 100);
+  if (pct >= 100) return "w-full";
+  if (pct >= 90) return "w-[90%]";
+  if (pct >= 80) return "w-[80%]";
+  if (pct >= 70) return "w-[70%]";
+  if (pct >= 60) return "w-[60%]";
+  if (pct >= 50) return "w-1/2";
+  if (pct >= 40) return "w-[40%]";
+  if (pct >= 30) return "w-[30%]";
+  if (pct >= 20) return "w-[20%]";
+  if (pct >= 10) return "w-[10%]";
+  return "w-0";
+}
+
+function dotColorClass(idx: number) {
+  const classes = [
+    "bg-emerald-500",
+    "bg-blue-500",
+    "bg-purple-500",
+    "bg-orange-500",
+    "bg-rose-500",
+    "bg-teal-500",
+    "bg-yellow-500",
+  ];
+  return classes[idx % classes.length];
+}
+
 function StatCard({ label, value, to }: { label: string; value: number | null; to: string }) {
   return (
     <Link to={to} className="block">
@@ -48,7 +87,7 @@ function MiniBarChart({ title, data }: { title: string; data: Array<{ label: str
                 <span>{d.value.toLocaleString()}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full border bg-background">
-                <div className="h-full rounded-full bg-primary/70" style={{ width: `${Math.round((d.value / max) * 100)}%` }} />
+                <div className={`h-full rounded-full bg-primary/70 ${widthClass(d.value, max)}`} />
               </div>
             </div>
           ))
@@ -103,7 +142,7 @@ function PieChart({ title, data }: { title: string; data: Array<{ label: string;
             data.map((d, idx) => (
               <div key={d.label} className="flex items-center justify-between gap-3 text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full" style={{ background: colors[idx % colors.length] }} />
+                  <span className={`h-2 w-2 rounded-full ${dotColorClass(idx)}`} />
                   <span className="text-muted-foreground">{d.label}</span>
                 </div>
                 <span className="font-medium text-foreground">{d.value.toLocaleString()}</span>
@@ -181,7 +220,7 @@ function BarChart({ title, data }: { title: string; data: Array<{ label: string;
                 <span>{d.value.toLocaleString()}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full border bg-background">
-                <div className="h-full rounded-full bg-primary/60" style={{ width: `${Math.round((d.value / max) * 100)}%` }} />
+                <div className={`h-full rounded-full bg-primary/60 ${widthClass(d.value, max)}`} />
               </div>
             </div>
           ))
@@ -276,7 +315,7 @@ export default function AdminHomePage() {
   const statusChartData = useMemo(() => {
     const entries = Object.entries(recentOrderStatus);
     entries.sort((a, b) => b[1] - a[1]);
-    return entries.slice(0, 7).map(([label, value]) => ({ label, value }));
+    return entries.slice(0, 7).map(([label, value]) => ({ label: statusLabels[label] ?? label, value }));
   }, [recentOrderStatus]);
 
   const totalsBarData = useMemo(() => {
@@ -310,10 +349,10 @@ export default function AdminHomePage() {
 </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <PieChart title="Orders by status (last 50)" data={statusChartData} />
-        <LineChart title="Orders trend (last 14 days)" data={ordersByDay} />
-        <BarChart title="Entities overview" data={totalsBarData} />
-        <MiniBarChart title="Top status counts" data={statusChartData} />
+        <PieChart title="Recent orders by status" data={statusChartData} />
+        <LineChart title="Order trend (last 14 days)" data={ordersByDay} />
+        <BarChart title="Catalog and order totals" data={totalsBarData} />
+        <MiniBarChart title="Top order statuses" data={statusChartData} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -329,7 +368,7 @@ export default function AdminHomePage() {
                   <Link
                     key={i.to}
                     to={i.to}
-                    className="pressable inline-flex items-center gap-2 rounded-xl border bg-background px-3 py-2 text-sm text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground hover:shadow-md"
+                    className="pressable inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground hover:shadow-md"
                   >
                     <i.icon className="h-4 w-4" />
                     {i.label}
@@ -342,3 +381,4 @@ export default function AdminHomePage() {
     </div>
   );
 }
+

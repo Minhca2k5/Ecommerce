@@ -16,7 +16,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.minzetsu.ecommerce.mongo.document.ClickstreamEventDocument;
 import com.minzetsu.ecommerce.mongo.repository.ClickstreamEventRepository;
 
-
 @Service
 @RequiredArgsConstructor
 public class ClickstreamEventService {
@@ -30,6 +29,7 @@ public class ClickstreamEventService {
     private static final String EVENT_PLACE_ORDER = "PLACE_ORDER";
     private static final String EVENT_PAYMENT_SUCCESS = "PAYMENT_SUCCESS";
     private static final String EVENT_SEARCH = "SEARCH";
+    private static final String EVENT_CLICK_BANNER = "CLICK_BANNER";
     private static final String SCHEMA_VERSION = "v1";
     private static final String DEFAULT_SOURCE = "WEB";
     private static final String UNKNOWN_EVENT = "UNKNOWN";
@@ -68,6 +68,19 @@ public class ClickstreamEventService {
         ClickstreamEventDocument doc = buildBaseEvent(EVENT_SEARCH, userId, null);
         doc.setKeyword(keyword);
         persistIfValid(doc);
+    }
+
+    public void recordBannerClick(Long userId, String guestId, String bannerKey, String placement, String targetPath) {
+        ClickstreamEventDocument doc = buildBaseEvent(EVENT_CLICK_BANNER, userId, guestId);
+        doc.setKeyword(buildBannerKeyword(bannerKey, placement, targetPath));
+        persistIfValid(doc);
+    }
+
+    private String buildBannerKeyword(String bannerKey, String placement, String targetPath) {
+        String key = bannerKey == null ? "" : bannerKey.trim();
+        String zone = placement == null ? "" : placement.trim();
+        String target = targetPath == null ? "" : targetPath.trim();
+        return "banner=" + key + "|placement=" + zone + "|target=" + target;
     }
 
     private ClickstreamEventDocument buildBaseEvent(String eventType, Long userId, String guestId) {
@@ -159,8 +172,7 @@ public class ClickstreamEventService {
                     doc.getProductId(),
                     doc.getUserId(),
                     doc.getGuestId(),
-                    doc.getEventTime()
-            );
+                    doc.getEventTime());
         } catch (Exception ex) {
             meterRegistry.counter("clickstream.events.failed", "eventType", doc.getEventType()).increment();
             logger.warn("Failed to persist clickstream event type={} requestId={} reason={}",
@@ -170,7 +182,3 @@ public class ClickstreamEventService {
         }
     }
 }
-
-
-
-

@@ -126,7 +126,7 @@ export default function AdminWarehousesPage() {
     };
 
     if (!editingId && (!payload.code || !payload.name || !payload.city || !payload.country)) {
-      toast.push({ variant: "error", title: "Invalid form", message: "For new warehouse, code/name/city/country are required." });
+      toast.push({ variant: "error", title: "Missing required fields", message: "Code, name, city, and country are required for a new warehouse." });
       return;
     }
 
@@ -178,20 +178,20 @@ export default function AdminWarehousesPage() {
             <CardTitle>Warehouses</CardTitle>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+            <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
               Refresh
             </Button>
-            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
+            <Button className="h-9 rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               New warehouse
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={qCode} onChange={(e) => setQCode(e.target.value)} placeholder="Code" className="rounded-xl" />
-            <Input value={qName} onChange={(e) => setQName(e.target.value)} placeholder="Name" className="rounded-xl" />
-            <select value={qActive} onChange={(e) => setQActive(e.target.value)} className="h-10 rounded-xl border bg-background px-3 text-sm">
-              <option value="">All</option>
+            <Input value={qCode} onChange={(e) => setQCode(e.target.value)} placeholder="Search warehouse code" className="rounded-md" />
+            <Input value={qName} onChange={(e) => setQName(e.target.value)} placeholder="Search warehouse name" className="rounded-md" />
+            <select title="Select option" value={qActive} onChange={(e) => setQActive(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">All statuses</option>
               <option value="true">Active</option>
               <option value="false">Inactive</option>
             </select>
@@ -219,7 +219,7 @@ export default function AdminWarehousesPage() {
                 ) : !items.length ? (
                   <tr className="border-t">
                     <td className="px-4 py-6 text-center text-muted-foreground" colSpan={4}>
-                      No warehouses found.
+                      No warehouses match your current filters.
                     </td>
                   </tr>
                 ) : (
@@ -242,18 +242,18 @@ export default function AdminWarehousesPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => openDetails(id)} disabled={!id}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => openDetails(id)} disabled={!id}>
                               Details
                             </Button>
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => openEdit(w)} disabled={!id}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => openEdit(w)} disabled={!id}>
                               Edit
                             </Button>
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => void toggleActive(id, !isActive)} disabled={!id}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => void toggleActive(id, !isActive)} disabled={!id}>
                               {isActive ? "Deactivate" : "Activate"}
                             </Button>
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl action-danger"
+                              className="h-9 rounded-md action-danger"
                               onClick={() => setDeleteId(id)}
                               disabled={!id}
                             >
@@ -274,19 +274,19 @@ export default function AdminWarehousesPage() {
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
-              <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
+              <select title="Select option" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-background px-3 text-sm">
                 {[10, 20, 30, 50].map((n) => (
                   <option key={n} value={String(n)}>
                     {n}/page
                   </option>
                 ))}
               </select>
-              <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+              <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                 Prev
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-xl"
+                className="h-9 rounded-md"
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               >
@@ -300,28 +300,28 @@ export default function AdminWarehousesPage() {
       <Modal isOpen={isFormOpen} title={editingId ? `Edit warehouse #${editingId}` : "New warehouse"} onClose={() => setIsFormOpen(false)}>
         <div className="grid gap-3">
           <div className="grid gap-3 md:grid-cols-2">
-            <Input value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))} placeholder="Code *" className="rounded-xl" disabled={Boolean(editingId)} />
-            <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Name *" className="rounded-xl" />
+            <Input value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))} placeholder="Code *" className="rounded-md" disabled={Boolean(editingId)} />
+            <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Name *" className="rounded-md" />
           </div>
-          <Input value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} placeholder="Address" className="rounded-xl" />
+          <Input value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} placeholder="Address" className="rounded-md" />
           <div className="grid gap-3 md:grid-cols-2">
-            <Input value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} placeholder="City *" className="rounded-xl" />
-            <Input value={form.country} onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))} placeholder="Country *" className="rounded-xl" />
+            <Input value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} placeholder="City *" className="rounded-md" />
+            <Input value={form.country} onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))} placeholder="Country *" className="rounded-md" />
           </div>
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={form.state} onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))} placeholder="State" className="rounded-xl" />
-            <Input value={form.zipcode} onChange={(e) => setForm((f) => ({ ...f, zipcode: e.target.value }))} placeholder="Zipcode" className="rounded-xl" />
-            <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="Phone" className="rounded-xl" />
+            <Input value={form.state} onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))} placeholder="State" className="rounded-md" />
+            <Input value={form.zipcode} onChange={(e) => setForm((f) => ({ ...f, zipcode: e.target.value }))} placeholder="Zipcode" className="rounded-md" />
+            <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="Phone" className="rounded-md" />
           </div>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} />
             Active
           </label>
           <div className="mt-2 flex justify-end gap-2">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
+            <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
               Save
             </Button>
           </div>
@@ -330,16 +330,16 @@ export default function AdminWarehousesPage() {
 
       <Modal isOpen={isDetailsOpen} title={detailsId ? `Warehouse #${detailsId}` : "Warehouse"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">{getString(details ?? {}, "name") ?? "-"}</div>
             <div className="mt-1 text-sm text-muted-foreground">{formatAddress(details ?? {})}</div>
           </div>
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">Inventories</div>
-            <div className="mt-2 text-sm text-muted-foreground">This response may include inventory details depending on backend mapping.</div>
+            <div className="mt-2 text-sm text-muted-foreground">Inventory details appear here when provided by the backend response.</div>
           </div>
           <div className="flex justify-end">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsDetailsOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsDetailsOpen(false)}>
               Close
             </Button>
           </div>
@@ -362,3 +362,4 @@ export default function AdminWarehousesPage() {
     </>
   );
 }
+

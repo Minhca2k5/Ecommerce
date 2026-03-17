@@ -23,6 +23,8 @@
     <include file="db/changelog/v14__order_pricing_breakdown.xml"/>
     <include file="db/changelog/v15__catalog_expansion.xml"/>
     <include file="db/changelog/v16__analytics_mart.xml"/>
+    <include file="db/changelog/v17__voucher_uses_unique_order.xml"/>
+    <include file="db/changelog/v18__refresh_seed_images.xml"/>
+    <include file="db/changelog/v19__replace_source_unsplash_urls.xml"/>
 
 </databaseChangeLog>
-

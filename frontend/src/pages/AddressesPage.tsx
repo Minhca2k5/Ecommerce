@@ -189,10 +189,10 @@ export default function AddressesPage() {
   if (error) {
     return (
       <EmptyState
-        title="Couldn’t load addresses"
+      title="Could not load addresses"
         description={error}
         action={
-          <Button onClick={() => window.location.reload()} className="h-10 rounded-xl bg-primary text-primary-foreground">
+          <Button onClick={() => window.location.reload()} className="h-10 rounded-md bg-primary text-primary-foreground">
             Retry
           </Button>
         }
@@ -204,12 +204,12 @@ export default function AddressesPage() {
     <div className="space-y-6">
       <section className="page-section">
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="text-2xl font-semibold">Address book</div>
+          <div className="text-2xl font-semibold">Addresses</div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button asChild variant="outline" className="h-10 rounded-xl bg-background">
+            <Button asChild variant="outline" className="h-10 rounded-md bg-background">
               <Link to="/me">Back</Link>
             </Button>
-            <Button onClick={openCreate} className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button onClick={openCreate} className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
               Add address
             </Button>
           </div>
@@ -219,9 +219,9 @@ export default function AddressesPage() {
       {sorted.length === 0 ? (
         <EmptyState
           title="No addresses yet"
-          description="Add your first address to speed up checkout."
+          description="Add an address to speed up checkout."
           action={
-            <Button onClick={openCreate} className="h-10 rounded-xl bg-primary text-primary-foreground">
+            <Button onClick={openCreate} className="h-10 rounded-md bg-primary text-primary-foreground">
               Add address
             </Button>
           }
@@ -239,12 +239,12 @@ export default function AddressesPage() {
               </CardHeader>
               <CardContent className="relative flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" className="rounded-xl bg-background" onClick={() => openEdit(a)}>
+                  <Button variant="outline" className="rounded-md bg-background" onClick={() => openEdit(a)}>
                     Edit
                   </Button>
                   <Button
                     variant="outline"
-                    className="rounded-xl border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10"
+                    className="rounded-md border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10"
                     onClick={() => setDeleteTarget(a)}
                   >
                     Delete
@@ -253,7 +253,7 @@ export default function AddressesPage() {
                 <Button
                   disabled={Boolean(a.isDefault) || !a.id}
                   onClick={() => a.id && onSetDefault(a.id)}
-                  className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+                  className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
                 >
                   {a.isDefault ? "Default" : "Set default"}
                 </Button>
@@ -275,27 +275,27 @@ export default function AddressesPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2 sm:col-span-2">
               <label className="text-sm font-medium">Address line 1</label>
-              <Input className="rounded-xl" value={draft.line1} onChange={(e) => setDraft((d) => ({ ...d, line1: e.target.value }))} />
+              <Input className="rounded-md" value={draft.line1} onChange={(e) => setDraft((d) => ({ ...d, line1: e.target.value }))} />
             </div>
             <div className="space-y-2 sm:col-span-2">
               <label className="text-sm font-medium">Address line 2 (optional)</label>
-              <Input className="rounded-xl" value={draft.line2} onChange={(e) => setDraft((d) => ({ ...d, line2: e.target.value }))} />
+              <Input className="rounded-md" value={draft.line2} onChange={(e) => setDraft((d) => ({ ...d, line2: e.target.value }))} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">City</label>
-              <Input className="rounded-xl" value={draft.city} onChange={(e) => setDraft((d) => ({ ...d, city: e.target.value }))} />
+              <Input className="rounded-md" value={draft.city} onChange={(e) => setDraft((d) => ({ ...d, city: e.target.value }))} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">State (optional)</label>
-              <Input className="rounded-xl" value={draft.state} onChange={(e) => setDraft((d) => ({ ...d, state: e.target.value }))} />
+              <Input className="rounded-md" value={draft.state} onChange={(e) => setDraft((d) => ({ ...d, state: e.target.value }))} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Country</label>
-              <Input className="rounded-xl" value={draft.country} onChange={(e) => setDraft((d) => ({ ...d, country: e.target.value }))} />
+              <Input className="rounded-md" value={draft.country} onChange={(e) => setDraft((d) => ({ ...d, country: e.target.value }))} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Zip code (optional)</label>
-              <Input className="rounded-xl" value={draft.zipcode} onChange={(e) => setDraft((d) => ({ ...d, zipcode: e.target.value }))} />
+              <Input className="rounded-md" value={draft.zipcode} onChange={(e) => setDraft((d) => ({ ...d, zipcode: e.target.value }))} />
             </div>
           </div>
 
@@ -304,7 +304,7 @@ export default function AddressesPage() {
               type="button"
               onClick={() => setDraft((d) => ({ ...d, isDefault: !d.isDefault }))}
               className={[
-                "w-full rounded-xl border px-3 py-2 text-left text-sm",
+                "w-full rounded-md border px-3 py-2 text-left text-sm",
                 draft.isDefault ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800" : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
               ].join(" ")}
             >
@@ -313,7 +313,7 @@ export default function AddressesPage() {
           ) : null}
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" className="rounded-xl" onClick={() => setIsModalOpen(false)} disabled={isSaving}>
+            <Button type="button" variant="outline" className="rounded-md" onClick={() => setIsModalOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
             <Button
@@ -324,7 +324,7 @@ export default function AddressesPage() {
                 !draft.city.trim() ||
                 !draft.country.trim()
               }
-              className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+              className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {isSaving ? "Saving..." : editing ? "Save changes" : "Add address"}
             </Button>
@@ -345,3 +345,4 @@ export default function AddressesPage() {
     </div>
   );
 }
+

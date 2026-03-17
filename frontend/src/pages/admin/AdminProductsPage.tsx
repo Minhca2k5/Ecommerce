@@ -23,6 +23,16 @@ type AdminCategory = Record<string, unknown>;
 
 const productStatuses = ["ACTIVE", "INACTIVE", "OUT_OF_STOCK"] as const;
 
+const productStatusMeta: Record<string, string> = {
+  ACTIVE: "Active",
+  INACTIVE: "Inactive",
+  OUT_OF_STOCK: "Out of stock",
+};
+
+function getProductStatusLabel(status: string) {
+  return productStatusMeta[status] ?? "Unknown";
+}
+
 function formatVnd(value: unknown) {
   const n = Number(value ?? 0);
   if (!Number.isFinite(n)) return "0 đ";
@@ -138,7 +148,7 @@ export default function AdminProductsPage() {
     };
 
     if (!payload.name || !payload.slug || !payload.sku || !Number.isFinite(payload.price) || payload.price <= 0 || !payload.categoryId) {
-      toast.push({ variant: "error", title: "Invalid form", message: "Please fill required fields (name/slug/sku/price/category)." });
+      toast.push({ variant: "error", title: "Missing required fields", message: "Name, slug, SKU, price, and category are required." });
       return;
     }
 
@@ -167,7 +177,7 @@ export default function AdminProductsPage() {
   async function updateStatus(id: number, status: string) {
     try {
       await adminPut(`/api/admin/products/${id}/status${buildQuery({ status })}`);
-      toast.push({ variant: "success", title: "Updated", message: "Status updated." });
+      toast.push({ variant: "success", title: "Updated", message: "Product status updated." });
       await load();
     } catch (e) {
       toast.push({ variant: "error", title: "Update failed", message: getErrorMessage(e, "Failed to update status.") });
@@ -200,30 +210,28 @@ export default function AdminProductsPage() {
           <div>
             <CardTitle>Products</CardTitle>
           </div>
-          <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
+          <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
             New product
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-4">
-            <Input value={qName} onChange={(e) => setQName(e.target.value)} placeholder="Search name..." className="rounded-xl" />
-            <Input value={qSku} onChange={(e) => setQSku(e.target.value)} placeholder="SKU..." className="rounded-xl" />
-            <select
-              value={qStatus}
+            <Input value={qName} onChange={(e) => setQName(e.target.value)} placeholder="Search product name" className="rounded-md" />
+            <Input value={qSku} onChange={(e) => setQSku(e.target.value)} placeholder="Search SKU" className="rounded-md" />
+            <select title="Select option" value={qStatus}
               onChange={(e) => setQStatus(e.target.value)}
-              className="h-10 rounded-xl border bg-background px-3 text-sm"
+              className="h-10 rounded-md border bg-background px-3 text-sm"
             >
-              <option value="">All status</option>
+              <option value="">All statuses</option>
               {productStatuses.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {getProductStatusLabel(s)}
                 </option>
               ))}
             </select>
-            <select
-              value={qCategoryId}
+            <select title="Select option" value={qCategoryId}
               onChange={(e) => setQCategoryId(e.target.value)}
-              className="h-10 rounded-xl border bg-background px-3 text-sm"
+              className="h-10 rounded-md border bg-background px-3 text-sm"
             >
               <option value="">All categories</option>
               {categoryOptions.map((c) => (
@@ -255,7 +263,7 @@ export default function AdminProductsPage() {
                 ) : items.length === 0 ? (
                   <tr>
                     <td className="px-4 py-6 text-muted-foreground" colSpan={5}>
-                      No products found.
+                      No products match your current filters.
                     </td>
                   </tr>
                 ) : (
@@ -264,7 +272,7 @@ export default function AdminProductsPage() {
                     const name = getString(p, "name") ?? "Product";
                     const sku = getString(p, "sku") ?? "";
                     const catName = getString(p, "categoryName") ?? "-";
-                    const status = getString(p, "status") ?? "-";
+                    const status = getString(p, "status") ?? "ACTIVE";
                     return (
                       <tr key={String(id)} className="border-t hover:bg-muted/20">
                         <td className="px-4 py-3">
@@ -274,24 +282,23 @@ export default function AdminProductsPage() {
                         <td className="px-4 py-3">{catName}</td>
                         <td className="px-4 py-3">{formatVnd(p["price"])}</td>
                         <td className="px-4 py-3">
-                          <select
-                            value={status}
+                          <select title="Select option" value={status}
                             onChange={(e) => updateStatus(id, e.target.value)}
-                            className="h-9 rounded-xl border bg-background px-3 text-sm"
+                            className="h-9 rounded-md border bg-background px-3 text-sm"
                           >
                             {productStatuses.map((s) => (
                               <option key={s} value={s}>
-                                {s}
+                                {getProductStatusLabel(s)}
                               </option>
                             ))}
                           </select>
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="inline-flex gap-2">
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => openEdit(p)}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => openEdit(p)}>
                               Edit
                             </Button>
-                            <Button variant="outline" className="h-9 rounded-xl action-danger" onClick={() => setDeleteId(id)}>
+                            <Button variant="outline" className="h-9 rounded-md action-danger" onClick={() => setDeleteId(id)}>
                               Delete
                             </Button>
                           </div>
@@ -309,19 +316,19 @@ export default function AdminProductsPage() {
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
-              <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
+              <select title="Select option" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-background px-3 text-sm">
                 {[10, 20, 30, 50].map((n) => (
                   <option key={n} value={String(n)}>
                     {n}/page
                   </option>
                 ))}
               </select>
-              <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+              <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                 Prev
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-xl"
+                className="h-9 rounded-md"
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               >
@@ -339,38 +346,37 @@ export default function AdminProductsPage() {
       >
         <div className="grid gap-3">
           <div className="grid gap-3 md:grid-cols-2">
-            <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Name *" className="rounded-xl" />
-            <Input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="Slug *" className="rounded-xl" />
+            <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Name *" className="rounded-md" />
+            <Input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="Slug *" className="rounded-md" />
           </div>
           <div className="grid gap-3 md:grid-cols-2">
-            <Input value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} placeholder="SKU *" className="rounded-xl" />
-            <Input value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))} placeholder="Price *" className="rounded-xl" />
+            <Input value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} placeholder="SKU *" className="rounded-md" />
+            <Input value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))} placeholder="Price *" className="rounded-md" />
           </div>
           <textarea
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             placeholder="Description"
-            className="min-h-24 w-full rounded-xl border bg-background px-3 py-2 text-sm"
+            className="min-h-24 w-full rounded-md border bg-background px-3 py-2 text-sm"
           />
           <div className="grid gap-3 md:grid-cols-3">
-            <select value={form.currency} onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))} className="h-10 rounded-xl border bg-background px-3 text-sm">
+            <select title="Select option" value={form.currency} onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value }))} className="h-10 rounded-md border bg-background px-3 text-sm">
               {["VND", "USD", "EUR"].map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>
               ))}
             </select>
-            <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} className="h-10 rounded-xl border bg-background px-3 text-sm">
+            <select title="Select option" value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} className="h-10 rounded-md border bg-background px-3 text-sm">
               {productStatuses.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {getProductStatusLabel(s)}
                 </option>
               ))}
             </select>
-            <select
-              value={form.categoryId}
+            <select title="Select option" value={form.categoryId}
               onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
-              className="h-10 rounded-xl border bg-background px-3 text-sm"
+              className="h-10 rounded-md border bg-background px-3 text-sm"
             >
               <option value="">Category *</option>
               {categoryOptions.map((c) => (
@@ -382,10 +388,10 @@ export default function AdminProductsPage() {
           </div>
 
           <div className="mt-2 flex justify-end gap-2">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
+            <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={save}>
               Save
             </Button>
           </div>
@@ -408,3 +414,4 @@ export default function AdminProductsPage() {
     </>
   );
 }
+

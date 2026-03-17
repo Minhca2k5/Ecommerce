@@ -84,8 +84,8 @@ export default function SearchLogsPage() {
   }
 
   if (isLoading) return <div className="space-y-4"><LoadingCard /><LoadingCard /></div>;
-  if (error) return <EmptyState title="Couldn't load search logs" description={error} action={<Button onClick={refresh} className="h-10 rounded-xl bg-primary text-primary-foreground">Retry</Button>} />;
-  if (!items.length) return <EmptyState title="No search logs" description="Search products to build your history." />;
+  if (error) return <EmptyState title="Could not load search history" description={error} action={<Button onClick={refresh} className="h-10 rounded-md bg-primary text-primary-foreground">Try again</Button>} />;
+  if (!items.length) return <EmptyState title="No search history yet" description="Search for products and your history will appear here." />;
 
   return (
     <div className="space-y-8">
@@ -95,12 +95,12 @@ export default function SearchLogsPage() {
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl space-y-2">
             <div className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Search</div>
-            <div className="text-3xl font-semibold tracking-tight">Search logs</div>
+            <div className="text-3xl font-semibold tracking-tight">Search history</div>
             <p className="text-sm text-muted-foreground">
-              Review what you searched for and clean it up anytime.
+              Review what you searched and clear it anytime.
             </p>
           </div>
-          <Button variant="outline" className="h-10 rounded-xl border-rose-500/20 bg-white/80 text-rose-700 hover:bg-rose-500/10" onClick={() => setIsClearOpen(true)}>
+          <Button variant="outline" className="h-10 rounded-md border-rose-500/20 bg-white text-rose-700 hover:bg-rose-500/10" onClick={() => setIsClearOpen(true)}>
             Clear all
           </Button>
         </div>
@@ -111,19 +111,19 @@ export default function SearchLogsPage() {
           <CardTitle className="text-base">Filter</CardTitle>
         </CardHeader>
         <CardContent>
-          <Input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter by keyword..." className="rounded-xl bg-white/80" />
+          <Input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter by keyword" className="rounded-md bg-white" />
         </CardContent>
       </Card>
 
       <div className="grid gap-3 lg:grid-cols-2">
         {filtered.map((i) => (
-          <Card key={String(i.id)} className="pressable bg-white/90 shadow-sm transition hover:shadow-md">
+          <Card key={String(i.id)} className="pressable bg-white shadow-sm transition hover:shadow-md">
             <CardHeader className="flex flex-row items-start justify-between gap-3">
               <div>
                 <CardTitle className="text-base">{i.keyword || "-"}</CardTitle>
                 <div className="mt-1 text-xs text-muted-foreground">{formatTime(i.createdAt)}</div>
               </div>
-              <Button variant="outline" className="rounded-xl border-rose-500/20 bg-white/80 text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(i)}>
+              <Button variant="outline" className="rounded-md border-rose-500/20 bg-white text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(i)}>
                 Delete
               </Button>
             </CardHeader>
@@ -154,3 +154,4 @@ export default function SearchLogsPage() {
     </div>
   );
 }
+

@@ -69,7 +69,7 @@ export default function LoginPage() {
             <Button
               type="button"
               onClick={() => navigate("/", { replace: true })}
-              className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.99]"
+              className="w-full rounded-md bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.99]"
             >
               Go to Home
             </Button>
@@ -102,7 +102,7 @@ export default function LoginPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
                 autoComplete="username"
-                className="rounded-xl bg-background"
+                className="rounded-md bg-background"
               />
             </div>
 
@@ -115,7 +115,7 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   autoComplete="current-password"
-                  className="rounded-xl pr-20 bg-background"
+                  className="rounded-md pr-20 bg-background"
                 />
                 <button
                   type="button"
@@ -128,7 +128,7 @@ export default function LoginPage() {
             </div>
 
             {error ? (
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">
+              <div className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">
                 {error}
               </div>
             ) : null}
@@ -136,7 +136,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={!canSubmit}
-              className="h-10 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.99]"
+              className="h-10 w-full rounded-md bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.99]"
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
@@ -153,3 +153,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

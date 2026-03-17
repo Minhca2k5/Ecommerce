@@ -17,6 +17,19 @@ type AdminVoucherUse = Record<string, unknown>;
 
 type Mode = "search" | "byUser" | "byOrder" | "byVoucher";
 
+function dedupeVoucherUses(rows: AdminVoucherUse[]) {
+  const map = new Map<string, AdminVoucherUse>();
+  for (const row of rows) {
+    const id = getNumber(row, "id");
+    const key =
+      id && id > 0
+        ? `id-${id}`
+        : `${getNumber(row, "voucherId") ?? "x"}-${getNumber(row, "orderId") ?? "x"}-${getNumber(row, "userId") ?? "x"}-${getString(row, "createdAt") ?? "x"}`;
+    if (!map.has(key)) map.set(key, row);
+  }
+  return Array.from(map.values());
+}
+
 export default function AdminVoucherUsesPage() {
   const toast = useToast();
   const [mode, setMode] = useState<Mode>("search");
@@ -51,7 +64,7 @@ export default function AdminVoucherUsesPage() {
         path = `/api/admin/voucher-uses/voucher/${id}${query}`;
       }
       const res = await adminGet<PageResponse<AdminVoucherUse>>(path);
-      setItems(asArray(res?.content) as AdminVoucherUse[]);
+      setItems(dedupeVoucherUses(asArray(res?.content) as AdminVoucherUse[]));
       setTotalPages(Number(res?.totalPages ?? 1) || 1);
     } catch (e) {
       toast.push({ variant: "error", title: "Load failed", message: getErrorMessage(e, "Failed to load voucher uses.") });
@@ -73,21 +86,21 @@ export default function AdminVoucherUsesPage() {
         <div>
           <CardTitle>Voucher uses</CardTitle>
         </div>
-        <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+        <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
           Refresh
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-3 md:grid-cols-4">
-          <select value={mode} onChange={(e) => setMode(e.target.value as Mode)} className="h-10 rounded-xl border bg-background px-3 text-sm">
+          <select aria-label="Voucher use search mode" title="Voucher use search mode" value={mode} onChange={(e) => setMode(e.target.value as Mode)} className="h-10 rounded-md border bg-background px-3 text-sm">
             <option value="search">Search (all)</option>
             <option value="byUser">By userId</option>
             <option value="byOrder">By orderId</option>
             <option value="byVoucher">By voucherId</option>
           </select>
-          <Input value={qUserId} onChange={(e) => setQUserId(e.target.value)} placeholder="userId" className="rounded-xl" disabled={mode !== "byUser"} />
-          <Input value={qOrderId} onChange={(e) => setQOrderId(e.target.value)} placeholder="orderId" className="rounded-xl" disabled={mode !== "byOrder"} />
-          <Input value={qVoucherId} onChange={(e) => setQVoucherId(e.target.value)} placeholder="voucherId" className="rounded-xl" disabled={mode !== "byVoucher"} />
+          <Input value={qUserId} onChange={(e) => setQUserId(e.target.value)} placeholder="userId" className="rounded-md" disabled={mode !== "byUser"} />
+          <Input value={qOrderId} onChange={(e) => setQOrderId(e.target.value)} placeholder="orderId" className="rounded-md" disabled={mode !== "byOrder"} />
+          <Input value={qVoucherId} onChange={(e) => setQVoucherId(e.target.value)} placeholder="voucherId" className="rounded-md" disabled={mode !== "byVoucher"} />
         </div>
 
         <div className="table-shell">
@@ -139,19 +152,19 @@ export default function AdminVoucherUsesPage() {
             Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
           </div>
           <div className="flex items-center gap-2">
-            <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
+            <select aria-label="Voucher uses page size" title="Voucher uses page size" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-background px-3 text-sm">
               {[10, 20, 30, 50].map((n) => (
                 <option key={n} value={String(n)}>
                   {n}/page
                 </option>
               ))}
             </select>
-            <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+            <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
               Prev
             </Button>
             <Button
               variant="outline"
-              className="h-9 rounded-xl"
+              className="h-9 rounded-md"
               disabled={page + 1 >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             >
@@ -163,3 +176,4 @@ export default function AdminVoucherUsesPage() {
     </Card>
   );
 }
+

@@ -281,7 +281,7 @@ export default function CheckoutPage() {
         notifications.push({
           type: "ORDER",
           title: "Order created",
-          message: `Items: ${preview || "Your cart"}${suffix} • Total: ${formatCurrency(Number(created.totalAmount ?? 0), created.currency || currency)} • Tap to view details.`,
+          message: `Items: ${preview || "Your cart"}${suffix} - Total: ${formatCurrency(Number(created.totalAmount ?? 0), created.currency || currency)} - Tap to view details.`,
           referenceId: orderId,
           referenceType: "ORDER",
         });
@@ -329,11 +329,11 @@ export default function CheckoutPage() {
   if (error) {
     return (
       <EmptyState
-        title="Couldn't load checkout"
+        title="Could not load checkout"
         description={error}
         action={
-          <Button onClick={() => window.location.reload()} className="rounded-xl bg-primary text-primary-foreground">
-            Retry
+          <Button onClick={() => window.location.reload()} className="rounded-md bg-primary text-primary-foreground">
+            Try again
           </Button>
         }
       />
@@ -346,8 +346,8 @@ export default function CheckoutPage() {
         title="Nothing to checkout"
         description="Your cart is empty."
         action={
-          <Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground">
-            <Link to="/products">Browse products</Link>
+          <Button asChild className="h-10 rounded-md bg-primary text-primary-foreground">
+            <Link to="/products">Shop products</Link>
           </Button>
         }
       />
@@ -360,8 +360,8 @@ export default function CheckoutPage() {
         title="Add an address first"
         description="Checkout requires at least one delivery address."
         action={
-          <Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground">
-            <Link to="/me/addresses">Go to address book</Link>
+          <Button asChild className="h-10 rounded-md bg-primary text-primary-foreground">
+            <Link to="/me/addresses">Manage addresses</Link>
           </Button>
         }
       />
@@ -374,10 +374,10 @@ export default function CheckoutPage() {
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-sm text-muted-foreground">Checkout</div>
-            <div className="text-2xl font-semibold">Place your order</div>
-            <div className="mt-1 text-sm text-muted-foreground">Confirm address, extras, and create the order.</div>
+            <div className="text-2xl font-semibold">Review and place order</div>
+            <div className="mt-1 text-sm text-muted-foreground">Confirm address, vouchers, and totals.</div>
           </div>
-          <Button asChild variant="outline" className="h-10 rounded-xl bg-background">
+          <Button asChild variant="outline" className="h-10 rounded-md bg-background">
             <Link to="/cart">Back to cart</Link>
           </Button>
         </div>
@@ -392,40 +392,40 @@ export default function CheckoutPage() {
             <CardContent className="relative space-y-3">
               {isGuest ? (
                 <div className="space-y-2">
-                  <div className="text-xs text-muted-foreground">Enter shipping info for guest checkout.</div>
+                  <div className="text-xs text-muted-foreground">Enter shipping info to continue.</div>
                   <Input
-                    className="rounded-xl bg-background"
+                    className="rounded-md bg-white"
                     value={guestAddress.fullName}
                     onChange={(e) => setGuestAddress((s) => ({ ...s, fullName: e.target.value }))}
                     placeholder="Full name"
                   />
                   <Input
-                    className="rounded-xl bg-background"
+                    className="rounded-md bg-white"
                     value={guestAddress.phone}
                     onChange={(e) => setGuestAddress((s) => ({ ...s, phone: e.target.value }))}
                     placeholder="Phone number"
                   />
                   <Input
-                    className="rounded-xl bg-background"
+                    className="rounded-md bg-white"
                     value={guestAddress.line1}
                     onChange={(e) => setGuestAddress((s) => ({ ...s, line1: e.target.value }))}
                     placeholder="Address line"
                   />
                   <div className="grid gap-2 sm:grid-cols-2">
                     <Input
-                      className="rounded-xl bg-background"
+                      className="rounded-md bg-white"
                       value={guestAddress.city}
                       onChange={(e) => setGuestAddress((s) => ({ ...s, city: e.target.value }))}
                       placeholder="City"
                     />
                     <Input
-                      className="rounded-xl bg-background"
+                      className="rounded-md bg-white"
                       value={guestAddress.country}
                       onChange={(e) => setGuestAddress((s) => ({ ...s, country: e.target.value }))}
                       placeholder="Country"
                     />
                   </div>
-                  <div className="rounded-xl border bg-background px-3 py-2 text-xs text-muted-foreground">
+                  <div className="rounded-md border bg-background px-3 py-2 text-xs text-muted-foreground">
                     Snapshot id (auto): <span className="font-medium text-foreground">{guestAddressSnapshotId || "-"}</span>
                   </div>
                 </div>
@@ -441,7 +441,7 @@ export default function CheckoutPage() {
                           type="button"
                           onClick={() => setSelectedAddressId(id)}
                           className={[
-                            "pressable rounded-xl border p-3 text-left shadow-sm transition hover:shadow-md",
+                            "pressable rounded-md border p-3 text-left shadow-sm transition hover:shadow-md",
                             active ? "border-primary bg-primary/10 ring-1 ring-primary/20" : "bg-background hover:bg-muted",
                           ].join(" ")}
                         >
@@ -456,7 +456,7 @@ export default function CheckoutPage() {
                       );
                     })}
                   </div>
-                  <Button asChild variant="outline" className="h-10 rounded-xl bg-background">
+                  <Button asChild variant="outline" className="h-10 rounded-md bg-background">
                     <Link to="/me/addresses">Manage addresses</Link>
                   </Button>
                 </>
@@ -471,12 +471,11 @@ export default function CheckoutPage() {
             <CardContent className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <div className="text-xs font-medium text-muted-foreground">Shipping fee</div>
-                <Input className="rounded-xl bg-background" value={shippingFee} onChange={(e) => setShippingFee(e.target.value)} inputMode="numeric" />
+                <Input className="rounded-md bg-white" value={shippingFee} onChange={(e) => setShippingFee(e.target.value)} inputMode="numeric" />
               </div>
               <div className="space-y-2">
                 <div className="text-xs font-medium text-muted-foreground">Currency</div>
-                <select
-                  className="h-10 w-full rounded-xl border bg-background px-3 text-sm"
+                <select title="Select option" className="h-10 w-full rounded-md border bg-white px-3 text-sm"
                   value={currency}
                   onChange={(e) => setSelectedCurrency(e.target.value)}
                 >
@@ -488,13 +487,13 @@ export default function CheckoutPage() {
               <div className="space-y-2 sm:col-span-2">
                 <div className="text-xs font-medium text-muted-foreground">Voucher</div>
                 {isGuest ? (
-                  <div className="text-xs text-muted-foreground">Voucher is available for signed-in checkout only.</div>
+                  <div className="text-xs text-muted-foreground">Vouchers are available for signed-in checkout.</div>
                 ) : (
                 <div className="flex flex-wrap items-center gap-2">
                   <Button
                     type="button"
                     variant="outline"
-                    className="rounded-xl bg-background"
+                    className="rounded-md bg-background"
                     onClick={() => {
                       setIsVoucherPickerOpen(true);
                       setVoucherView("eligible");
@@ -510,7 +509,7 @@ export default function CheckoutPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="rounded-xl bg-background action-danger"
+                      className="rounded-md bg-background action-danger"
                       onClick={() => {
                         setAppliedVoucher(null);
                         void refreshDiscount(null);
@@ -519,17 +518,17 @@ export default function CheckoutPage() {
                       Remove
                     </Button>
                   ) : null}
-                  <Button asChild variant="outline" className="rounded-xl bg-background">
-                    <Link to="/me/vouchers">My vouchers</Link>
+                  <Button asChild variant="outline" className="rounded-md bg-background">
+                    <Link to="/me/vouchers">Your vouchers</Link>
                   </Button>
                 </div>
                 )}
                 {!isGuest && appliedVoucher?.id ? (
-                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
-                    Applied: <span className="font-medium">{appliedVoucher.code}</span> — {appliedVoucher.name || "Voucher"}
+                  <div className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
+                    Applied: <span className="font-medium">{appliedVoucher.code}</span> - {appliedVoucher.name || "Voucher"}
                   </div>
                 ) : !isGuest ? (
-                  <div className="text-xs text-muted-foreground">Pick a voucher from the eligible list, or search by code.</div>
+                  <div className="text-xs text-muted-foreground">Pick an eligible voucher or search by code.</div>
                 ) : null}
               </div>
             </CardContent>
@@ -557,7 +556,7 @@ export default function CheckoutPage() {
               <span className="text-muted-foreground">Tax</span>
               <span>{money(tax, currency)}</span>
             </div>
-            {discountStatus === "loading" ? <div className="text-xs text-muted-foreground">Calculating discount…</div> : null}
+            {discountStatus === "loading" ? <div className="text-xs text-muted-foreground">Calculating discount...</div> : null}
             {discountStatus === "error" && discountError ? <div className="text-xs text-danger">{discountError}</div> : null}
             <div className="h-px bg-border" />
             <div className="flex items-center justify-between text-base font-semibold">
@@ -565,7 +564,7 @@ export default function CheckoutPage() {
               <span>{money(total, currency)}</span>
             </div>
 
-            <Button disabled={!canSubmit} onClick={placeOrder} className="h-10 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button disabled={!canSubmit} onClick={placeOrder} className="h-10 w-full rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
               {isSubmitting ? "Placing..." : "Place order"}
             </Button>
           </CardContent>
@@ -581,7 +580,7 @@ export default function CheckoutPage() {
             if (e.target === e.currentTarget) setIsVoucherPickerOpen(false);
           }}
         >
-          <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-xl border bg-background shadow-md max-h-[85vh]">
+          <div className="flex w-full max-w-3xl flex-col overflow-hidden rounded-md border bg-background shadow-md max-h-[85vh]">
             <div className="flex items-center justify-between gap-3 border-b p-4">
               <div>
                 <div className="text-sm text-muted-foreground">Checkout</div>
@@ -591,7 +590,7 @@ export default function CheckoutPage() {
                 {voucherView === "search" ? (
                   <Button
                     variant="outline"
-                    className="h-9 rounded-xl bg-background"
+                    className="h-9 rounded-md bg-background"
                     onClick={() => {
                       void resetVoucherSearch();
                     }}
@@ -599,7 +598,7 @@ export default function CheckoutPage() {
                     Reset
                   </Button>
                 ) : null}
-                <Button variant="outline" className="h-9 rounded-xl bg-background" onClick={() => setIsVoucherPickerOpen(false)}>
+                <Button variant="outline" className="h-9 rounded-md bg-background" onClick={() => setIsVoucherPickerOpen(false)}>
                   Close
                 </Button>
               </div>
@@ -609,11 +608,11 @@ export default function CheckoutPage() {
               <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
                 <div className="space-y-1">
                   <div className="text-sm font-medium">Search by code</div>
-                  <div className="text-xs text-muted-foreground">Search overrides the eligible list until you reset.</div>
+                  <div className="text-xs text-muted-foreground">Search replaces the eligible list until reset.</div>
                 </div>
                 <div className="flex gap-2">
                   <Input
-                    className="h-10 w-56 rounded-xl bg-background"
+                    className="h-10 w-56 rounded-md bg-white"
                     value={searchCode}
                     onChange={(e) => {
                       setSearchCode(e.target.value);
@@ -622,7 +621,7 @@ export default function CheckoutPage() {
                     }}
                     placeholder="e.g. SAVE10"
                   />
-                  <Button className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={runVoucherSearch} disabled={!searchCode.trim() || searchLoading}>
+                  <Button className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={runVoucherSearch} disabled={!searchCode.trim() || searchLoading}>
                     {searchLoading ? "Searching..." : "Search"}
                   </Button>
                 </div>
@@ -643,7 +642,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
-                      className="h-9 rounded-xl"
+                      className="h-9 rounded-md"
                       disabled={eligibleLoading || eligiblePage <= 0}
                       onClick={() => void loadEligibleVouchers(Math.max(0, eligiblePage - 1))}
                     >
@@ -651,7 +650,7 @@ export default function CheckoutPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="h-9 rounded-xl"
+                      className="h-9 rounded-md"
                       disabled={eligibleLoading || eligiblePage + 1 >= eligibleTotalPages}
                       onClick={() => void loadEligibleVouchers(Math.min(eligibleTotalPages - 1, eligiblePage + 1))}
                     >
@@ -662,24 +661,24 @@ export default function CheckoutPage() {
               </div>
 
               {voucherView === "search" && searchError ? (
-                <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-700">{searchError}</div>
+                <div className="rounded-md border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-700">{searchError}</div>
               ) : null}
               {voucherView === "eligible" && eligibleError ? (
-                <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-700">{eligibleError}</div>
+                <div className="rounded-md border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-700">{eligibleError}</div>
               ) : null}
 
               {voucherView === "eligible" && eligibleLoading ? (
                 <div className="space-y-2">
-                  <div className="h-20 animate-pulse rounded-xl border bg-muted" />
-                  <div className="h-20 animate-pulse rounded-xl border bg-muted" />
+                  <div className="h-20 animate-pulse rounded-md border bg-muted" />
+                  <div className="h-20 animate-pulse rounded-md border bg-muted" />
                 </div>
               ) : voucherView === "search" && searchLoading ? (
                 <div className="space-y-2">
-                  <div className="h-20 animate-pulse rounded-xl border bg-muted" />
-                  <div className="h-20 animate-pulse rounded-xl border bg-muted" />
+                  <div className="h-20 animate-pulse rounded-md border bg-muted" />
+                  <div className="h-20 animate-pulse rounded-md border bg-muted" />
                 </div>
               ) : (voucherView === "search" ? searchResults : eligibleItems).length === 0 ? (
-                <div className="rounded-xl border bg-background p-3 text-sm text-muted-foreground">
+                <div className="rounded-md border bg-background p-3 text-sm text-muted-foreground">
                   {voucherView === "search" ? "No vouchers found for this code." : "No eligible vouchers for this order total."}
                 </div>
               ) : (
@@ -701,7 +700,7 @@ export default function CheckoutPage() {
                           toast.push({ variant: "success", title: "Voucher selected", message: v.code ? `Applied ${v.code}.` : "Voucher applied." });
                         }}
                         className={[
-                          "w-full rounded-xl border bg-background p-3 text-left shadow-sm transition hover:shadow-md",
+                          "w-full rounded-md border bg-background p-3 text-left shadow-sm transition hover:shadow-md",
                           disabled ? "opacity-60" : "hover:bg-muted",
                           appliedVoucher?.id && v.id && Number(appliedVoucher.id) === Number(v.id) ? "border-primary ring-1 ring-primary/20" : "",
                         ].join(" ")}
@@ -710,7 +709,7 @@ export default function CheckoutPage() {
                           <div>
                             <div className="font-medium">{v.name || v.code || "Voucher"}</div>
                             <div className="mt-1 text-xs text-muted-foreground">
-                              {v.code ? `Code: ${v.code}` : ""} {v.discountType ? `• ${voucherDiscountLabel(v)}` : ""}
+                              {v.code ? `Code: ${v.code}` : ""} {v.discountType ? `- ${voucherDiscountLabel(v)}` : ""}
                             </div>
                           </div>
                           <div className="shrink-0 text-right">
@@ -733,3 +732,4 @@ export default function CheckoutPage() {
     </div>
   );
 }
+

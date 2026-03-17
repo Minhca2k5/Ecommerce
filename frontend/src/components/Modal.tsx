@@ -32,7 +32,7 @@ export default function Modal({
         aria-label="Close modal"
       />
       <div className="absolute inset-x-0 top-16 mx-auto w-[min(92vw,42rem)]">
-        <div className="overflow-hidden rounded-xl border bg-background shadow-2xl animate-in fade-in zoom-in-95">
+        <div className="overflow-hidden rounded-md border bg-background shadow-2xl animate-in fade-in zoom-in-95">
           {title ? (
             <div className="border-b px-5 py-4">
               <div className="text-sm font-semibold">{title}</div>
@@ -44,4 +44,5 @@ export default function Modal({
     </div>
   );
 }
+
 

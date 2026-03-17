@@ -103,7 +103,7 @@ export default function CategoryDetailPage() {
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
         </div>
         <Button asChild variant="outline">
-          <Link to="/products">Browse products</Link>
+          <Link to="/products">Shop products</Link>
         </Button>
       </div>
 
@@ -135,7 +135,7 @@ export default function CategoryDetailPage() {
                       <Link
                         key={String(id)}
                         to={href}
-                        className="pressable group inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs shadow-sm transition hover:bg-muted hover:shadow-md"
+                        className="pressable group inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs transition hover:bg-muted"
                       >
                         <CategoryIcon
                           name={meta.icon}
@@ -162,7 +162,7 @@ export default function CategoryDetailPage() {
                         <path d="M6 12h12" />
                         <path d="M10 18h4" />
                       </svg>
-                      Filter products by this category
+                      Shop this category
                     </span>
                   </Link>
                 </Button>
@@ -185,11 +185,10 @@ export default function CategoryDetailPage() {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold tracking-tight">Products</h2>
+              <h2 className="text-lg font-semibold tracking-tight">Category products</h2>
               <div className="flex items-center gap-2">
                 <div className="text-xs text-muted-foreground">Show:</div>
-                <select
-                  className="h-9 cursor-pointer rounded-md border bg-background px-3 text-sm shadow-sm transition hover:bg-muted"
+                <select title="Select option" className="h-9 cursor-pointer rounded-md border bg-background px-3 text-sm shadow-sm transition hover:bg-muted"
                   value={String(size)}
                   onChange={(e) => {
                     const next = Number(e.target.value);
@@ -203,7 +202,7 @@ export default function CategoryDetailPage() {
                   <option value="18">18</option>
                 </select>
                 <Button asChild variant="ghost">
-                  <Link to={`/products?categoryId=${resolvedCategoryId}`}>View all</Link>
+                  <Link to={`/products?categoryId=${resolvedCategoryId}`}>See all</Link>
                 </Button>
               </div>
             </div>

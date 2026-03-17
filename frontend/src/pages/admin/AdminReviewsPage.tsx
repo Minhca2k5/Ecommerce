@@ -80,15 +80,15 @@ export default function AdminReviewsPage() {
           <div>
             <CardTitle>Reviews</CardTitle>
           </div>
-          <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+          <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
             Refresh
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={qProductId} onChange={(e) => setQProductId(e.target.value)} placeholder="Product ID" className="rounded-xl" />
-            <Input value={qUserId} onChange={(e) => setQUserId(e.target.value)} placeholder="User ID" className="rounded-xl" />
-            <Input value={qMinRating} onChange={(e) => setQMinRating(e.target.value)} placeholder="Min rating" className="rounded-xl" />
+            <Input value={qProductId} onChange={(e) => setQProductId(e.target.value)} placeholder="Product ID" className="rounded-md" />
+            <Input value={qUserId} onChange={(e) => setQUserId(e.target.value)} placeholder="User ID" className="rounded-md" />
+            <Input value={qMinRating} onChange={(e) => setQMinRating(e.target.value)} placeholder="Minimum rating" className="rounded-md" />
           </div>
 
           <div className="table-shell">
@@ -114,7 +114,7 @@ export default function AdminReviewsPage() {
                 ) : !items.length ? (
                   <tr className="border-t">
                     <td className="px-4 py-6 text-center text-muted-foreground" colSpan={5}>
-                      No reviews found.
+                      No reviews match your current filters.
                     </td>
                   </tr>
                 ) : (
@@ -136,7 +136,7 @@ export default function AdminReviewsPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <Button variant="outline" className="h-9 rounded-xl" onClick={() => openDetails(id)} disabled={!id}>
+                          <Button variant="outline" className="h-9 rounded-md" onClick={() => openDetails(id)} disabled={!id}>
                             Details
                           </Button>
                         </td>
@@ -153,19 +153,19 @@ export default function AdminReviewsPage() {
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
-              <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
+              <select title="Select option" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-background px-3 text-sm">
                 {[10, 20, 30, 50].map((n) => (
                   <option key={n} value={String(n)}>
                     {n}/page
                   </option>
                 ))}
               </select>
-              <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+              <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                 Prev
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-xl"
+                className="h-9 rounded-md"
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               >
@@ -178,7 +178,7 @@ export default function AdminReviewsPage() {
 
       <Modal isOpen={isDetailsOpen} title={detailsId ? `Review #${detailsId}` : "Review"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">
               Product: {getNumber(details ?? {}, "productId") ?? "-"} • User: {getNumber(details ?? {}, "userId") ?? "-"}
             </div>
@@ -187,9 +187,9 @@ export default function AdminReviewsPage() {
               <span className="text-sm text-muted-foreground">{String((details ?? {})["rating"] ?? 0)}</span>
             </div>
           </div>
-          <div className="rounded-xl border bg-background p-4 text-sm text-muted-foreground whitespace-pre-wrap">{getString(details ?? {}, "comment") ?? "-"}</div>
+          <div className="rounded-md border bg-background p-4 text-sm text-muted-foreground whitespace-pre-wrap">{getString(details ?? {}, "comment") ?? "-"}</div>
           <div className="flex justify-end">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsDetailsOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsDetailsOpen(false)}>
               Close
             </Button>
           </div>
@@ -198,3 +198,4 @@ export default function AdminReviewsPage() {
     </>
   );
 }
+

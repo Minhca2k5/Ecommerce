@@ -53,10 +53,10 @@ export default function AdminProfilePage() {
           <div className="mt-1 text-sm text-muted-foreground">Account settings while in admin mode.</div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline" className="rounded-xl">
+          <Button asChild variant="outline" className="rounded-md">
             <Link to="/admin/profile/edit">Edit profile</Link>
           </Button>
-          <Button asChild variant="outline" className="rounded-xl">
+          <Button asChild variant="outline" className="rounded-md">
             <Link to="/admin/profile/password">Change password</Link>
           </Button>
         </div>
@@ -68,19 +68,19 @@ export default function AdminProfilePage() {
           <div className="rounded-full bg-primary/10 px-3 py-1 text-sm text-foreground ring-1 ring-primary/20">{me.enabled === false ? "Disabled" : "Active"}</div>
         </CardHeader>
         <CardContent className="relative grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm text-muted-foreground">Username</div>
             <div className="mt-1 text-base font-medium">{me.username || "-"}</div>
           </div>
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm text-muted-foreground">Email</div>
             <div className="mt-1 text-base font-medium">{me.email || "-"}</div>
           </div>
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm text-muted-foreground">Full name</div>
             <div className="mt-1 text-base font-medium">{me.fullName || "-"}</div>
           </div>
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm text-muted-foreground">Phone</div>
             <div className="mt-1 text-base font-medium">{me.phone || "-"}</div>
           </div>
@@ -95,7 +95,7 @@ export default function AdminProfilePage() {
           <div className="text-sm text-muted-foreground">
             Signed in as <span className="font-medium text-foreground">{auth.user?.fullName || auth.user?.username || "User"}</span>
           </div>
-          <Button variant="outline" className="rounded-xl" asChild>
+          <Button variant="outline" className="rounded-md" asChild>
             <Link to="/admin">Back to admin</Link>
           </Button>
         </CardContent>
@@ -103,4 +103,5 @@ export default function AdminProfilePage() {
     </div>
   );
 }
+
 

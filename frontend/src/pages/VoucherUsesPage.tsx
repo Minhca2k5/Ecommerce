@@ -9,6 +9,15 @@ import { getErrorMessage } from "@/lib/errors";
 import { formatCurrency } from "@/lib/format";
 import { listMyVoucherUses, listMyVoucherUsesByOrder, listMyVoucherUsesByVoucher, type VoucherUseResponse } from "@/lib/voucherUseApi";
 
+function voucherUseKey(item: VoucherUseResponse) {
+  const orderId = Number(item.orderId ?? 0);
+  const voucherId = Number(item.voucherId ?? 0);
+  const userId = Number(item.userId ?? 0);
+  if (orderId > 0 && voucherId > 0) return `order-${orderId}-voucher-${voucherId}-user-${userId}`;
+  if (Number(item.id ?? 0) > 0) return `id-${item.id}`;
+  return `${orderId}-${voucherId}-${userId}-${item.createdAt ?? ""}-${item.discountAmount ?? ""}`;
+}
+
 function money(value: number | string | undefined) {
   if (value === undefined || value === null) return "-";
   const n = typeof value === "string" ? Number(value) : value;
@@ -25,9 +34,9 @@ export default function VoucherUsesPage() {
   const [voucherIdFilter, setVoucherIdFilter] = useState("");
 
   const title = useMemo(() => {
-    if (orderIdFilter.trim()) return "Voucher uses (filtered)";
-    if (voucherIdFilter.trim()) return "Voucher uses (filtered)";
-    return "Voucher uses";
+    if (orderIdFilter.trim()) return "Voucher usage (filtered)";
+    if (voucherIdFilter.trim()) return "Voucher usage (filtered)";
+    return "Voucher usage";
   }, [orderIdFilter, voucherIdFilter]);
 
   async function refresh() {
@@ -42,7 +51,23 @@ export default function VoucherUsesPage() {
           : voucherId > 0
             ? await listMyVoucherUsesByVoucher(voucherId, { page: 0, size: 20 })
             : await listMyVoucherUses({ page: 0, size: 20 });
-      setItems(page.content ?? []);
+      const raw = page.content ?? [];
+      const deduped = Array.from(
+        raw
+          .slice()
+          .sort((a, b) => {
+            const aTs = Date.parse(a.createdAt ?? "") || 0;
+            const bTs = Date.parse(b.createdAt ?? "") || 0;
+            return bTs - aTs;
+          })
+          .reduce((acc, item) => {
+            const key = voucherUseKey(item);
+            if (!acc.has(key)) acc.set(key, item);
+            return acc;
+          }, new Map<string, VoucherUseResponse>())
+          .values()
+      );
+      setItems(deduped);
     } catch (e) {
       setError(getErrorMessage(e, "Failed to load voucher uses."));
     } finally {
@@ -67,11 +92,11 @@ export default function VoucherUsesPage() {
   if (error) {
     return (
       <EmptyState
-        title="Couldn't load voucher uses"
+        title="Could not load voucher usage"
         description={error}
         action={
-          <Button onClick={refresh} className="h-10 rounded-xl bg-primary text-primary-foreground">
-            Retry
+          <Button onClick={refresh} className="h-10 rounded-md bg-primary text-primary-foreground">
+            Try again
           </Button>
         }
       />
@@ -88,11 +113,11 @@ export default function VoucherUsesPage() {
             <div className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Vouchers</div>
             <div className="text-3xl font-semibold tracking-tight">{title}</div>
             <p className="text-sm text-muted-foreground">
-              Filter by order or voucher to review your usage history.
+              Filter by order or voucher to review usage history.
             </p>
           </div>
-          <Button asChild variant="outline" className="h-10 rounded-xl bg-white/80">
-            <Link to="/me/vouchers">My vouchers</Link>
+          <Button asChild variant="outline" className="h-10 rounded-md bg-white">
+            <Link to="/me/vouchers">Your vouchers</Link>
           </Button>
         </div>
       </section>
@@ -104,19 +129,19 @@ export default function VoucherUsesPage() {
         <CardContent className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-2">
             <div className="text-xs font-medium text-muted-foreground">Order ID</div>
-            <Input className="rounded-xl bg-white/80" value={orderIdFilter} onChange={(e) => setOrderIdFilter(e.target.value)} inputMode="numeric" placeholder="e.g. 30" />
+            <Input className="rounded-md bg-white" value={orderIdFilter} onChange={(e) => setOrderIdFilter(e.target.value)} inputMode="numeric" placeholder="e.g. 30" />
           </div>
           <div className="space-y-2">
             <div className="text-xs font-medium text-muted-foreground">Voucher ID</div>
-            <Input className="rounded-xl bg-white/80" value={voucherIdFilter} onChange={(e) => setVoucherIdFilter(e.target.value)} inputMode="numeric" placeholder="e.g. 1" />
+            <Input className="rounded-md bg-white" value={voucherIdFilter} onChange={(e) => setVoucherIdFilter(e.target.value)} inputMode="numeric" placeholder="e.g. 1" />
           </div>
           <div className="flex items-end gap-2">
-            <Button className="h-10 rounded-xl bg-primary text-primary-foreground" onClick={refresh}>
+            <Button className="h-10 rounded-md bg-primary text-primary-foreground" onClick={refresh}>
               Apply
             </Button>
             <Button
               variant="outline"
-              className="h-10 rounded-xl bg-white/80"
+              className="h-10 rounded-md bg-white"
               onClick={() => {
                 setOrderIdFilter("");
                 setVoucherIdFilter("");
@@ -129,19 +154,21 @@ export default function VoucherUsesPage() {
       </Card>
 
       {items.length === 0 ? (
-        <EmptyState title="No voucher uses" description="No voucher usage history found for the current filter." />
+        <EmptyState title="No voucher usage" description="No results for the current filter." />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {items.map((u) => (
-            <Card key={String(u.id)} className="pressable overflow-hidden bg-white/90">
-              <div className="h-1 w-full bg-gradient-to-r from-primary/60 via-sky-400/50 to-amber-300/40" />
+            <Card key={voucherUseKey(u)} className="pressable overflow-hidden bg-white">
               <CardHeader className="flex flex-row items-start justify-between gap-3">
                 <div>
                   <CardTitle className="text-base">Voucher use</CardTitle>
                   <div className="mt-1 text-sm text-muted-foreground">Discount: {money(u.discountAmount)}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    Order #{u.orderId ?? "-"} · Voucher #{u.voucherId ?? "-"}
+                  </div>
                 </div>
                 {u.orderId ? (
-                  <Button asChild variant="outline" className="rounded-xl bg-white/80">
+                  <Button asChild variant="outline" className="rounded-md bg-white">
                     <Link to={`/orders/${u.orderId}`}>View order</Link>
                   </Button>
                 ) : null}
@@ -153,3 +180,4 @@ export default function VoucherUsesPage() {
     </div>
   );
 }
+

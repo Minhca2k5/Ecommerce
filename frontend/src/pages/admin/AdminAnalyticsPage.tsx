@@ -123,15 +123,15 @@ export default function AdminAnalyticsPage() {
           <div>
             <CardTitle>Analytics</CardTitle>
           </div>
-          <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+          <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
             {isLoading ? "Loading..." : "Load"}
           </Button>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-4">
-          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="rounded-xl" />
-          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="rounded-xl" />
-          <Input type="number" min={1} max={100} value={limit} onChange={(e) => setLimit(e.target.value)} placeholder="Top limit" className="rounded-xl" />
-          <Button className="rounded-xl" onClick={load} disabled={isLoading}>
+          <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="rounded-md" />
+          <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="rounded-md" />
+          <Input type="number" min={1} max={100} value={limit} onChange={(e) => setLimit(e.target.value)} placeholder="Top limit" className="rounded-md" />
+          <Button className="rounded-md" onClick={load} disabled={isLoading}>
             Refresh
           </Button>
         </CardContent>
@@ -283,3 +283,4 @@ export default function AdminAnalyticsPage() {
     </div>
   );
 }
+

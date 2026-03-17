@@ -50,7 +50,7 @@ export default function PasswordPage() {
             <div className="text-2xl font-semibold">Change password</div>
             <div className="mt-1 text-sm text-muted-foreground">Keep your account secure with a strong password.</div>
           </div>
-          <Button asChild variant="outline" className="h-10 rounded-xl bg-background">
+          <Button asChild variant="outline" className="h-10 rounded-md bg-background">
             <Link to="/me">Back</Link>
           </Button>
         </div>
@@ -65,7 +65,7 @@ export default function PasswordPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Old password</label>
               <Input
-                className="rounded-xl bg-background"
+                className="rounded-md bg-background"
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
                 type={showPassword ? "text" : "password"}
@@ -76,7 +76,7 @@ export default function PasswordPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">New password</label>
               <Input
-                className="rounded-xl bg-background"
+                className="rounded-md bg-background"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 type={showPassword ? "text" : "password"}
@@ -88,7 +88,7 @@ export default function PasswordPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Confirm password</label>
               <Input
-                className="rounded-xl bg-background"
+                className="rounded-md bg-background"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 type={showPassword ? "text" : "password"}
@@ -104,24 +104,24 @@ export default function PasswordPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="pressable rounded-xl border bg-background px-3 py-2 text-sm text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground"
+                className="pressable rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground"
               >
                 {showPassword ? "Hide passwords" : "Show passwords"}
               </button>
             </div>
 
             {error ? (
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{error}</div>
+              <div className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{error}</div>
             ) : null}
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" className="h-10 rounded-xl bg-background" onClick={() => navigate("/me")}>
+              <Button type="button" variant="outline" className="h-10 rounded-md bg-background" onClick={() => navigate("/me")}>
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={!canSubmit}
-                className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {isSaving ? "Updating..." : "Update password"}
               </Button>
@@ -132,3 +132,4 @@ export default function PasswordPage() {
     </div>
   );
 }
+

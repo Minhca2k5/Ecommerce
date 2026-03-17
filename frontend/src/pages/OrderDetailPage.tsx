@@ -18,15 +18,62 @@ import Modal from "@/components/Modal";
 import { apiJson } from "@/lib/http";
 import { createAuthedEventSource } from "@/lib/sse";
 
+function dedupePayments(rows: PaymentResponse[]) {
+  const map = new Map<number, PaymentResponse>();
+  for (const row of rows) {
+    const id = Number(row.id ?? 0);
+    if (!id) continue;
+    if (!map.has(id)) map.set(id, row);
+  }
+  return Array.from(map.values());
+}
+
 function statusBadge(status?: string) {
   const normalized = (status || "PENDING").toUpperCase();
+  const labelMap: Record<string, string> = {
+    PENDING: "Pending",
+    PAID: "Paid",
+    COMPLETED: "Completed",
+    CANCELLED: "Cancelled",
+    CANCELED: "Cancelled",
+    PROCESSING: "Processing",
+    SHIPPED: "Shipped",
+    DELIVERED: "Delivered",
+    FAILED: "Failed",
+  };
   const cls =
     normalized === "PAID" || normalized === "COMPLETED"
       ? "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20"
       : normalized === "CANCELLED" || normalized === "CANCELED"
         ? "bg-rose-500/10 text-rose-700 ring-rose-500/20"
         : "bg-primary/10 text-foreground ring-primary/20";
-  return <span className={`rounded-full px-2 py-1 text-xs ring-1 ${cls}`}>{normalized}</span>;
+  return <span className={`rounded-full px-2 py-1 text-xs ring-1 ${cls}`}>{labelMap[normalized] ?? "Pending"}</span>;
+}
+
+type PaymentMethod = "MOMO_QR" | "MOMO_SANDBOX" | "COD" | "CARD";
+
+function paymentMeta(method: PaymentMethod) {
+  if (method === "MOMO_QR") return { label: "MoMo QR", icon: "◉" };
+  if (method === "MOMO_SANDBOX") return { label: "MoMo", icon: "◉" };
+  if (method === "COD") return { label: "Cash on Delivery", icon: "◈" };
+  return { label: "Credit/Debit Card", icon: "◍" };
+}
+
+function getItemDisplayName(item: any, index: number) {
+  const direct = String(item?.productName ?? "").trim();
+  if (direct) return direct;
+  const slug = String(item?.productSlug ?? "").trim();
+  if (slug) return slug.replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+  return `Item ${index + 1}`;
+}
+
+function getItemShortDescription(item: any) {
+  const parts = [
+    item?.variantName ? `Variant: ${String(item.variantName)}` : "",
+    item?.color ? `Color: ${String(item.color)}` : "",
+    item?.size ? `Size: ${String(item.size)}` : "",
+  ].filter(Boolean);
+  return parts.join(" • ");
 }
 
 export default function OrderDetailPage() {
@@ -41,7 +88,7 @@ export default function OrderDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [method, setMethod] = useState("MOMO_QR");
+  const [method, setMethod] = useState<PaymentMethod>("MOMO_QR");
   const [providerTxnId, setProviderTxnId] = useState("");
   const [isPaying, setIsPaying] = useState(false);
   const [isMomoLoading, setIsMomoLoading] = useState(false);
@@ -58,7 +105,7 @@ export default function OrderDetailPage() {
   const shippingFee = useMemo(() => getNumber(order, "shippingFee") ?? 0, [order]);
   const taxAmount = useMemo(() => getNumber(order, "taxAmount") ?? 0, [order]);
   const isMomoSandboxEnabled = String(import.meta.env.VITE_MOMO_SANDBOX_ENABLED || "false").toLowerCase() === "true";
-  const paymentMethods = useMemo(
+  const paymentMethods = useMemo<PaymentMethod[]>(
     () => (isMomoSandboxEnabled ? ["MOMO_QR", "MOMO_SANDBOX", "COD", "CARD"] : ["MOMO_QR", "COD", "CARD"]),
     [isMomoSandboxEnabled],
   );
@@ -72,7 +119,7 @@ export default function OrderDetailPage() {
       .then(([o, p]) => {
         if (!alive) return;
         setOrder(o);
-        setPayments(p);
+        setPayments(dedupePayments(p));
       })
       .catch((e) => alive && setError(getErrorMessage(e, "Failed to load order.")))
       .finally(() => alive && setIsLoading(false));
@@ -87,7 +134,7 @@ export default function OrderDetailPage() {
     const reload = async () => {
       const [o, p] = await Promise.all([getMyOrder(orderId), listPayments(orderId).catch(() => [])]);
       setOrder(o);
-      setPayments(p);
+      setPayments(dedupePayments(p));
     };
     const onPaymentStatus = () => void reload();
     es.addEventListener("order-status", onPaymentStatus);
@@ -144,7 +191,7 @@ export default function OrderDetailPage() {
       });
       setProviderTxnId("");
       const updated = await listPayments(orderId).catch(() => []);
-      setPayments(updated);
+      setPayments(dedupePayments(updated));
     } catch (e) {
       toast.push({ variant: "error", title: "Payment failed", message: getErrorMessage(e, "Couldn't create payment. Please try again later.") });
     } finally {
@@ -210,7 +257,7 @@ export default function OrderDetailPage() {
         title="Couldn't load order"
         description={error || "Order not found."}
         action={
-          <Button asChild className="rounded-xl bg-primary text-primary-foreground">
+          <Button asChild className="rounded-md bg-primary text-primary-foreground">
             <Link to="/orders">Back to orders</Link>
           </Button>
         }
@@ -232,17 +279,17 @@ export default function OrderDetailPage() {
             </div>
         </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" className="h-10 rounded-xl bg-background" onClick={() => navigate("/orders")}>
+            <Button variant="outline" className="h-10 rounded-md bg-background" onClick={() => navigate("/orders")}>
             Back
             </Button>
-            <Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button asChild className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
               <Link to="/products">Shop more</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+      <div className="grid gap-6 lg:grid-cols-[1fr_380px] lg:items-start">
         <Card className="bg-background">
           <CardHeader>
             <CardTitle className="text-base">Items</CardTitle>
@@ -250,8 +297,8 @@ export default function OrderDetailPage() {
           <CardContent className="space-y-3">
             {items.length ? (
               items.map((it, idx) => (
-                <div key={String(it?.id ?? idx)} className="pressable group flex gap-3 rounded-xl border bg-background p-3 shadow-sm transition hover:shadow-md">
-                  <div className="h-16 w-16 overflow-hidden rounded-xl border bg-muted">
+                <div key={String(it?.id ?? idx)} className="pressable group flex gap-3 rounded-md border bg-background p-3 shadow-sm transition hover:shadow-md">
+                  <div className="h-16 w-16 overflow-hidden rounded-md border bg-muted">
                     <SafeImage
                       src={it?.url ?? ""}
                       alt={it?.productName ?? "Product"}
@@ -260,10 +307,18 @@ export default function OrderDetailPage() {
                     />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium">{it?.productName ?? "Product"}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">Qty: {it?.quantity ?? 1}</div>
+                    <div className="truncate font-medium">{getItemDisplayName(it, idx)}</div>
+                    {getItemShortDescription(it) ? (
+                      <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">{getItemShortDescription(it)}</div>
+                    ) : null}
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <span>Qty: {it?.quantity ?? 1}</span>
+                      {it?.variantName ? <span>Variant: {String(it.variantName)}</span> : null}
+                      {it?.color ? <span>Color: {String(it.color)}</span> : null}
+                      {it?.size ? <span>Size: {String(it.size)}</span> : null}
+                    </div>
                     <div className="mt-2">
-                      <Button asChild variant="outline" className="rounded-xl bg-background">
+                      <Button asChild variant="outline" className="rounded-md bg-background">
                         <Link to={`/products/${it?.productId ?? ""}`}>View product</Link>
                       </Button>
                     </div>
@@ -277,7 +332,7 @@ export default function OrderDetailPage() {
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        <div className="space-y-4 lg:sticky lg:top-24">
           <Card className="bg-background">
             <CardHeader>
               <CardTitle>Order summary</CardTitle>
@@ -288,7 +343,10 @@ export default function OrderDetailPage() {
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Shipping</span><span>{formatCurrency(shippingFee, currency)}</span></div>
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Tax</span><span>{formatCurrency(taxAmount, currency)}</span></div>
               <div className="h-px bg-border" />
-              <div className="flex items-center justify-between font-semibold"><span>Total</span><span>{formatCurrency(Number(order.totalAmount ?? 0), currency)}</span></div>
+              <div className="flex items-center justify-between rounded-md bg-accent/60 px-3 py-2 font-semibold">
+                <span className="text-base">Total</span>
+                <span className="text-xl font-extrabold text-foreground">{formatCurrency(Number(order.totalAmount ?? 0), currency)}</span>
+              </div>
             </CardContent>
           </Card>
 
@@ -306,34 +364,42 @@ export default function OrderDetailPage() {
                       type="button"
                       onClick={() => setMethod(m)}
                       className={[
-                        "pressable rounded-full border px-3 py-1 text-xs shadow-sm transition ",
-                        method === m ? "border-primary bg-primary text-primary-foreground" : "bg-background hover:bg-muted",
+                        "pressable inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs shadow-sm transition",
+                        method === m
+                          ? "border-primary bg-primary/10 text-foreground ring-1 ring-primary/30"
+                          : "bg-background hover:bg-muted",
                       ].join(" ")}
                     >
-                      {m}
+                      <span className={method === m ? "text-primary" : "text-muted-foreground"}>{paymentMeta(m).icon}</span>
+                      {paymentMeta(m).label}
                     </button>
                   ))}
                 </div>
               </div>
               <div className="space-y-2">
                   <div className="text-xs font-medium text-muted-foreground">Provider txn id (optional)</div>
-                  <Input className="rounded-xl bg-background" value={providerTxnId} onChange={(e) => setProviderTxnId(e.target.value)} placeholder="e.g. VNPAY-..." />
+                  <Input className="rounded-md bg-background" value={providerTxnId} onChange={(e) => setProviderTxnId(e.target.value)} placeholder="e.g. VNPAY-..." />
                 </div>
               <Button
                 disabled={isPaying || isMomoLoading}
                 onClick={onSubmitPayment}
-                className="h-10 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                className="h-10 w-full rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {isPaying
                   ? "Creating..."
                   : isMomoLoading
                     ? "Opening MoMo..."
                     : method === "MOMO_QR"
-                      ? "Continue to MoMo QR"
+                      ? "Continue to payment"
                       : method === "MOMO_SANDBOX"
-                        ? "Pay with MoMo"
-                        : "Create payment"}
+                        ? "Pay now"
+                        : method === "CARD"
+                          ? "Pay now"
+                          : "Place order"}
               </Button>
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                Secure payment • Buyer protection • Easy returns
+              </div>
             </CardContent>
           </Card>
 
@@ -347,7 +413,7 @@ export default function OrderDetailPage() {
                   <button
                     key={String(p.id)}
                     type="button"
-                    className="pressable flex w-full items-center justify-between rounded-xl border bg-background px-3 py-2 text-left shadow-sm transition hover:bg-muted hover:shadow-md"
+                    className="pressable flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-left shadow-sm transition hover:bg-muted hover:shadow-md"
                     onClick={() => void openPayment(Number(p.id ?? 0))}
                   >
                     <div className="min-w-0">
@@ -369,7 +435,7 @@ export default function OrderDetailPage() {
         <div className="space-y-3">
           {isPaymentDetailLoading ? <div className="text-sm text-muted-foreground">Loading...</div> : null}
           {paymentDetailError ? (
-            <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{paymentDetailError}</div>
+            <div className="rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">{paymentDetailError}</div>
           ) : null}
           {paymentDetail ? (
             <div className="grid gap-2 text-sm">
@@ -380,7 +446,7 @@ export default function OrderDetailPage() {
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Provider txn</span><span className="font-medium truncate max-w-[220px]">{paymentDetail.providerTxnId || "-"}</span></div>
             </div>
           ) : null}
-          <Button variant="outline" className="h-10 w-full rounded-xl bg-background" onClick={() => setIsPaymentOpen(false)}>
+          <Button variant="outline" className="h-10 w-full rounded-md bg-background" onClick={() => setIsPaymentOpen(false)}>
             Close
           </Button>
         </div>
@@ -388,3 +454,4 @@ export default function OrderDetailPage() {
     </div>
   );
 }
+

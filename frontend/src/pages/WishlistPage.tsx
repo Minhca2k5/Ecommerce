@@ -92,8 +92,8 @@ export default function WishlistPage() {
   }
 
   if (isLoading) return <div className="space-y-4"><LoadingCard /><LoadingCard /></div>;
-  if (error) return <EmptyState title="Couldn't load wishlist" description={error} action={<Button onClick={refresh} className="h-10 rounded-xl bg-primary text-primary-foreground">Retry</Button>} />;
-  if (!items.length) return <EmptyState title="Wishlist is empty" description="Save products you love for later." action={<Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground"><Link to="/products">Browse products</Link></Button>} />;
+  if (error) return <EmptyState title="Could not load wishlist" description={error} action={<Button onClick={refresh} className="h-10 rounded-md bg-primary text-primary-foreground">Try again</Button>} />;
+  if (!items.length) return <EmptyState title="No saved items yet" description="Tap the heart on any product to save it here." action={<Button asChild className="h-10 rounded-md bg-primary text-primary-foreground"><Link to="/products">Shop products</Link></Button>} />;
 
   return (
     <div className="space-y-8">
@@ -103,17 +103,17 @@ export default function WishlistPage() {
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl space-y-2">
             <div className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Wishlist</div>
-            <div className="text-3xl font-semibold tracking-tight">Saved for later</div>
+            <div className="text-3xl font-semibold tracking-tight">Your saved items</div>
             <p className="text-sm text-muted-foreground">
-              Keep track of items you want to buy next.
+              Save it now, buy it later.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" className="h-10 rounded-xl bg-white/80" onClick={() => setIsClearOpen(true)}>
+            <Button variant="outline" className="h-10 rounded-md bg-white" onClick={() => setIsClearOpen(true)}>
               Clear all
             </Button>
-            <Button asChild className="h-10 rounded-xl bg-primary text-primary-foreground">
-              <Link to="/products">Shop</Link>
+            <Button asChild className="h-10 rounded-md bg-primary text-primary-foreground">
+              <Link to="/products">Shop products</Link>
             </Button>
           </div>
         </div>
@@ -124,7 +124,7 @@ export default function WishlistPage() {
           <CardTitle className="text-base">Search</CardTitle>
         </CardHeader>
         <CardContent>
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search wishlist..." className="rounded-xl bg-white/80" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search your wishlist" className="rounded-md bg-white" />
         </CardContent>
       </Card>
 
@@ -144,10 +144,10 @@ export default function WishlistPage() {
               <div className="font-semibold line-clamp-2">{w.productName || "Product"}</div>
               <div className="text-sm text-primary font-bold">{money(w.productPrice, w.productCurrency)}</div>
               <div className="flex gap-2">
-                <Button asChild variant="outline" className="w-full rounded-xl bg-white/80">
-                  <Link to={`/products/${w.productId ?? ""}`}>View</Link>
+                <Button asChild variant="outline" className="w-full rounded-md bg-white">
+                  <Link to={`/products/${w.productId ?? ""}`}>Details</Link>
                 </Button>
-                <Button variant="outline" className="w-full rounded-xl border-rose-500/20 bg-white/80 text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(w)}>
+                <Button variant="outline" className="w-full rounded-md border-rose-500/20 bg-white text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(w)}>
                   Remove
                 </Button>
               </div>
@@ -179,3 +179,4 @@ export default function WishlistPage() {
     </div>
   );
 }
+

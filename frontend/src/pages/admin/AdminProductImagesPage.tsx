@@ -130,22 +130,22 @@ export default function AdminProductImagesPage() {
             <CardTitle>Product images</CardTitle>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+            <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
               Load
             </Button>
-            <Button className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
+            <Button className="h-9 rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={openCreate}>
               Add image
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Input value={productId} onChange={(e) => setProductId(e.target.value)} placeholder="Product ID" className="rounded-xl" />
-          <div className="rounded-xl border bg-background p-4">
+          <Input value={productId} onChange={(e) => setProductId(e.target.value)} placeholder="Product ID" className="rounded-md" />
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">Primary</div>
             <div className="mt-3 flex items-center gap-3">
               {primary ? (
                 <>
-                  <SafeImage src={getString(primary, "url") ?? ""} alt="primary" fallbackKey={getNumber(primary, "id") ?? "primary"} className="h-14 w-28 rounded-xl border object-cover" />
+                  <SafeImage src={getString(primary, "url") ?? ""} alt="primary" fallbackKey={getNumber(primary, "id") ?? "primary"} className="h-14 w-28 rounded-md border object-cover" />
                   <div className="text-sm">
                     <div className="font-medium">#{getNumber(primary, "id") ?? "-"}</div>
                     <div className="text-sm text-muted-foreground line-clamp-1">{getString(primary, "url") ?? ""}</div>
@@ -194,22 +194,22 @@ export default function AdminProductImagesPage() {
                           <div className="text-sm text-muted-foreground line-clamp-1">{url}</div>
                         </td>
                         <td className="px-4 py-3">
-                          <SafeImage src={url} alt="img" fallbackKey={id} className="h-12 w-24 rounded-xl border object-cover" />
+                          <SafeImage src={url} alt="img" fallbackKey={id} className="h-12 w-24 rounded-md border object-cover" />
                         </td>
                         <td className="px-4 py-3">
                           <span className="rounded-full border bg-background px-3 py-1 text-sm">{isPrimary ? "Primary" : "—"}</span>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => void setAsPrimary(id)} disabled={!id}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => void setAsPrimary(id)} disabled={!id}>
                               Set primary
                             </Button>
-                            <Button variant="outline" className="h-9 rounded-xl" onClick={() => openEdit(img)} disabled={!id}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => openEdit(img)} disabled={!id}>
                               Edit URL
                             </Button>
                             <Button
                               variant="outline"
-                              className="h-9 rounded-xl action-danger"
+                              className="h-9 rounded-md action-danger"
                               onClick={() => setDeleteId(id)}
                               disabled={!id}
                             >
@@ -229,16 +229,16 @@ export default function AdminProductImagesPage() {
 
       <Modal isOpen={isFormOpen} title="New product image" onClose={() => setIsFormOpen(false)}>
         <div className="grid gap-3">
-          <Input value={form.url} onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))} placeholder="Image URL *" className="rounded-xl" />
+          <Input value={form.url} onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))} placeholder="Image URL *" className="rounded-md" />
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.isPrimary} onChange={(e) => setForm((f) => ({ ...f, isPrimary: e.target.checked }))} />
             Set as primary
           </label>
           <div className="mt-2 flex justify-end gap-2">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsFormOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsFormOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={create}>
+            <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={create}>
               Create
             </Button>
           </div>
@@ -247,12 +247,12 @@ export default function AdminProductImagesPage() {
 
       <Modal isOpen={isEditOpen} title={editId ? `Edit image #${editId}` : "Edit image"} onClose={() => setIsEditOpen(false)}>
         <div className="grid gap-3">
-          <Input value={editUrl} onChange={(e) => setEditUrl(e.target.value)} placeholder="URL" className="rounded-xl" />
+          <Input value={editUrl} onChange={(e) => setEditUrl(e.target.value)} placeholder="URL" className="rounded-md" />
           <div className="mt-2 flex justify-end gap-2">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsEditOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsEditOpen(false)}>
               Cancel
             </Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={saveUrl}>
+            <Button className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={saveUrl}>
               Save
             </Button>
           </div>
@@ -275,3 +275,4 @@ export default function AdminProductImagesPage() {
     </>
   );
 }
+

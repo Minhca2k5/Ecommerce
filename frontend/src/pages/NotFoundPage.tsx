@@ -10,13 +10,12 @@ export default function NotFoundPage() {
           <CardTitle>404 - Not Found</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <div>Trang bạn tìm không tồn tại.</div>
+          <div>The page you are looking for does not exist.</div>
           <Button asChild>
-            <Link to="/">Go home</Link>
+            <Link to="/">Go back home</Link>
           </Button>
         </CardContent>
       </Card>
     </div>
   );
 }
-

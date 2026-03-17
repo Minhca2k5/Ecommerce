@@ -81,15 +81,15 @@ export default function AdminOrderItemsPage() {
             <CardTitle>Order items</CardTitle>
             <div className="mt-1 text-sm text-muted-foreground">Search order items and inspect line details.</div>
           </div>
-          <Button variant="outline" className="h-9 rounded-xl" onClick={load} disabled={isLoading}>
+          <Button variant="outline" className="h-9 rounded-md" onClick={load} disabled={isLoading}>
             Refresh
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={qOrderId} onChange={(e) => setQOrderId(e.target.value)} placeholder="Order ID" className="rounded-xl" />
-            <Input value={qProductId} onChange={(e) => setQProductId(e.target.value)} placeholder="Product ID" className="rounded-xl" />
-            <Input value={qProductName} onChange={(e) => setQProductName(e.target.value)} placeholder="Product name contains" className="rounded-xl" />
+            <Input value={qOrderId} onChange={(e) => setQOrderId(e.target.value)} placeholder="Order ID" className="rounded-md" />
+            <Input value={qProductId} onChange={(e) => setQProductId(e.target.value)} placeholder="Product ID" className="rounded-md" />
+            <Input value={qProductName} onChange={(e) => setQProductName(e.target.value)} placeholder="Product name contains" className="rounded-md" />
           </div>
 
           <div className="table-shell">
@@ -139,7 +139,7 @@ export default function AdminOrderItemsPage() {
                         <td className="px-4 py-3">{qty}</td>
                         <td className="px-4 py-3">{formatCurrency(lineTotal, currency)}</td>
                         <td className="px-4 py-3 text-right">
-                          <Button variant="outline" className="h-9 rounded-xl" onClick={() => openDetails(id)} disabled={!id}>
+                          <Button variant="outline" className="h-9 rounded-md" onClick={() => openDetails(id)} disabled={!id}>
                             Details
                           </Button>
                         </td>
@@ -156,19 +156,19 @@ export default function AdminOrderItemsPage() {
               Page <span className="font-medium text-foreground">{page + 1}</span> / {totalPages}
             </div>
             <div className="flex items-center gap-2">
-              <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-background px-3 text-sm">
+              <select title="Select option" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-background px-3 text-sm">
                 {[10, 20, 30, 50].map((n) => (
                   <option key={n} value={String(n)}>
                     {n}/page
                   </option>
                 ))}
               </select>
-              <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+              <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                 Prev
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-xl"
+                className="h-9 rounded-md"
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               >
@@ -181,24 +181,24 @@ export default function AdminOrderItemsPage() {
 
       <Modal isOpen={isDetailsOpen} title={detailsId ? `Order item #${detailsId}` : "Order item"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
-          <div className="rounded-xl border bg-background p-4">
+          <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">{getString(details ?? {}, "productNameSnapshot") ?? "Item"}</div>
             <div className="mt-1 text-sm text-muted-foreground">
               Order: {getNumber(details ?? {}, "orderId") ?? "-"} • Product: {getNumber(details ?? {}, "productId") ?? "-"}
             </div>
           </div>
           <div className="grid gap-3 md:grid-cols-3">
-            <div className="rounded-xl border bg-background p-4">
+            <div className="rounded-md border bg-background p-4">
               <div className="text-sm text-muted-foreground">Quantity</div>
               <div className="mt-1 text-sm font-semibold">{getNumber(details ?? {}, "quantity") ?? 0}</div>
             </div>
-            <div className="rounded-xl border bg-background p-4">
+            <div className="rounded-md border bg-background p-4">
               <div className="text-sm text-muted-foreground">Unit price</div>
               <div className="mt-1 text-sm font-semibold">
                 {formatCurrency(Number((details ?? {})["priceSnapshot"] ?? (details ?? {})["unitPrice"] ?? 0), getString(details ?? {}, "currency") ?? "VND")}
               </div>
             </div>
-            <div className="rounded-xl border bg-background p-4">
+            <div className="rounded-md border bg-background p-4">
               <div className="text-sm text-muted-foreground">Line total</div>
               <div className="mt-1 text-sm font-semibold">
                 {formatCurrency(Number((details ?? {})["lineTotal"] ?? 0), getString(details ?? {}, "currency") ?? "VND")}
@@ -206,7 +206,7 @@ export default function AdminOrderItemsPage() {
             </div>
           </div>
           <div className="flex justify-end">
-            <Button variant="outline" className="rounded-xl" onClick={() => setIsDetailsOpen(false)}>
+            <Button variant="outline" className="rounded-md" onClick={() => setIsDetailsOpen(false)}>
               Close
             </Button>
           </div>
@@ -215,3 +215,4 @@ export default function AdminOrderItemsPage() {
     </>
   );
 }
+

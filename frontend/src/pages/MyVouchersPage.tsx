@@ -81,7 +81,7 @@ export default function MyVouchersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, size]);
 
-  const headline = useMemo(() => (hasSearch ? `Search results for "${searchCode.trim()}"` : "Available vouchers"), [hasSearch, searchCode]);
+  const headline = useMemo(() => (hasSearch ? `Results for "${searchCode.trim()}"` : "Available discounts"), [hasSearch, searchCode]);
 
   return (
     <div className="space-y-8">
@@ -91,14 +91,14 @@ export default function MyVouchersPage() {
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl space-y-2">
             <div className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Vouchers</div>
-            <div className="text-3xl font-semibold tracking-tight">My vouchers</div>
+            <div className="text-3xl font-semibold tracking-tight">Your vouchers</div>
             <p className="text-sm text-muted-foreground">
-              Search by code or browse your available discounts.
+              Search by code or browse your discounts.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button asChild variant="outline" className="h-10 rounded-xl bg-white/80">
-              <Link to="/me/voucher-uses">Usage history</Link>
+            <Button asChild variant="outline" className="h-10 rounded-md bg-white">
+              <Link to="/me/voucher-uses">Usage</Link>
             </Button>
           </div>
         </div>
@@ -112,7 +112,7 @@ export default function MyVouchersPage() {
           <div className="space-y-2">
             <div className="text-xs font-medium text-muted-foreground">Voucher code</div>
             <Input
-              className="rounded-xl bg-white/80"
+              className="rounded-md bg-white"
               value={searchCode}
               onChange={(e) => {
                 setSearchCode(e.target.value);
@@ -124,7 +124,7 @@ export default function MyVouchersPage() {
             />
           </div>
           <Button
-            className="h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+            className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={runSearch}
             disabled={!searchCode.trim() || searchStatus === "loading"}
           >
@@ -144,11 +144,11 @@ export default function MyVouchersPage() {
         </div>
       ) : error ? (
         <EmptyState
-          title="Couldn't load vouchers"
+          title="Could not load vouchers"
           description={error}
           action={
-            <Button onClick={loadAvailable} className="h-10 rounded-xl bg-primary text-primary-foreground">
-              Retry
+            <Button onClick={loadAvailable} className="h-10 rounded-md bg-primary text-primary-foreground">
+              Try again
             </Button>
           }
         />
@@ -158,19 +158,19 @@ export default function MyVouchersPage() {
             <div className="text-sm font-medium">{headline}</div>
             {!hasSearch ? (
               <div className="flex items-center gap-2">
-                <select value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-xl border bg-white/80 px-3 text-sm">
+                <select title="Select option" value={String(size)} onChange={(e) => setSize(Number(e.target.value))} className="h-9 rounded-md border bg-white px-3 text-sm">
                   {[12, 24, 36].map((n) => (
                     <option key={n} value={String(n)}>
                       {n}/page
                     </option>
                   ))}
                 </select>
-                <Button variant="outline" className="h-9 rounded-xl" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+                <Button variant="outline" className="h-9 rounded-md" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
                   Prev
                 </Button>
                 <Button
                   variant="outline"
-                  className="h-9 rounded-xl"
+                  className="h-9 rounded-md"
                   disabled={page + 1 >= totalPages}
                   onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 >
@@ -181,15 +181,14 @@ export default function MyVouchersPage() {
           </div>
 
           {(hasSearch ? searchResults : items).length === 0 ? (
-            <EmptyState title="No vouchers found" description={hasSearch ? "No voucher matches your code." : "No vouchers are available right now."} />
+            <EmptyState title="No vouchers found" description={hasSearch ? "No voucher matches that code." : "No vouchers available right now."} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {(hasSearch ? searchResults : items).map((v) => {
                 const id = Number(v.id ?? 0);
                 const remaining = typeof v.activeUsesForUser === "number" ? v.activeUsesForUser : undefined;
                 return (
-                  <Card key={String(id || v.code)} className="pressable relative overflow-hidden bg-white/90">
-                    <div className="h-1 w-full bg-gradient-to-r from-primary/60 via-sky-400/50 to-amber-300/40" />
+                  <Card key={String(id || v.code)} className="pressable relative overflow-hidden bg-white">
                     <CardHeader className="flex flex-row items-start justify-between gap-3">
                       <div>
                         <CardTitle className="text-base">{v.name || v.code || "Voucher"}</CardTitle>
@@ -207,7 +206,7 @@ export default function MyVouchersPage() {
                         </div>
                       </div>
                       {id ? (
-                        <Button asChild variant="outline" className="mt-2 w-full rounded-xl bg-white/80">
+                        <Button asChild variant="outline" className="mt-2 w-full rounded-md bg-white">
                           <Link to={`/me/vouchers/${id}`}>View details</Link>
                         </Button>
                       ) : null}
@@ -222,3 +221,4 @@ export default function MyVouchersPage() {
     </div>
   );
 }
+
