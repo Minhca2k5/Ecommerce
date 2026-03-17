@@ -362,7 +362,16 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductResponse> searchProductResponses(ProductFilter filter, Pageable pageable) {
         filter.setStatus("ACTIVE");
         Pageable sortedPageable = PageableUtils.applySorting(pageable, filter);
-        if (filter.getName() != null && !filter.getName().isBlank()) {
+        boolean canUseKeywordSearchOnly = filter.getName() != null
+                && !filter.getName().isBlank()
+                && filter.getCategoryId() == null
+                && filter.getMinPrice() == null
+                && filter.getMaxPrice() == null
+                && (filter.getWarehouseLocation() == null || filter.getWarehouseLocation().isBlank())
+                && (filter.getSku() == null || filter.getSku().isBlank())
+                && (filter.getSlug() == null || filter.getSlug().isBlank());
+
+        if (canUseKeywordSearchOnly) {
             try {
                 Page<Product> page = productSearchService.searchByName(filter.getName(), sortedPageable);
                 List<ProductResponse> responses = toUserResponseListWithUrls(page.getContent());

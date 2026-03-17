@@ -17,6 +17,7 @@ public class ProductFilter implements SortableFilter {
     private String sku;
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
+    private String warehouseLocation;
     private String status;
 
     private LocalDateTime createdFrom;

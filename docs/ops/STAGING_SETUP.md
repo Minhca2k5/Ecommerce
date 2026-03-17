@@ -49,7 +49,7 @@ In `Settings -> Environments -> staging`, add:
 - `STAGING_APP_DIR` (optional, default `/opt/ecommerce`)
 
 ## 5) First Deploy
-- Trigger workflow `Staging Deploy` manually (`workflow_dispatch`), set `deploy_ref` (e.g. `phase7`).
+- Trigger workflow `Staging Deploy` manually (`workflow_dispatch`), set `deploy_ref` (e.g. `main`).
 - Verify in Actions that deploy and smoke checks pass.
 
 ## 6) Smoke Verification on Host

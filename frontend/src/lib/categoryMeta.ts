@@ -135,7 +135,7 @@ export const categoryMetaBySlug: Record<string, CategoryMeta> = {
     title: "Fiction",
     description: "Stories you cannot put down.",
     gradientClassName: "bg-gradient-to-br from-amber-400/20 via-yellow-300/10 to-white",
-    imageUrl: "https://images.unsplash.com/photo-1455885666463-0ab677d12373?auto=format&fit=crop&w=800&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1474932430478-367dbb6832c1?auto=format&fit=crop&w=800&q=80",
     accentClassName: "border-yellow-200 bg-yellow-100 text-yellow-800",
     icon: "book",
   },

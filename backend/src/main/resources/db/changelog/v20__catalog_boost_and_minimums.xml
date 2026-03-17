@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v20-001-catalog-boost-and-minimums" author="codex">
+        <comment>
+            Increase catalog volume and ensure each category has at least 5 active products.
+            - Add 60 boosted products distributed across all categories.
+            - Top up categories that still have fewer than 5 active products.
+            - Seed image + inventory rows for the new products.
+        </comment>
+
+        <sql>
+            -- 1) Boost catalog with 60 additional products distributed across all categories
+            INSERT INTO products (category_id, name, slug, sku, description, price, currency, status, created_at, updated_at)
+            WITH RECURSIVE seq AS (
+                SELECT 1 AS n
+                UNION ALL
+                SELECT n + 1 FROM seq WHERE n &lt; 60
+            ),
+            cat_map AS (
+                SELECT id, slug, name, ROW_NUMBER() OVER (ORDER BY id) AS rn
+                FROM categories
+            ),
+            cat_total AS (
+                SELECT COUNT(*) AS cnt FROM cat_map
+            )
+            SELECT
+                c.id,
+                CONCAT(c.name, ' Boost Item ', LPAD(s.n, 3, '0')),
+                CONCAT('boost-', c.slug, '-', LPAD(s.n, 3, '0')),
+                CONCAT('BOOST-', LPAD(c.id, 2, '0'), '-', LPAD(s.n, 3, '0')),
+                CONCAT('Boosted seed item #', s.n, ' for category ', c.name, '.'),
+                CAST((19900 + (c.id * 1700) + (s.n * 180)) AS DECIMAL(12,2)),
+                'VND',
+                'ACTIVE',
+                NOW(),
+                NOW()
+            FROM seq s
+            JOIN cat_total t ON t.cnt &gt; 0
+            JOIN cat_map c ON c.rn = ((s.n - 1) % t.cnt) + 1;
+
+            -- 2) Top up categories to guarantee at least 5 ACTIVE products each
+            INSERT INTO products (category_id, name, slug, sku, description, price, currency, status, created_at, updated_at)
+            WITH RECURSIVE seq AS (
+                SELECT 1 AS n
+                UNION ALL
+                SELECT n + 1 FROM seq WHERE n &lt; 5
+            ),
+            current_counts AS (
+                SELECT category_id, COUNT(*) AS cnt
+                FROM products
+                WHERE status = 'ACTIVE'
+                GROUP BY category_id
+            ),
+            needs AS (
+                SELECT
+                    c.id AS category_id,
+                    c.slug AS category_slug,
+                    c.name AS category_name,
+                    COALESCE(cc.cnt, 0) AS existing_count,
+                    GREATEST(0, 5 - COALESCE(cc.cnt, 0)) AS missing_count
+                FROM categories c
+                LEFT JOIN current_counts cc ON cc.category_id = c.id
+            )
+            SELECT
+                n.category_id,
+                CONCAT(n.category_name, ' Starter Item ', LPAD(s.n, 2, '0')),
+                CONCAT('min5-', n.category_slug, '-', LPAD(n.existing_count + s.n, 3, '0')),
+                CONCAT('MIN5-', LPAD(n.category_id, 2, '0'), '-', LPAD(n.existing_count + s.n, 3, '0')),
+                CONCAT('Minimum coverage seed item #', s.n, ' for category ', n.category_name, '.'),
+                CAST((14900 + (n.category_id * 1300) + (s.n * 250)) AS DECIMAL(12,2)),
+                'VND',
+                'ACTIVE',
+                NOW(),
+                NOW()
+            FROM needs n
+            JOIN seq s ON s.n &lt;= n.missing_count;
+
+            -- 3) Primary image for all newly inserted products in this migration
+            INSERT INTO product_images (product_id, url, is_primary, created_at, updated_at)
+            SELECT
+                p.id,
+                CONCAT('https://picsum.photos/seed/', LOWER(REPLACE(p.sku, ' ', '-')), '/900/900'),
+                TRUE,
+                NOW(),
+                NOW()
+            FROM products p
+            WHERE (p.sku LIKE 'BOOST-%' OR p.sku LIKE 'MIN5-%')
+              AND NOT EXISTS (
+                    SELECT 1
+                    FROM product_images pi
+                    WHERE pi.product_id = p.id
+                      AND pi.is_primary = TRUE
+              );
+
+            -- 4) Inventory rows for all newly inserted products in this migration
+            INSERT INTO inventory (product_id, warehouse_id, stock_qty, reserved_qty, created_at, updated_at)
+            SELECT
+                p.id,
+                w.id,
+                60 + (p.id % 90),
+                0,
+                NOW(),
+                NOW()
+            FROM products p
+            JOIN (
+                SELECT id
+                FROM warehouses
+                WHERE is_active = TRUE
+                ORDER BY id
+                LIMIT 1
+            ) w
+            WHERE (p.sku LIKE 'BOOST-%' OR p.sku LIKE 'MIN5-%')
+              AND NOT EXISTS (
+                    SELECT 1
+                    FROM inventory i
+                    WHERE i.product_id = p.id
+              );
+        </sql>
+
+        <rollback>
+            <sql>
+                DELETE FROM inventory
+                WHERE product_id IN (
+                    SELECT id
+                    FROM products
+                    WHERE sku LIKE 'BOOST-%' OR sku LIKE 'MIN5-%'
+                );
+
+                DELETE FROM product_images
+                WHERE product_id IN (
+                    SELECT id
+                    FROM products
+                    WHERE sku LIKE 'BOOST-%' OR sku LIKE 'MIN5-%'
+                );
+
+                DELETE FROM products
+                WHERE sku LIKE 'BOOST-%' OR sku LIKE 'MIN5-%';
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

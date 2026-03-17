@@ -1,6 +1,6 @@
 # E-commerce System (Phase 6 Completed, Phase 7 In Progress)
 
-> **Branch:** `phase6`  
+> **Branch:** `main`  
 > **Status:** Phase 6 Completed (Data Reliability & Hybrid Realtime Analytics Serving), moving to Phase 7 (DevOps, Observability & Scale)  
 > **Author:** Phan Dinh Minh (Minzetsu)  
 > **Last Updated:** March 18, 2026
@@ -91,7 +91,7 @@ This repository is an end-to-end E-commerce system:
 ### Staging Deploy (AWS via GitHub Actions)
 - Workflow: `.github/workflows/staging-deploy.yml`
 - Trigger:
-  - Push to `phase7` (backend/frontend/compose/workflow changes)
+   - Push to `main` (backend/frontend/compose/workflow changes)
   - Manual run via `workflow_dispatch` with `deploy_ref`
 - Required GitHub Environment (`staging`) secrets:
   - `STAGING_SSH_HOST`

@@ -1,6 +1,7 @@
 package com.minzetsu.ecommerce.product.repository;
 
 import com.minzetsu.ecommerce.product.dto.filter.ProductFilter;
+import com.minzetsu.ecommerce.inventory.entity.Inventory;
 import com.minzetsu.ecommerce.product.entity.Product;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -16,6 +17,7 @@ public class ProductSpecification {
         String sku = filter.getSku();
         BigDecimal minPrice = filter.getMinPrice();
         BigDecimal maxPrice = filter.getMaxPrice();
+        String warehouseLocation = filter.getWarehouseLocation();
         String status = filter.getStatus();
 
         LocalDateTime createdFrom = filter.getCreatedFrom();
@@ -50,6 +52,25 @@ public class ProductSpecification {
             if (maxPrice != null) {
                 predicates = cb.and(predicates,
                         cb.lessThanOrEqualTo(root.get("price"), maxPrice));
+            }
+            if (warehouseLocation != null && !warehouseLocation.isBlank()) {
+                String term = "%" + warehouseLocation.toLowerCase() + "%";
+
+                var invSubquery = query.subquery(Long.class);
+                var invRoot = invSubquery.from(Inventory.class);
+                var warehouse = invRoot.join("warehouse");
+
+                invSubquery.select(invRoot.get("id"));
+                invSubquery.where(
+                        cb.and(
+                                cb.equal(invRoot.get("product"), root),
+                                cb.isTrue(warehouse.get("isActive")),
+                                cb.or(
+                                        cb.like(cb.lower(cb.coalesce(warehouse.get("city"), "")), term),
+                                        cb.like(cb.lower(cb.coalesce(warehouse.get("state"), "")), term),
+                                        cb.like(cb.lower(cb.coalesce(warehouse.get("country"), "")), term))));
+
+                predicates = cb.and(predicates, cb.exists(invSubquery));
             }
             if (status != null && !status.isEmpty()) {
                 predicates = cb.and(predicates,

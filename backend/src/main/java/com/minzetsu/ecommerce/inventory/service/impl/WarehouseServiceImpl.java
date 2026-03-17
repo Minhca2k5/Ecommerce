@@ -74,8 +74,7 @@ public class WarehouseServiceImpl implements WarehouseService {
                 pageable,
                 warehouseRepository,
                 WarehouseSpecification.filter(filter),
-                warehouseMapper::toResponse
-        );
+                warehouseMapper::toResponse);
     }
 
     @Override
@@ -89,9 +88,15 @@ public class WarehouseServiceImpl implements WarehouseService {
     @Transactional(readOnly = true)
     public WarehouseResponse getFullWarehouseResponseById(Long id) {
         Warehouse warehouse = getExistingWarehouse(id);
-        List<InventoryResponse> inventories =
-                inventoryMapper.toAdminResponseList(inventoryRepository.findByWarehouseId(id));
+        List<InventoryResponse> inventories = inventoryMapper
+                .toAdminResponseList(inventoryRepository.findByWarehouseId(id));
         return warehouseMapper.toFullResponse(warehouse, inventories);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getPublicWarehouseLocations() {
+        return warehouseRepository.findDistinctActiveCities();
     }
 
     @Override
@@ -111,4 +116,3 @@ public class WarehouseServiceImpl implements WarehouseService {
         return warehouseMapper.toResponse(warehouseRepository.save(warehouse));
     }
 }
-

@@ -86,13 +86,13 @@ export default function ProductCard({
       </div>
 
       <CardContent className="space-y-3 p-4">
-        <div className="space-y-1">
-          <Link to={href} className="line-clamp-2 text-sm font-medium leading-5 hover:text-primary">
+        <div className="space-y-2">
+          <Link to={href} className="line-clamp-2 text-[15px] font-medium leading-6 text-foreground/95 hover:text-primary">
             {name}
           </Link>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="flex items-center gap-2">
-              <div className="text-xl font-extrabold text-primary">{formatCurrency(price, currency)}</div>
+              <div className="text-lg font-bold text-primary">{formatCurrency(price, currency)}</div>
               {hasDiscount && basePrice ? (
                 <div className="text-xs text-muted-foreground line-through">
                   {formatCurrency(basePrice, currency)}
@@ -102,15 +102,15 @@ export default function ProductCard({
             {displayReviewCount > 0 ? (
               <div className="flex items-center gap-2">
                 <RatingStars rating={displayRating} />
-                <span className="text-xs text-muted-foreground">
+                <span className="text-[11px] text-muted-foreground">
                   {Number(displayRating ?? 0).toFixed(1)} ({formatCompactNumber(displayReviewCount)})
                 </span>
               </div>
             ) : null}
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            {soldCount ? <span>{formatCompactNumber(soldCount)} sold</span> : null}
-            {description ? <span className="line-clamp-1">{description}</span> : null}
+          <div className="flex min-h-4 flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+            {soldCount ? <span className="font-medium text-muted-foreground/90">{formatCompactNumber(soldCount)} sold</span> : null}
+            {description ? <span className="line-clamp-1 text-muted-foreground/85">{description}</span> : null}
             {freeShip ? <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-800">Free ship</span> : null}
           </div>
         </div>

@@ -59,9 +59,13 @@ export default function ProductsPage() {
   const size = Number(searchParams.get("size") ?? "12");
   const name = searchParams.get("name") ?? "";
   const categoryId = searchParams.get("categoryId") ?? "";
+  const minPrice = searchParams.get("minPrice") ?? "";
+  const maxPrice = searchParams.get("maxPrice") ?? "";
+  const warehouseLocation = searchParams.get("warehouseLocation") ?? "";
 
   const [data, setData] = useState<SpringPage<ProductSummary> | null>(null);
   const [categories, setCategories] = useState<CategorySummary[]>([]);
+  const [warehouseLocations, setWarehouseLocations] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasNewProducts, setHasNewProducts] = useState(false);
@@ -71,21 +75,29 @@ export default function ProductsPage() {
   const [isRankLoading, setIsRankLoading] = useState(false);
   const [flashSale, setFlashSale] = useState<FlashSaleSummary | null>(null);
   const [dealFilters, setDealFilters] = useState({
-    freeShip: false,
     topRated: false,
     bestSeller: false,
   });
+  const [topRatedDealIds, setTopRatedDealIds] = useState<Set<number>>(new Set());
+  const [bestSellerDealIds, setBestSellerDealIds] = useState<Set<number>>(new Set());
   const [nowTs, setNowTs] = useState(() => Date.now());
+  const [priceDraft, setPriceDraft] = useState({ min: minPrice, max: maxPrice });
+  const hasDealFilter = dealFilters.topRated || dealFilters.bestSeller;
+  const requestPage = hasDealFilter ? 0 : page;
+  const requestSize = hasDealFilter ? 240 : size;
 
   const queryString = useMemo(
     () =>
       buildQuery({
-        page,
-        size,
+        page: requestPage,
+        size: requestSize,
         name: name.trim() ? name.trim() : undefined,
         categoryId: categoryId.trim() ? categoryId.trim() : undefined,
+        minPrice: minPrice.trim() ? minPrice.trim() : undefined,
+        maxPrice: maxPrice.trim() ? maxPrice.trim() : undefined,
+        warehouseLocation: warehouseLocation.trim() ? warehouseLocation.trim() : undefined,
       }),
-    [page, size, name, categoryId]
+    [requestPage, requestSize, name, categoryId, minPrice, maxPrice, warehouseLocation]
   );
 
   useEffect(() => {
@@ -95,16 +107,18 @@ export default function ProductsPage() {
       try {
         setIsLoading(true);
         setError(null);
-        const [result, categoryPage, flashSaleData] = await Promise.all([
+        const [result, categoryPage, locationRows, flashSaleData] = await Promise.all([
           apiGet<SpringPage<ProductSummary>>(`/api/public/products${queryString}`),
           apiGet<SpringPage<CategorySummary>>(
             `/api/public/categories${buildQuery({ page: 0, size: 50 })}`
           ),
+          apiGet<string[]>(`/api/public/warehouses/locations`),
           apiGet<FlashSaleSummary>(`/api/public/products/flash-sale`),
         ]);
         if (!isMounted) return;
         setData(result);
         setCategories(categoryPage?.content ?? []);
+        setWarehouseLocations(Array.isArray(locationRows) ? locationRows : []);
         setFlashSale(flashSaleData ?? null);
       } catch (e) {
         if (!isMounted) return;
@@ -122,8 +136,35 @@ export default function ProductsPage() {
   }, [queryString, refreshKey]);
 
   useEffect(() => {
+    setPriceDraft({ min: minPrice, max: maxPrice });
+  }, [minPrice, maxPrice]);
+
+  useEffect(() => {
     const id = window.setInterval(() => setNowTs(Date.now()), 1000);
     return () => window.clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    Promise.all([
+      apiGet<ProductSummary[]>("/api/public/products/top-rating"),
+      apiGet<ProductSummary[]>("/api/public/products/best-selling"),
+    ])
+      .then(([topRatedRows, bestSellerRows]) => {
+        if (!alive) return;
+        const topIds = new Set<number>((topRatedRows ?? []).map((p) => getNumber(p, "id") ?? -1).filter((id) => id > 0));
+        const bestIds = new Set<number>((bestSellerRows ?? []).map((p) => getNumber(p, "id") ?? -1).filter((id) => id > 0));
+        setTopRatedDealIds(topIds);
+        setBestSellerDealIds(bestIds);
+      })
+      .catch(() => {
+        if (!alive) return;
+        setTopRatedDealIds(new Set());
+        setBestSellerDealIds(new Set());
+      });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -160,6 +201,14 @@ export default function ProductsPage() {
   }, [auth.isAuthenticated, name]);
 
   useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    if (next.get("page") !== "0") {
+      next.set("page", "0");
+      setSearchParams(next, { replace: true });
+    }
+  }, [dealFilters, searchParams, setSearchParams]);
+
+  useEffect(() => {
     const rankedMode = sortKey === "rating" || sortKey === "sold";
     if (!rankedMode) {
       setRankedProducts([]);
@@ -189,14 +238,6 @@ export default function ProductsPage() {
     };
   }, [sortKey]);
 
-  useEffect(() => {
-    const next = new URLSearchParams(searchParams);
-    if (next.get("page") !== "0") {
-      next.set("page", "0");
-      setSearchParams(next, { replace: true });
-    }
-  }, [sortKey, searchParams, setSearchParams]);
-
   const products = data?.content ?? [];
   const isRankedMode = sortKey === "rating" || sortKey === "sold";
   const sourceProducts = isRankedMode ? rankedProducts : products;
@@ -223,20 +264,23 @@ export default function ProductsPage() {
   }, [isRankedMode, normalizedName, selectedCategoryId, sourceProducts]);
 
   const filteredProducts = useMemo(() => {
-    if (!dealFilters.freeShip && !dealFilters.topRated && !dealFilters.bestSeller) return queryFilteredProducts;
+    if (!dealFilters.topRated && !dealFilters.bestSeller) return queryFilteredProducts;
     return queryFilteredProducts.filter((p) => {
-      const price = getNumber(p, "salePrice", "price") ?? 0;
-      const currency = getString(p, "currency") ?? "VND";
-      const rating = getNumber(p, "recentlyAverageRating", "rating") ?? 0;
+      const id = getNumber(p, "id") ?? -1;
+      const rating = getNumber(p, "recentlyAverageRating", "averageRating", "rating") ?? 0;
       const reviewCount = getNumber(p, "recentlyReviewCount", "reviewCount", "totalReviews") ?? 0;
       const sold = getNumber(p, "recentlyTotalSoldQuantity", "totalSold", "soldCount") ?? 0;
-      const freeShip = currency === "VND" ? price >= 300000 : price >= 20;
-      if (dealFilters.freeShip && !freeShip) return false;
-      if (dealFilters.topRated && !(rating >= 4.5 && reviewCount >= 5)) return false;
-      if (dealFilters.bestSeller && !(sold >= 30)) return false;
+      const topRated = topRatedDealIds.size > 0
+        ? topRatedDealIds.has(id)
+        : (rating >= 4.0 && reviewCount >= 1) || rating >= 4.5;
+      const bestSeller = bestSellerDealIds.size > 0
+        ? bestSellerDealIds.has(id)
+        : sold >= 5;
+      if (dealFilters.topRated && !topRated) return false;
+      if (dealFilters.bestSeller && !bestSeller) return false;
       return true;
     });
-  }, [dealFilters, queryFilteredProducts]);
+  }, [dealFilters, queryFilteredProducts, topRatedDealIds, bestSellerDealIds]);
 
   const sortedProducts = useMemo(() => {
     const list = [...filteredProducts];
@@ -254,15 +298,35 @@ export default function ProductsPage() {
     }
   }, [filteredProducts, sortKey]);
 
-  const totalPagesForRanked = Math.max(1, Math.ceil(sortedProducts.length / Math.max(1, size)));
+  const useClientPagination = isRankedMode || hasDealFilter;
+  const totalPagesForClient = Math.max(1, Math.ceil(sortedProducts.length / Math.max(1, size)));
   const pagedProducts = useMemo(() => {
-    if (!isRankedMode) return sortedProducts;
+    if (!useClientPagination) return sortedProducts;
     const start = page * size;
     return sortedProducts.slice(start, start + size);
-  }, [isRankedMode, page, size, sortedProducts]);
+  }, [useClientPagination, page, size, sortedProducts]);
 
   const isBusy = isLoading || isRankLoading;
-  const isNextDisabled = isBusy || (isRankedMode ? page + 1 >= totalPagesForRanked : Boolean(data?.last));
+  const isNextDisabled = isBusy || (useClientPagination ? page + 1 >= totalPagesForClient : Boolean(data?.last));
+  const totalPagesDisplay = useClientPagination ? totalPagesForClient : Math.max(1, Number(data?.totalPages ?? 1));
+  const currentPageDisplay = Math.min(Math.max(1, page + 1), totalPagesDisplay);
+
+  function setSort(nextSort: string) {
+    if (nextSort !== sortKey) {
+      const next = new URLSearchParams(searchParams);
+      next.set("page", "0");
+      setSearchParams(next, { replace: true });
+    }
+    setSortKey(nextSort);
+  }
+
+  function togglePriceSort() {
+    setSortKey((prev) => {
+      if (prev === "price-low") return "price-high";
+      if (prev === "price-high") return "price-low";
+      return "price-low";
+    });
+  }
 
   const soldToday = useMemo(
     () =>
@@ -283,7 +347,7 @@ export default function ProductsPage() {
   const remainingMs = Number.isFinite(endAtTs) ? endAtTs - nowTs : 0;
   const isFlashSaleEnded = String(flashSale?.status ?? "").toUpperCase() === "ENDED" || remainingMs <= 0;
   const flashSaleHeadline = flashSale?.headline?.trim() || (isFlashSaleEnded ? "Flash sale has ended" : "Grab deals before they are gone");
-  const flashSaleDescription = flashSale?.description?.trim() || (isFlashSaleEnded ? "The next promotion will be available soon." : "Free shipping on select items today.");
+  const flashSaleDescription = flashSale?.description?.trim() || (isFlashSaleEnded ? "The next promotion will be available soon." : "Hot deals on select items today.");
   const countdown = formatCountdown(remainingMs);
 
   return (
@@ -306,10 +370,13 @@ export default function ProductsPage() {
                 const next = new URLSearchParams(searchParams);
                 next.delete("name");
                 next.delete("categoryId");
+                next.delete("minPrice");
+                next.delete("maxPrice");
+                next.delete("warehouseLocation");
                 next.set("page", "0");
                 setSearchParams(next, { replace: true });
               }}
-              disabled={isLoading || (!name.trim() && !categoryId.trim())}
+              disabled={isLoading || (!name.trim() && !categoryId.trim() && !minPrice.trim() && !maxPrice.trim() && !warehouseLocation.trim())}
             >
               Reset filters
             </Button>
@@ -361,13 +428,14 @@ export default function ProductsPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-        <Card className="h-fit bg-background lg:sticky lg:top-24">
-          <CardHeader>
-            <CardTitle className="text-base">Filters</CardTitle>
+      <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+        <Card className="h-fit rounded-xl border bg-background shadow-sm lg:sticky lg:top-24">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold uppercase tracking-[0.16em] text-muted-foreground">Search filters</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
+          <CardContent className="space-y-4 pt-0">
+            <div className="space-y-2 rounded-md border bg-card p-3">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Keyword</div>
               <Input
                 placeholder="Search products"
                 value={name}
@@ -380,12 +448,12 @@ export default function ProductsPage() {
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 rounded-md border bg-card p-3">
               <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Categories</div>
-              <ul className="space-y-2 text-sm">
+              <ul className="divide-y text-sm">
                 <li>
                   <label
-                    className={`flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 transition ${
+                    className={`flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 transition ${
                       !categoryId ? "bg-orange-50 text-orange-700" : "hover:bg-muted"
                     }`}
                   >
@@ -409,7 +477,7 @@ export default function ProductsPage() {
                   return (
                     <li key={id}>
                       <label
-                        className={`flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 transition ${
+                        className={`flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 transition ${
                           categoryId === id ? "bg-orange-50 text-orange-700" : "hover:bg-muted"
                         }`}
                       >
@@ -432,45 +500,119 @@ export default function ProductsPage() {
               </ul>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 rounded-md border bg-card p-3">
               <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Deals</div>
-              <ul className="space-y-2 text-sm">
+              <ul className="divide-y text-sm">
                 <li>
-                  <label className="flex cursor-pointer items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={dealFilters.freeShip}
-                      onChange={(e) => setDealFilters((prev) => ({ ...prev, freeShip: e.target.checked }))}
-                    />
-                    <span>Free shipping</span>
-                  </label>
-                </li>
-                <li>
-                  <label className="flex cursor-pointer items-center gap-2">
+                  <label className="flex cursor-pointer items-center gap-2 py-2">
                     <input
                       type="checkbox"
                       checked={dealFilters.topRated}
                       onChange={(e) => setDealFilters((prev) => ({ ...prev, topRated: e.target.checked }))}
                     />
-                    <span>Top rated 4.5+</span>
+                    <span>Top rated 4.0+</span>
                   </label>
                 </li>
                 <li>
-                  <label className="flex cursor-pointer items-center gap-2">
+                  <label className="flex cursor-pointer items-center gap-2 py-2">
                     <input
                       type="checkbox"
                       checked={dealFilters.bestSeller}
                       onChange={(e) => setDealFilters((prev) => ({ ...prev, bestSeller: e.target.checked }))}
                     />
-                    <span>Best sellers</span>
+                    <span>Best sellers (5+ sold)</span>
                   </label>
                 </li>
+              </ul>
+            </div>
+
+            <div className="space-y-2 rounded-md border bg-card p-3">
+              <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Price range</div>
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  placeholder="Min"
+                  inputMode="decimal"
+                  value={priceDraft.min}
+                  onChange={(e) => setPriceDraft((prev) => ({ ...prev, min: e.target.value }))}
+                />
+                <Input
+                  placeholder="Max"
+                  inputMode="decimal"
+                  value={priceDraft.max}
+                  onChange={(e) => setPriceDraft((prev) => ({ ...prev, max: e.target.value }))}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 w-full"
+                onClick={() => {
+                  const next = new URLSearchParams(searchParams);
+                  const min = priceDraft.min.trim();
+                  const max = priceDraft.max.trim();
+                  if (min) next.set("minPrice", min);
+                  else next.delete("minPrice");
+                  if (max) next.set("maxPrice", max);
+                  else next.delete("maxPrice");
+                  next.set("page", "0");
+                  setSearchParams(next, { replace: true });
+                }}
+              >
+                Apply price
+              </Button>
+            </div>
+
+            <div className="space-y-2 rounded-md border bg-card p-3">
+              <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Ship from</div>
+              <ul className="max-h-48 divide-y overflow-auto pr-1 text-sm">
+                <li>
+                  <label
+                    className={`flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 transition ${
+                      !warehouseLocation ? "bg-orange-50 text-orange-700" : "hover:bg-muted"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      className="accent-orange-500"
+                      checked={!warehouseLocation}
+                      onChange={() => {
+                        const next = new URLSearchParams(searchParams);
+                        next.delete("warehouseLocation");
+                        next.set("page", "0");
+                        setSearchParams(next, { replace: true });
+                      }}
+                    />
+                    <span>All locations</span>
+                  </label>
+                </li>
+                {warehouseLocations.map((location) => (
+                  <li key={location}>
+                    <label
+                      className={`flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 transition ${
+                        warehouseLocation === location ? "bg-orange-50 text-orange-700" : "hover:bg-muted"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        className="accent-orange-500"
+                        checked={warehouseLocation === location}
+                        onChange={() => {
+                          const next = new URLSearchParams(searchParams);
+                          next.set("warehouseLocation", location);
+                          next.set("page", "0");
+                          setSearchParams(next, { replace: true });
+                        }}
+                      />
+                      <span>{location}</span>
+                    </label>
+                  </li>
+                ))}
               </ul>
             </div>
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           {isBusy ? (
             <div className="rounded-md border bg-gradient-to-r from-amber-50 via-orange-50 to-white p-4 shadow-sm">
               <div className="space-y-3 animate-pulse">
@@ -513,23 +655,60 @@ export default function ProductsPage() {
             </div>
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div />
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Sort by</span>
-              <select
-                aria-label="Sort products"
-                title="Sort products"
-                className="h-9 rounded-md border bg-background px-3 text-sm shadow-sm"
-                value={sortKey}
-                onChange={(e) => setSortKey(e.target.value)}
-              >
-                <option value="best-match">Best match</option>
-                <option value="sold">Best sellers</option>
-                <option value="rating">Top rated</option>
-                <option value="price-low">Price: low to high</option>
-                <option value="price-high">Price: high to low</option>
-              </select>
+          <div className="rounded-md border bg-card px-3 py-3 sm:px-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <div className="text-sm text-muted-foreground">
+                  {name.trim()
+                    ? `Search results for "${name.trim()}"`
+                    : "Browse all products"}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span className="rounded-md bg-muted px-2 py-1 font-semibold text-foreground">
+                    {sortedProducts.length} products
+                  </span>
+                  {dealFilters.topRated ? (
+                    <span className="rounded-md border border-sky-200 bg-sky-50 px-2 py-1 font-medium text-sky-700">Top rated</span>
+                  ) : null}
+                  {dealFilters.bestSeller ? (
+                    <span className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1 font-medium text-amber-700">Best sellers</span>
+                  ) : null}
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center justify-end gap-2 rounded-md bg-muted/40 p-1.5">
+                <div className="px-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Sort by</div>
+                <button
+                  type="button"
+                  className={`h-9 rounded-md border px-3 text-sm font-semibold transition ${sortKey === "best-match" ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border bg-background hover:bg-white"}`}
+                  onClick={() => setSort("best-match")}
+                >
+                  Liên quan
+                </button>
+                <button
+                  type="button"
+                  className={`h-9 rounded-md border px-3 text-sm font-semibold transition ${sortKey === "rating" ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border bg-background hover:bg-white"}`}
+                  onClick={() => setSort("rating")}
+                >
+                  Mới nhất
+                </button>
+                <button
+                  type="button"
+                  className={`h-9 rounded-md border px-3 text-sm font-semibold transition ${sortKey === "sold" ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border bg-background hover:bg-white"}`}
+                  onClick={() => setSort("sold")}
+                >
+                  Bán chạy
+                </button>
+                <button
+                  type="button"
+                  className={`h-9 rounded-md border px-3 text-sm font-semibold transition ${(sortKey === "price-low" || sortKey === "price-high") ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border bg-background hover:bg-white"}`}
+                  onClick={togglePriceSort}
+                >
+                  Giá {sortKey === "price-low" ? "↑" : sortKey === "price-high" ? "↓" : ""}
+                </button>
+                <div className="ml-1 rounded-md border border-border bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-600">
+                  Trang {currentPageDisplay}/{totalPagesDisplay}
+                </div>
+              </div>
             </div>
           </div>
           {isBusy ? (

@@ -19,20 +19,22 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class HomeService {
 
+    private static final String HOME_CACHE_KEY = "v2";
+    private static final int HOME_BANNER_LIMIT = 100;
+
     private final BannerService bannerService;
     private final CategoryService categoryService;
     private final ProductService productService;
     private final CacheManager cacheManager;
 
-    @Cacheable(cacheNames = "home", key = "'v1'", sync = true)
+    @Cacheable(cacheNames = "home", key = "'" + HOME_CACHE_KEY + "'", sync = true)
     public HomeResponse getHomeData() {
         try {
             var bannerFilter = BannerFilter.builder().isActive(true).build();
             var bannerPage = bannerService.searchBanners(
                     bannerFilter,
-                    PageRequest.of(0, 5, Sort.by("position").ascending()),
-                    true
-            );
+                    PageRequest.of(0, HOME_BANNER_LIMIT, Sort.by("position").ascending()),
+                    true);
 
             var categoryFilter = CategoryFilter.builder().build();
             var categoryPage = categoryService.searchCategoryResponses(categoryFilter, PageRequest.of(0, 10));
@@ -70,8 +72,6 @@ public class HomeService {
         if (cache == null) {
             return null;
         }
-        return cache.get("v1", HomeResponse.class);
+        return cache.get(HOME_CACHE_KEY, HomeResponse.class);
     }
 }
-
-

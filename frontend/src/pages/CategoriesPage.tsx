@@ -1,6 +1,7 @@
 import EmptyState from "@/components/EmptyState";
 import CategoryIcon from "@/components/CategoryIcon";
 import LoadingCard from "@/components/LoadingCard";
+import SafeImage from "@/components/SafeImage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiGet, buildQuery } from "@/lib/apiClient";
 import { categoryMetaBySlug, defaultCategoryMeta } from "@/lib/categoryMeta";
@@ -56,11 +57,11 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-8">
-      <section className="market-hero grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div className="relative z-10 space-y-5">
+      <section className="market-hero grid gap-6 p-5 sm:p-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-8 lg:p-8">
+        <div className="relative z-10 max-w-xl space-y-5">
           <div className="space-y-3">
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Shop by category</h1>
-            <p className="text-base text-muted-foreground">
+            <h1 className="text-3xl font-semibold tracking-tight leading-tight sm:text-4xl">Shop by category</h1>
+            <p className="text-base leading-8 text-muted-foreground sm:leading-7">
               Pick a lane and start shopping in seconds.
             </p>
           </div>
@@ -80,11 +81,12 @@ export default function CategoriesPage() {
             </div>
           </div>
         </div>
-        <div className="hero-media">
-          <img
+        <div className="hero-media min-h-[260px] lg:min-h-[320px]">
+          <SafeImage
             src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80"
             alt="Trending fashion"
-            loading="lazy"
+            fallbackKey="categories-hero-fashion"
+            className="h-full w-full object-cover"
           />
           <div className="hero-media__overlay" />
           <div className="hero-media__badge">Trending now</div>
@@ -107,11 +109,11 @@ export default function CategoriesPage() {
             <Link to={`/categories/${featuredId ?? 0}`} className="block lg:col-span-2 lg:row-span-2">
               <Card className="category-card pressable group relative h-full overflow-hidden border transition">
                 <div className="relative h-56 overflow-hidden sm:h-64 lg:h-full">
-                  <img
+                  <SafeImage
                     src={featuredMeta.imageUrl}
                     alt={featuredName}
+                    fallbackKey={`category-featured-${featuredSlug ?? featuredId ?? "default"}`}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/55 via-slate-900/15 to-transparent" />
                   <span className={cn(
@@ -147,11 +149,11 @@ export default function CategoriesPage() {
               <Link key={id} to={href} className="block cursor-pointer">
                 <Card className="category-card pressable group relative overflow-hidden border transition">
                   <div className="relative h-36 overflow-hidden">
-                    <img
+                    <SafeImage
                       src={meta.imageUrl}
                       alt={name}
+                      fallbackKey={`category-${slug ?? id}`}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/45 via-slate-900/5 to-transparent" />
                   </div>

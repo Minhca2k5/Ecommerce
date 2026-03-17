@@ -8,15 +8,26 @@ import com.minzetsu.ecommerce.inventory.entity.Warehouse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface WarehouseService {
     void updateIsActiveAndId(boolean isActive, Long id);
+
     void deleteWarehouse(Long id);
+
     boolean existsById(Long id);
+
     Warehouse getWarehouseById(Long id);
 
     Page<WarehouseResponse> searchWarehouseResponses(WarehouseFilter filter, Pageable pageable);
+
     WarehouseResponse getWarehouseResponseById(Long id);
+
     WarehouseResponse getFullWarehouseResponseById(Long id);
+
+    List<String> getPublicWarehouseLocations();
+
     WarehouseResponse createWarehouseResponse(WarehouseCreateRequest request);
+
     WarehouseResponse updateWarehouseResponse(WarehouseUpdateRequest request, Long id);
 }

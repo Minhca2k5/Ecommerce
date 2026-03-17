@@ -47,7 +47,6 @@ public class CartItemServiceImpl implements CartItemService {
     private final GetUrlForCartService getUrlForCartService;
     private final ClickstreamEventService clickstreamEventService;
 
-
     private void validateCartAndProduct(Long cartId, Long productId) {
         if (!cartService.existsById(cartId)) {
             throw new NotFoundException("Cart not found with id: " + cartId);
@@ -82,7 +81,8 @@ public class CartItemServiceImpl implements CartItemService {
 
     private <T> T findOrThrow(Supplier<T> supplier, String message) {
         T value = supplier.get();
-        if (value == null) throw new NotFoundException(message);
+        if (value == null)
+            throw new NotFoundException(message);
         return value;
     }
 
@@ -138,14 +138,9 @@ public class CartItemServiceImpl implements CartItemService {
                 .filter(item -> item.getProduct() != null && item.getProduct().getId() != null)
                 .collect(Collectors.groupingBy(
                         item -> item.getProduct().getId(),
-                        Collectors.summingInt(CartItem::getQuantity)
-                ));
+                        Collectors.summingInt(CartItem::getQuantity)));
         quantityByProduct.forEach((productId, quantity) -> {
-            Integer reserved = inventoryService.getTotalReservedQuantityByProductId(productId);
-            int returnQty = reserved == null ? 0 : Math.min(quantity, reserved);
-            if (returnQty > 0) {
-                inventoryService.updateQuantityByCartItemAmountReturnedOrCheckouted(productId, returnQty, true);
-            }
+            inventoryService.updateQuantityByCartItemAmountReturnedOrCheckouted(productId, quantity, true);
         });
         cartItemRepository.deleteAllInBatch(cartItems);
     }
@@ -229,7 +224,8 @@ public class CartItemServiceImpl implements CartItemService {
     @Override
     @Transactional
     @AuditAction(action = "CART_ITEM_UPSERTED", entityType = "CART_ITEM")
-    public CartItemResponse addOrUpdateCartItemResponseByCartId(CartItemRequest request, boolean isReturned, Long cartId) {
+    public CartItemResponse addOrUpdateCartItemResponseByCartId(CartItemRequest request, boolean isReturned,
+            Long cartId) {
         return upsertCartItem(request, isReturned, cartId);
     }
 
@@ -280,9 +276,6 @@ public class CartItemServiceImpl implements CartItemService {
     @Transactional(readOnly = true)
     public List<CartItemResponse> getCarItemResponsesByProductName(String productName, Long userId) {
         return getUrlForCartService.toResponseListWithUrl(
-                cartItemRepository.findByProductName(productName, userId)
-        );
+                cartItemRepository.findByProductName(productName, userId));
     }
 }
-
-

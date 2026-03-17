@@ -6,8 +6,8 @@ import { apiJson } from "@/lib/http";
 import { apiGet, buildQuery } from "@/lib/apiClient";
 import { getNumber, getString } from "@/lib/safe";
 import { getAppBaseUrl, isAbsoluteUrl } from "@/lib/env";
-import { Link } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { categoryMetaBySlug, defaultCategoryMeta } from "@/lib/categoryMeta";
 import CategoryIcon from "@/components/CategoryIcon";
 import { Button } from "@/components/ui/button";
@@ -31,9 +31,28 @@ type PreparedBanner = {
 };
 
 const BANNER_COOLDOWN_MS = 30 * 60 * 1000;
+const HERO_AUTOPLAY_MS = 4200;
 const DISMISSED_BANNERS_KEY = "home-dismissed-banners";
 const BANNER_LAST_SHOWN_KEY = "home-banner-last-shown-at";
 const BANNER_HIDE_UNTIL_KEY = "home-banner-hide-until";
+const HERO_CHIP_SETS = [
+  ["Freeship 0D", "Extra 10% off"],
+  ["Flash sale", "Payday picks"],
+  ["Voucher x2", "Fast delivery"],
+] as const;
+
+function formatAsClock(totalSeconds: number) {
+  const h = Math.floor(totalSeconds / 3600)
+    .toString()
+    .padStart(2, "0");
+  const m = Math.floor((totalSeconds % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
+  const s = Math.floor(totalSeconds % 60)
+    .toString()
+    .padStart(2, "0");
+  return `${h}:${m}:${s}`;
+}
 
 function getFeaturedTitle(rawTitle: string, targetPath: string, categories: Category[], fallbackIndex: number) {
   const title = rawTitle.trim();
@@ -66,6 +85,7 @@ const topListOptions = [
 ] as const;
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const auth = useAuth();
   const [home, setHome] = useState<unknown>(null);
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -80,6 +100,12 @@ export default function HomePage() {
   const [dismissedBannerKeys, setDismissedBannerKeys] = useState<string[]>([]);
   const [lastBannerShownAt, setLastBannerShownAt] = useState(0);
   const [hideFloatingUntil, setHideFloatingUntil] = useState(0);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [heroNowMs, setHeroNowMs] = useState(() => Date.now());
+  const heroDragStartX = useRef(0);
+  const heroDragDistance = useRef(0);
+  const heroIsDragging = useRef(false);
+  const heroBlockNextClick = useRef(false);
 
   const [recentViews, setRecentViews] = useState<RecentViewResponse[]>([]);
 
@@ -173,26 +199,18 @@ export default function HomePage() {
   const topPageItems = topProducts.slice(topStart, topEnd);
   const featuredTop = topPageItems[0];
   const restTop = topPageItems.slice(1);
-  const heroBanner = banners[0];
-  const heroTitle = getString(heroBanner, "title") ?? "Deals you actually want";
-  const heroImage = getString(heroBanner, "imageUrl", "image", "url");
-  const heroTarget = getString(heroBanner, "targetUrl", "targetPath", "url") ?? "/products";
-  const dealProducts = topProducts.slice(0, 16);
+  const dealProducts = topProducts.slice(0, 12);
   const dealGroups = [
-    dealProducts.slice(0, 4),
-    dealProducts.slice(4, 8),
-    dealProducts.slice(8, 12),
-    dealProducts.slice(12, 16),
+    dealProducts.slice(0, 6),
+    dealProducts.slice(6, 12),
   ];
   const dealTitles = [
     "Top picks in Electronics",
     "Fresh styles for you",
-    "Bestselling reads",
-    "Accessories you will use",
   ];
 
   const preparedBanners = useMemo<PreparedBanner[]>(() => {
-    return (banners ?? []).slice(1).map((b, index) => {
+    return (banners ?? []).map((b, index) => {
       const rawTitle = getString(b, "title") ?? "";
       const imageUrl = getString(b, "imageUrl", "image", "url") ?? "";
       const targetPath = getString(b, "targetUrl", "targetPath", "url") ?? "/products";
@@ -206,6 +224,46 @@ export default function HomePage() {
     });
   }, [banners, homeCategories]);
 
+  const heroBanners = useMemo<PreparedBanner[]>(() => {
+    const picks = (banners ?? []).map((b, index) => {
+      const rawTitle = getString(b, "title") ?? "";
+      const imageUrl = getString(b, "imageUrl", "image", "url") ?? "";
+      const targetPath = getString(b, "targetUrl", "targetPath", "url") ?? "/products";
+      const title = getFeaturedTitle(rawTitle, targetPath, homeCategories, index);
+      const isInternal = !isAbsoluteUrl(targetPath) && targetPath.startsWith("/");
+      const targetUrl = isAbsoluteUrl(targetPath)
+        ? targetPath
+        : `${getAppBaseUrl()}${targetPath.startsWith("/") ? "" : "/"}${targetPath}`;
+      const key = String(getNumber(b, "id") ?? `hero-${title}-${targetPath}-${index}`);
+      return { key, title, imageUrl, targetPath, isInternal, targetUrl };
+    });
+
+    if (picks.length > 0) {
+      return picks;
+    }
+
+    return [
+      {
+        key: "hero-fallback",
+        title: "Big deals, fresh arrivals, every day",
+        imageUrl: "",
+        isInternal: true,
+        targetPath: "/products",
+        targetUrl: `${getAppBaseUrl()}/products`,
+      },
+    ];
+  }, [banners, homeCategories]);
+
+  const heroSideBanners = useMemo(() => {
+    if (heroBanners.length <= 1) {
+      return [] as PreparedBanner[];
+    }
+    const sideCount = Math.min(2, Math.max(0, heroBanners.length - 1));
+    return Array.from({ length: sideCount }, (_, idx) => {
+      const nextIdx = (heroIndex + idx + 1) % heroBanners.length;
+      return heroBanners[nextIdx];
+    });
+  }, [heroBanners, heroIndex]);
   const featuredBanners = useMemo(() => preparedBanners.slice(0, 4), [preparedBanners]);
   const floatingBanners = useMemo(
     () => featuredBanners.filter((b) => !dismissedBannerKeys.includes(b.key)).slice(0, 2),
@@ -219,6 +277,93 @@ export default function HomePage() {
     () => Date.now() >= hideFloatingUntil && Date.now() - lastBannerShownAt >= BANNER_COOLDOWN_MS,
     [hideFloatingUntil, lastBannerShownAt]
   );
+  const heroSecondsUntilMidnight = useMemo(() => {
+    const now = new Date(heroNowMs);
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
+    return Math.max(0, Math.floor((endOfDay - heroNowMs) / 1000));
+  }, [heroNowMs]);
+
+  useEffect(() => {
+    if (!heroBanners.length) {
+      setHeroIndex(0);
+      return;
+    }
+    setHeroIndex((prev) => (prev >= heroBanners.length ? 0 : prev));
+  }, [heroBanners]);
+
+  useEffect(() => {
+    if (heroBanners.length <= 1) return;
+    const timer = window.setInterval(() => {
+      if (heroIsDragging.current) return;
+      setHeroIndex((prev) => (prev + 1) % heroBanners.length);
+    }, HERO_AUTOPLAY_MS);
+    return () => window.clearInterval(timer);
+  }, [heroBanners.length]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setHeroNowMs(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  function goToNextHero() {
+    if (heroBanners.length <= 1) return;
+    setHeroIndex((prev) => (prev + 1) % heroBanners.length);
+  }
+
+  function goToPrevHero() {
+    if (heroBanners.length <= 1) return;
+    setHeroIndex((prev) => (prev - 1 + heroBanners.length) % heroBanners.length);
+  }
+
+  function onHeroSlideClick(event: React.MouseEvent<HTMLElement>, hero: PreparedBanner) {
+    if (heroBlockNextClick.current) {
+      heroBlockNextClick.current = false;
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    if (target?.closest("a, button, input, select, textarea, [role='button']")) {
+      return;
+    }
+
+    trackBannerClick(hero.key, "hero", hero.targetPath);
+    if (hero.isInternal) {
+      navigate(hero.targetPath);
+    } else {
+      window.location.href = hero.targetUrl;
+    }
+  }
+
+  function onHeroPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (heroBanners.length <= 1) return;
+
+    const target = e.target as HTMLElement | null;
+    if (target?.closest("a, button, input, select, textarea, [role='button']")) {
+      return;
+    }
+
+    heroIsDragging.current = true;
+    heroDragStartX.current = e.clientX;
+    heroDragDistance.current = 0;
+  }
+
+  function onHeroPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!heroIsDragging.current) return;
+    heroDragDistance.current = e.clientX - heroDragStartX.current;
+  }
+
+  function onHeroPointerUp() {
+    if (!heroIsDragging.current) return;
+    heroIsDragging.current = false;
+    if (heroDragDistance.current <= -60) {
+      heroBlockNextClick.current = true;
+      goToNextHero();
+    } else if (heroDragDistance.current >= 60) {
+      heroBlockNextClick.current = true;
+      goToPrevHero();
+    }
+    heroDragDistance.current = 0;
+  }
 
   function trackBannerClick(bannerKey: string, placement: string, targetPath: string) {
     const guestId = getStoredGuestId();
@@ -285,56 +430,167 @@ export default function HomePage() {
 
   return (
     <div className="space-y-8">
-      <section className="market-hero">
-        <div className="market-hero__media">
-          {heroImage ? (
-            <SafeImage
-              src={heroImage}
-              alt={heroTitle}
-              fallbackKey="home-hero"
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="h-full w-full bg-muted" />
-          )}
-          <div className="market-hero__content">
-            <div className="mx-6 max-w-xl space-y-3 text-white sm:mx-8">
-              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-white/80">Today</div>
-              <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">{heroTitle}</h1>
-              <p className="text-sm text-white/85">
-                Big deals, fast shipping, trusted sellers.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {heroTarget.startsWith("/") ? (
-                  <Button asChild className="h-10 rounded-md bg-primary text-primary-foreground">
-                    <Link to={heroTarget} onClick={() => trackBannerClick("hero-banner", "hero", heroTarget)}>Grab the deal</Link>
-                  </Button>
-                ) : (
-                  <a
-                    href={heroTarget}
-                    className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground"
-                    onClick={() => trackBannerClick("hero-banner", "hero", heroTarget)}
+      <section className="market-hero market-hero--fullbleed">
+        <div className="market-hero-frame">
+          <div className="market-hero-main">
+            <div
+              className="market-hero-slider"
+              onPointerDown={onHeroPointerDown}
+              onPointerMove={onHeroPointerMove}
+              onPointerUp={onHeroPointerUp}
+              onPointerCancel={onHeroPointerUp}
+            >
+              <div
+                className="market-hero-slider__track"
+                style={{ transform: `translateX(-${heroIndex * 100}%)` }}
+              >
+                {heroBanners.map((hero, index) => (
+                  <article
+                    key={hero.key}
+                    className="market-hero__slide cursor-pointer"
+                    onClick={(event) => onHeroSlideClick(event, hero)}
                   >
-                    Grab the deal
-                  </a>
-                )}
-                <Button asChild variant="outline" className="h-10 rounded-md bg-white/90">
-                  <Link to="/categories">Browse categories</Link>
-                </Button>
+                    {hero.imageUrl ? (
+                      <SafeImage
+                        src={hero.imageUrl}
+                        alt={hero.title}
+                        fallbackKey={`home-hero-${hero.key}-${index}`}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-muted" />
+                    )}
+
+                    <div className="market-hero__content">
+                      <div className="mx-auto w-full max-w-6xl px-4">
+                        <div className="max-w-xl space-y-3 text-white">
+                          <div className="text-xs font-semibold uppercase tracking-[0.22em] text-white/80">Today</div>
+                          <div className="market-hero__chips">
+                            {HERO_CHIP_SETS[index % HERO_CHIP_SETS.length].map((chip) => (
+                              <span key={`${hero.key}-${chip}`} className="market-hero__chip">{chip}</span>
+                            ))}
+                            <span className="market-hero__timer">Ends in {formatAsClock(heroSecondsUntilMidnight)}</span>
+                          </div>
+                          <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">{hero.title}</h1>
+                          <p className="text-sm text-white/85">Big deals, fast shipping, trusted sellers.</p>
+                          <div className="flex flex-wrap gap-2">
+                            {hero.isInternal ? (
+                              <Button asChild className="h-10 rounded-md bg-primary text-primary-foreground">
+                                <Link to={hero.targetPath} onClick={() => trackBannerClick(hero.key, "hero", hero.targetPath)}>
+                                  Grab the deal
+                                </Link>
+                              </Button>
+                            ) : (
+                              <a
+                                href={hero.targetUrl}
+                                className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground"
+                                onClick={() => trackBannerClick(hero.key, "hero", hero.targetPath)}
+                              >
+                                Grab the deal
+                              </a>
+                            )}
+                            <Button asChild variant="outline" className="h-10 rounded-md bg-white/90">
+                              <Link to="/categories">Browse categories</Link>
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                ))}
               </div>
+
+              {heroBanners.length > 1 ? (
+                <>
+                  <div className="market-hero-slider__progress">
+                    <span
+                      key={`hero-progress-${heroIndex}`}
+                      className="market-hero-slider__progress-bar"
+                      style={{ animationDuration: `${HERO_AUTOPLAY_MS}ms` }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Previous banner"
+                    className="market-hero-slider__arrow market-hero-slider__arrow--left"
+                    onClick={goToPrevHero}
+                  >
+                    <span aria-hidden>‹</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Next banner"
+                    className="market-hero-slider__arrow market-hero-slider__arrow--right"
+                    onClick={goToNextHero}
+                  >
+                    <span aria-hidden>›</span>
+                  </button>
+                  <div className="market-hero-slider__dots">
+                    {heroBanners.map((hero, idx) => (
+                      <button
+                        key={`hero-dot-${hero.key}`}
+                        type="button"
+                        aria-label={`Open banner ${idx + 1}`}
+                        className={`market-hero-slider__dot ${heroIndex === idx ? "is-active" : ""}`}
+                        onClick={() => setHeroIndex(idx)}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : null}
             </div>
           </div>
+
+          <aside className="market-hero-side" aria-label="Promotions">
+            {heroSideBanners.map((banner, idx) => (
+              <article key={`hero-side-${banner.key}`} className="market-hero-side__card">
+                {banner.isInternal ? (
+                  <Link
+                    to={banner.targetPath}
+                    className="block h-full cursor-pointer"
+                    onClick={() => trackBannerClick(banner.key, "hero-side", banner.targetPath)}
+                  >
+                    <div className="market-hero-side__image-wrap">
+                      <SafeImage
+                        src={banner.imageUrl}
+                        alt={banner.title}
+                        fallbackKey={`hero-side-${banner.key}-${idx}`}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="market-hero-side__label">{banner.title}</div>
+                  </Link>
+                ) : (
+                  <a
+                    href={banner.targetUrl}
+                    className="block h-full cursor-pointer"
+                    onClick={() => trackBannerClick(banner.key, "hero-side", banner.targetPath)}
+                  >
+                    <div className="market-hero-side__image-wrap">
+                      <SafeImage
+                        src={banner.imageUrl}
+                        alt={banner.title}
+                        fallbackKey={`hero-side-${banner.key}-${idx}`}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="market-hero-side__label">{banner.title}</div>
+                  </a>
+                )}
+              </article>
+            ))}
+          </aside>
         </div>
       </section>
 
       {dealProducts.length ? (
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid gap-4 lg:grid-cols-2">
           {dealGroups.map((group, idx) => {
             if (!group.length) return null;
             return (
-              <div key={`deal-${idx}`} className="market-card rounded-md border bg-card p-4">
-                <div className="text-sm font-semibold">{dealTitles[idx] ?? "Top picks"}</div>
-                <div className="mt-3 grid grid-cols-2 gap-2">
+              <div key={`deal-${idx}`} className="market-card rounded-md border bg-card p-4 sm:p-5">
+                <div className="text-base font-semibold">{dealTitles[idx] ?? "Top picks"}</div>
+                <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
                   {group.map((p, subIdx) => {
                     const id = getNumber(p, "id") ?? subIdx + 1;
                     const name = getString(p, "name", "title") ?? "Product";
@@ -352,12 +608,12 @@ export default function HomePage() {
                             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
                           />
                         </div>
-                        <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">{name}</div>
+                        <div className="mt-1 line-clamp-1 text-sm text-muted-foreground">{name}</div>
                       </Link>
                     );
                   })}
                 </div>
-                <Link to="/products" className="mt-3 inline-flex text-xs font-semibold text-primary">
+                <Link to="/products" className="mt-3 inline-flex text-sm font-semibold text-primary">
                   Explore deals
                 </Link>
               </div>
@@ -443,77 +699,6 @@ export default function HomePage() {
               </div>
             </section>
           ) : null}
-
-            <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-              <h2 className="text-lg font-semibold tracking-tight">Featured offers</h2>
-                </div>
-                <Button asChild variant="outline" className="h-9 rounded-md">
-                  <Link to="/products">Shop products</Link>
-                </Button>
-              </div>
-
-            {featuredBanners.length ? (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {featuredBanners.map((b, index) => {
-                  const title = b.title;
-                  const imageUrl = b.imageUrl;
-                  const targetPath = b.targetPath;
-                  const targetUrl = b.targetUrl;
-                  const isInternal = b.isInternal;
-
-                  return (
-                    <div
-                      key={b.key}
-                      className="group offer-card-enter relative overflow-hidden rounded-md border bg-card shadow-sm transition hover:shadow-md"
-                      style={{ animationDelay: `${index * 60}ms` }}
-                    >
-                      {isInternal ? (
-                        <Link
-                          to={targetPath}
-                          className="block"
-                          onClick={() => trackBannerClick(b.key, "featured", targetPath)}
-                        >
-                          <div className="relative aspect-[4/3] bg-muted/40">
-                            <SafeImage
-                              src={imageUrl}
-                              alt={title}
-                              fallbackKey={`banner-${b.key}-${index}`}
-                              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-                            />
-                          </div>
-                          <div className="p-4">
-                            <div className="line-clamp-1 text-sm font-semibold">{title}</div>
-                          </div>
-                        </Link>
-                      ) : (
-                        <a
-                          href={targetUrl}
-                          className="block"
-                          onClick={() => trackBannerClick(b.key, "featured", targetPath)}
-                        >
-                          <div className="relative aspect-[4/3] bg-muted/40">
-                            <SafeImage
-                              src={imageUrl}
-                              alt={title}
-                              fallbackKey={`banner-${b.key}-${index}`}
-                              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-                            />
-                          </div>
-                          <div className="p-4">
-                            <div className="line-clamp-1 text-sm font-semibold">{title}</div>
-                          </div>
-                        </a>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-sm text-muted-foreground">No featured offers yet.</div>
-            )}
-          </section>
 
           <section className="space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
