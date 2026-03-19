@@ -93,7 +93,7 @@ export default function WishlistPage() {
 
   if (isLoading) return <div className="space-y-4"><LoadingCard /><LoadingCard /></div>;
   if (error) return <EmptyState title="Could not load wishlist" description={error} action={<Button onClick={refresh} className="h-10 rounded-md bg-primary text-primary-foreground">Try again</Button>} />;
-  if (!items.length) return <EmptyState title="No saved items yet" description="Tap the heart on any product to save it here." action={<Button asChild className="h-10 rounded-md bg-primary text-primary-foreground"><Link to="/products">Shop products</Link></Button>} />;
+  if (!items.length) return <EmptyState title="No saved items yet" description="Tap the heart on any product to save it here." action={<Button asChild className="h-10 rounded-md bg-primary text-primary-foreground"><Link to="/products">Browse all products</Link></Button>} />;
 
   return (
     <div className="space-y-8">
@@ -113,7 +113,7 @@ export default function WishlistPage() {
               Clear all
             </Button>
             <Button asChild className="h-10 rounded-md bg-primary text-primary-foreground">
-              <Link to="/products">Shop products</Link>
+              <Link to="/products">Browse all products</Link>
             </Button>
           </div>
         </div>
@@ -145,7 +145,7 @@ export default function WishlistPage() {
               <div className="text-sm text-primary font-bold">{money(w.productPrice, w.productCurrency)}</div>
               <div className="flex gap-2">
                 <Button asChild variant="outline" className="w-full rounded-md bg-white">
-                  <Link to={`/products/${w.productId ?? ""}`}>Details</Link>
+                  <Link to={`/products/${w.productId ?? ""}`}>View details</Link>
                 </Button>
                 <Button variant="outline" className="w-full rounded-md border-rose-500/20 bg-white text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(w)}>
                   Remove

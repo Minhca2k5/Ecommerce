@@ -16,11 +16,13 @@ type PageResponse<T> = {
 };
 
 type AdminOrderItem = Record<string, unknown>;
+type AdminProduct = Record<string, unknown>;
 
 export default function AdminOrderItemsPage() {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<AdminOrderItem[]>([]);
+  const [products, setProducts] = useState<AdminProduct[]>([]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -32,6 +34,18 @@ export default function AdminOrderItemsPage() {
   const [detailsId, setDetailsId] = useState<number | null>(null);
   const [details, setDetails] = useState<AdminOrderItem | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  const productOptions = useMemo(
+    () =>
+      products
+        .map((product) => ({
+          id: getNumber(product, "id") ?? 0,
+          name: getString(product, "name") ?? "Product",
+          slug: getString(product, "slug") ?? "",
+        }))
+        .filter((product) => product.id > 0),
+    [products],
+  );
 
   const query = useMemo(() => {
     return buildQuery({
@@ -47,8 +61,14 @@ export default function AdminOrderItemsPage() {
   async function load() {
     setIsLoading(true);
     try {
-      const res = await adminGet<PageResponse<AdminOrderItem>>(`/api/admin/order-items${query}`);
+      const [res, productRes] = await Promise.all([
+        adminGet<PageResponse<AdminOrderItem>>(`/api/admin/order-items${query}`),
+        products.length
+          ? Promise.resolve({ content: products } as PageResponse<AdminProduct>)
+          : adminGet<PageResponse<AdminProduct>>(`/api/admin/products${buildQuery({ page: 0, size: 200, sort: "id,desc" })}`),
+      ]);
       setItems(asArray(res?.content) as AdminOrderItem[]);
+      setProducts(asArray(productRes?.content) as AdminProduct[]);
       setTotalPages(Number(res?.totalPages ?? 1) || 1);
     } catch (e) {
       toast.push({ variant: "error", title: "Load failed", message: getErrorMessage(e, "Failed to load order items.") });
@@ -88,7 +108,14 @@ export default function AdminOrderItemsPage() {
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
             <Input value={qOrderId} onChange={(e) => setQOrderId(e.target.value)} placeholder="Order ID" className="rounded-md" />
-            <Input value={qProductId} onChange={(e) => setQProductId(e.target.value)} placeholder="Product ID" className="rounded-md" />
+            <select title="Filter by product" value={qProductId} onChange={(e) => setQProductId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">All products</option>
+              {productOptions.map((product) => (
+                <option key={product.id} value={String(product.id)}>
+                  {product.name}{product.slug ? ` (${product.slug})` : ""}
+                </option>
+              ))}
+            </select>
             <Input value={qProductName} onChange={(e) => setQProductName(e.target.value)} placeholder="Product name contains" className="rounded-md" />
           </div>
 
@@ -123,8 +150,8 @@ export default function AdminOrderItemsPage() {
                   items.map((it) => {
                     const id = getNumber(it, "id") ?? 0;
                     const orderId = getNumber(it, "orderId");
-                    const productId = getNumber(it, "productId");
                     const name = getString(it, "productNameSnapshot") ?? getString(it, "productName") ?? "-";
+                    const productSlug = getString(it, "productSlug") ?? "";
                     const qty = getNumber(it, "quantity") ?? 0;
                     const currency = getString(it, "currency") ?? "VND";
                     const lineTotal = Number(it["lineTotal"] ?? 0);
@@ -134,8 +161,11 @@ export default function AdminOrderItemsPage() {
                           <div className="font-medium">#{id}</div>
                           <div className="text-sm text-muted-foreground">{name}</div>
                         </td>
-                        <td className="px-4 py-3">{orderId ?? "-"}</td>
-                        <td className="px-4 py-3">{productId ?? "-"}</td>
+                        <td className="px-4 py-3">#{orderId ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium">{name}</div>
+                          <div className="text-sm text-muted-foreground">{productSlug || "-"}</div>
+                        </td>
                         <td className="px-4 py-3">{qty}</td>
                         <td className="px-4 py-3">{formatCurrency(lineTotal, currency)}</td>
                         <td className="px-4 py-3 text-right">
@@ -179,12 +209,12 @@ export default function AdminOrderItemsPage() {
         </CardContent>
       </Card>
 
-      <Modal isOpen={isDetailsOpen} title={detailsId ? `Order item #${detailsId}` : "Order item"} onClose={() => setIsDetailsOpen(false)}>
+      <Modal isOpen={isDetailsOpen} title={getString(details ?? {}, "productNameSnapshot") ?? getString(details ?? {}, "productName") ?? (detailsId ? "Order item details" : "Order item")} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
           <div className="rounded-md border bg-background p-4">
-            <div className="text-sm font-semibold">{getString(details ?? {}, "productNameSnapshot") ?? "Item"}</div>
+            <div className="text-sm font-semibold">{getString(details ?? {}, "productNameSnapshot") ?? getString(details ?? {}, "productName") ?? "Item"}</div>
             <div className="mt-1 text-sm text-muted-foreground">
-              Order: {getNumber(details ?? {}, "orderId") ?? "-"} â€¢ Product: {getNumber(details ?? {}, "productId") ?? "-"}
+              Order: #{getNumber(details ?? {}, "orderId") ?? "-"} · Product slug: {getString(details ?? {}, "productSlug") ?? "-"}
             </div>
           </div>
           <div className="grid gap-3 md:grid-cols-3">
@@ -215,4 +245,5 @@ export default function AdminOrderItemsPage() {
     </>
   );
 }
+
 

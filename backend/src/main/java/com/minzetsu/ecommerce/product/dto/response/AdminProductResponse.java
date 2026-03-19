@@ -23,6 +23,7 @@ public class AdminProductResponse extends BaseDTO {
     private String description;
 
     private BigDecimal price;
+    private BigDecimal salePrice;
     private String currency;
     private String status;
 

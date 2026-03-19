@@ -14,6 +14,8 @@ type PageResponse<T> = {
 };
 
 type AdminVoucherUse = Record<string, unknown>;
+type AdminUser = Record<string, unknown>;
+type AdminVoucher = Record<string, unknown>;
 
 type Mode = "search" | "byUser" | "byOrder" | "byVoucher";
 
@@ -36,6 +38,8 @@ export default function AdminVoucherUsesPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<AdminVoucherUse[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [vouchers, setVouchers] = useState<AdminVoucher[]>([]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -46,24 +50,59 @@ export default function AdminVoucherUsesPage() {
 
   const query = useMemo(() => buildQuery({ page, size, sort: "id,desc" }), [page, size]);
 
+  const userOptions = useMemo(
+    () =>
+      users
+        .map((user) => ({
+          id: getNumber(user, "id") ?? 0,
+          username: getString(user, "username") ?? "",
+          fullName: getString(user, "fullName") ?? "",
+        }))
+        .filter((user) => user.id > 0),
+    [users],
+  );
+
+  const voucherOptions = useMemo(
+    () =>
+      vouchers
+        .map((voucher) => ({
+          id: getNumber(voucher, "id") ?? 0,
+          code: getString(voucher, "code") ?? "",
+          name: getString(voucher, "name") ?? "",
+        }))
+        .filter((voucher) => voucher.id > 0),
+    [vouchers],
+  );
+
   async function load() {
     setIsLoading(true);
     try {
+      const [userRes, voucherRes] = await Promise.all([
+        users.length
+          ? Promise.resolve({ content: users } as PageResponse<AdminUser>)
+          : adminGet<PageResponse<AdminUser>>(`/api/admin/users${buildQuery({ page: 0, size: 200, sort: "id,desc" })}`),
+        vouchers.length
+          ? Promise.resolve({ content: vouchers } as PageResponse<AdminVoucher>)
+          : adminGet<PageResponse<AdminVoucher>>(`/api/admin/vouchers${buildQuery({ page: 0, size: 200, sort: "id,desc" })}`),
+      ]);
+
       let path = `/api/admin/voucher-uses${query}`;
       if (mode === "byUser") {
         const id = qUserId.trim() ? Number(qUserId) : 0;
-        if (!id) throw new Error("Missing userId");
+        if (!id) throw new Error("Select a user");
         path = `/api/admin/voucher-uses/user/${id}${query}`;
       } else if (mode === "byOrder") {
         const id = qOrderId.trim() ? Number(qOrderId) : 0;
-        if (!id) throw new Error("Missing orderId");
+        if (!id) throw new Error("Enter an order ID");
         path = `/api/admin/voucher-uses/order/${id}${query}`;
       } else if (mode === "byVoucher") {
         const id = qVoucherId.trim() ? Number(qVoucherId) : 0;
-        if (!id) throw new Error("Missing voucherId");
+        if (!id) throw new Error("Select a voucher");
         path = `/api/admin/voucher-uses/voucher/${id}${query}`;
       }
       const res = await adminGet<PageResponse<AdminVoucherUse>>(path);
+      setUsers(asArray(userRes?.content) as AdminUser[]);
+      setVouchers(asArray(voucherRes?.content) as AdminVoucher[]);
       setItems(dedupeVoucherUses(asArray(res?.content) as AdminVoucherUse[]));
       setTotalPages(Number(res?.totalPages ?? 1) || 1);
     } catch (e) {
@@ -94,13 +133,29 @@ export default function AdminVoucherUsesPage() {
         <div className="grid gap-3 md:grid-cols-4">
           <select aria-label="Voucher use search mode" title="Voucher use search mode" value={mode} onChange={(e) => setMode(e.target.value as Mode)} className="h-10 rounded-md border bg-background px-3 text-sm">
             <option value="search">Search (all)</option>
-            <option value="byUser">By userId</option>
-            <option value="byOrder">By orderId</option>
-            <option value="byVoucher">By voucherId</option>
+            <option value="byUser">By user</option>
+            <option value="byOrder">By order</option>
+            <option value="byVoucher">By voucher</option>
           </select>
-          <Input value={qUserId} onChange={(e) => setQUserId(e.target.value)} placeholder="userId" className="rounded-md" disabled={mode !== "byUser"} />
-          <Input value={qOrderId} onChange={(e) => setQOrderId(e.target.value)} placeholder="orderId" className="rounded-md" disabled={mode !== "byOrder"} />
-          <Input value={qVoucherId} onChange={(e) => setQVoucherId(e.target.value)} placeholder="voucherId" className="rounded-md" disabled={mode !== "byVoucher"} />
+          <select aria-label="Voucher use user" title="Voucher use user" value={qUserId} onChange={(e) => setQUserId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm" disabled={mode !== "byUser"}>
+            <option value="">Select user</option>
+            {userOptions.map((user) => (
+              <option key={user.id} value={String(user.id)}>
+                {user.fullName || user.username}
+                {user.fullName && user.username ? ` (${user.username})` : ""}
+              </option>
+            ))}
+          </select>
+          <Input value={qOrderId} onChange={(e) => setQOrderId(e.target.value)} placeholder="Order ID" className="rounded-md" disabled={mode !== "byOrder"} />
+          <select aria-label="Voucher use voucher" title="Voucher use voucher" value={qVoucherId} onChange={(e) => setQVoucherId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm" disabled={mode !== "byVoucher"}>
+            <option value="">Select voucher</option>
+            {voucherOptions.map((voucher) => (
+              <option key={voucher.id} value={String(voucher.id)}>
+                {voucher.name || voucher.code}
+                {voucher.name && voucher.code ? ` (${voucher.code})` : ""}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="table-shell">
@@ -136,9 +191,15 @@ export default function AdminVoucherUsesPage() {
                       <div className="font-medium">#{getNumber(u, "id") ?? "-"}</div>
                       <div className="text-sm text-muted-foreground">{getString(u, "createdAt") ?? ""}</div>
                     </td>
-                    <td className="px-4 py-3">{getNumber(u, "voucherId") ?? "-"}</td>
-                    <td className="px-4 py-3">{getNumber(u, "userId") ?? "-"}</td>
-                    <td className="px-4 py-3">{getNumber(u, "orderId") ?? "-"}</td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium">{getString(u, "voucherName") ?? getString(u, "voucherCode") ?? "-"}</div>
+                      <div className="text-sm text-muted-foreground">{getString(u, "voucherCode") ?? "-"}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium">{getString(u, "fullName") ?? getString(u, "username") ?? "-"}</div>
+                      <div className="text-sm text-muted-foreground">{getString(u, "username") ?? ""}</div>
+                    </td>
+                    <td className="px-4 py-3">#{getNumber(u, "orderId") ?? "-"}</td>
                     <td className="px-4 py-3">{String(u["discountAmount"] ?? "-")}</td>
                   </tr>
                 ))
@@ -176,4 +237,3 @@ export default function AdminVoucherUsesPage() {
     </Card>
   );
 }
-

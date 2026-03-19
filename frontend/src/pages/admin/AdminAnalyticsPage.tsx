@@ -261,8 +261,7 @@ export default function AdminAnalyticsPage() {
                   topProducts.map((p) => (
                     <tr key={p.productId} className="border-t">
                       <td className="px-4 py-3">
-                        <div className="font-medium">{p.productName || `Product #${p.productId}`}</div>
-                        <div className="text-sm text-muted-foreground">ID: {p.productId}</div>
+                        <div className="font-medium">{p.productName || "Product"}</div>
                         {Number(p.orders ?? 0) > Number(p.views ?? 0) ? (
                           <div className="mt-1 text-sm text-amber-600">Attribution mismatch: orders {">"} views</div>
                         ) : null}

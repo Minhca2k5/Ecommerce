@@ -5,6 +5,8 @@ export type VoucherUseResponse = {
   id?: number;
   createdAt?: string;
   voucherId?: number;
+  voucherCode?: string;
+  voucherName?: string;
   userId?: number;
   orderId?: number;
   discountAmount?: number | string;

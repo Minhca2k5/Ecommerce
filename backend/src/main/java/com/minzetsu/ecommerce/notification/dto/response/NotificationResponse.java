@@ -13,6 +13,8 @@ import lombok.*;
 public class NotificationResponse extends BaseDTO {
 
     private Long userId;
+    private String username;
+    private String fullName;
     private String title;
     private String message;
 

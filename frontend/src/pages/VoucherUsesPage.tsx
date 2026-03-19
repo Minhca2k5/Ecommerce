@@ -132,8 +132,8 @@ export default function VoucherUsesPage() {
             <Input className="rounded-md bg-white" value={orderIdFilter} onChange={(e) => setOrderIdFilter(e.target.value)} inputMode="numeric" placeholder="e.g. 30" />
           </div>
           <div className="space-y-2">
-            <div className="text-xs font-medium text-muted-foreground">Voucher ID</div>
-            <Input className="rounded-md bg-white" value={voucherIdFilter} onChange={(e) => setVoucherIdFilter(e.target.value)} inputMode="numeric" placeholder="e.g. 1" />
+            <div className="text-xs font-medium text-muted-foreground">Voucher</div>
+            <Input className="rounded-md bg-white" value={voucherIdFilter} onChange={(e) => setVoucherIdFilter(e.target.value)} inputMode="numeric" placeholder="Enter voucher ID" />
           </div>
           <div className="flex items-end gap-2">
             <Button className="h-10 rounded-md bg-primary text-primary-foreground" onClick={refresh}>
@@ -164,7 +164,7 @@ export default function VoucherUsesPage() {
                   <CardTitle className="text-base">Voucher use</CardTitle>
                   <div className="mt-1 text-sm text-muted-foreground">Discount: {money(u.discountAmount)}</div>
                   <div className="mt-1 text-xs text-muted-foreground">
-                    Order #{u.orderId ?? "-"} Â· Voucher #{u.voucherId ?? "-"}
+                    Order #{u.orderId ?? "-"} · {u.voucherName ?? u.voucherCode ?? `Voucher #${u.voucherId ?? "-"}`}
                   </div>
                 </div>
                 {u.orderId ? (
@@ -180,4 +180,5 @@ export default function VoucherUsesPage() {
     </div>
   );
 }
+
 

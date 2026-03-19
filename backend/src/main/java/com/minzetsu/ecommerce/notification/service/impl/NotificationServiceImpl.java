@@ -97,11 +97,13 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     @AuditAction(action = "NOTIFICATION_CREATED", entityType = "NOTIFICATION")
     public NotificationResponse createNotificationResponse(NotificationCreateRequest request, Long userId) {
-        if (userId != null) {
-            request.setUserId(userId);
+        Long resolvedUserId = userId != null ? userId : request.getUserId();
+        if (resolvedUserId == null) {
+            throw new RuntimeException("Notification userId is required");
         }
+        request.setUserId(resolvedUserId);
         Notification notification = notificationMapper.toEntity(request);
-        notification.setUser(userService.getUserById(userId));
+        notification.setUser(userService.getUserById(resolvedUserId));
         return toResponse(notificationRepository.save(notification));
     }
 

@@ -23,7 +23,6 @@
     <include file="db/changelog/v2/v2-014-seed-reviews.xml"/>
     <include file="db/changelog/v2/v2-015-seed-wishlists.xml"/>
     <include file="db/changelog/v2/v2-016-seed-recent-views.xml"/>
-    <include file="db/changelog/v2/v2-017-seed-search-logs.xml"/>
     <include file="db/changelog/v2/v2-018-seed-vouchers.xml"/>
     <include file="db/changelog/v2/v2-019-seed-voucher-uses.xml"/>
     <include file="db/changelog/v2/v2-020-seed-banners.xml"/>
@@ -31,3 +30,4 @@
     <include file="db/changelog/v2/v2-022-seed-refresh-tokens.xml"/>
 
 </databaseChangeLog>
+

@@ -127,7 +127,7 @@ export default function CategoriesPage() {
                     <h2 className="text-3xl font-semibold">{featuredName}</h2>
                     <p className="max-w-md text-sm text-white/85">{featuredMeta.description}</p>
                     <div className="inline-flex items-center gap-2 rounded-md bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20">
-                      Explore category
+                      Shop category
                       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M5 12h14" />
                         <path d="M13 6l6 6-6 6" />
@@ -181,7 +181,7 @@ export default function CategoriesPage() {
                   </CardHeader>
                   <CardContent className="pt-2">
                     <div className="inline-flex items-center gap-2 rounded-md border border-primary/20 px-3 py-2 text-sm font-semibold text-primary transition group-hover:-translate-y-0.5 group-hover:bg-primary group-hover:text-primary-foreground">
-                      Explore category
+                      Shop category
                       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M5 12h14" />
                         <path d="M13 6l6 6-6 6" />

@@ -15,7 +15,11 @@ import java.math.BigDecimal;
 public class VoucherUseResponse extends BaseDTO {
 
     private Long voucherId;
+    private String voucherCode;
+    private String voucherName;
     private Long userId;
+    private String username;
+    private String fullName;
     private Long orderId;
 
     private BigDecimal discountAmount;

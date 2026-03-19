@@ -15,11 +15,13 @@ type PageResponse<T> = {
 };
 
 type AdminNotification = Record<string, unknown>;
+type AdminUser = Record<string, unknown>;
 
 export default function AdminNotificationsPage() {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<AdminNotification[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -41,6 +43,18 @@ export default function AdminNotificationsPage() {
     isHidden: false,
   });
 
+  const userOptions = useMemo(
+    () =>
+      users
+        .map((user) => ({
+          id: getNumber(user, "id") ?? 0,
+          username: getString(user, "username") ?? "",
+          fullName: getString(user, "fullName") ?? "",
+        }))
+        .filter((user) => user.id > 0),
+    [users],
+  );
+
   const query = useMemo(() => {
     return buildQuery({
       page,
@@ -55,8 +69,14 @@ export default function AdminNotificationsPage() {
   async function load() {
     setIsLoading(true);
     try {
-      const res = await adminGet<PageResponse<AdminNotification>>(`/api/admin/notifications/filter${query}`);
+      const [res, userRes] = await Promise.all([
+        adminGet<PageResponse<AdminNotification>>(`/api/admin/notifications/filter${query}`),
+        users.length
+          ? Promise.resolve({ content: users } as PageResponse<AdminUser>)
+          : adminGet<PageResponse<AdminUser>>(`/api/admin/users${buildQuery({ page: 0, size: 200, sort: "id,desc" })}`),
+      ]);
       setItems(asArray(res?.content) as AdminNotification[]);
+      setUsers(asArray(userRes?.content) as AdminUser[]);
       setTotalPages(Number(res?.totalPages ?? 1) || 1);
     } catch (e) {
       toast.push({ variant: "error", title: "Load failed", message: getErrorMessage(e, "Failed to load notifications.") });
@@ -104,7 +124,7 @@ export default function AdminNotificationsPage() {
         referenceType: form.referenceType.trim() || null,
       };
       if (!payload.userId || !payload.title || !payload.message || !payload.type) {
-        toast.push({ variant: "error", title: "Missing required fields", message: "User ID, title, message, and type are required." });
+        toast.push({ variant: "error", title: "Missing required fields", message: "User, title, message, and type are required." });
         return;
       }
       try {
@@ -124,8 +144,6 @@ export default function AdminNotificationsPage() {
       type: form.type.trim() || null,
       referenceId: form.referenceId.trim() ? Number(form.referenceId) : null,
       referenceType: form.referenceType.trim() || null,
-      isRead: Boolean(form.isRead),
-      isHidden: Boolean(form.isHidden),
     };
 
     try {
@@ -205,7 +223,10 @@ export default function AdminNotificationsPage() {
                           <div className="font-medium">{getString(n, "title") ?? "-"}</div>
                           <div className="text-sm text-muted-foreground line-clamp-1">{getString(n, "message") ?? ""}</div>
                         </td>
-                        <td className="px-4 py-3">{getNumber(n, "userId") ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium">{getString(n, "fullName") ?? getString(n, "username") ?? "-"}</div>
+                          <div className="text-sm text-muted-foreground">{getString(n, "username") ?? "-"}</div>
+                        </td>
                         <td className="px-4 py-3">
                           <span
                             className={[
@@ -267,9 +288,19 @@ export default function AdminNotificationsPage() {
         </CardContent>
       </Card>
 
-      <Modal isOpen={isFormOpen} title={editingId ? `Edit notification #${editingId}` : "New notification"} onClose={() => setIsFormOpen(false)}>
+      <Modal isOpen={isFormOpen} title={editingId ? "Edit notification" : "New notification"} onClose={() => setIsFormOpen(false)}>
         <div className="grid gap-3">
-          {!editingId ? <Input value={form.userId} onChange={(e) => setForm((f) => ({ ...f, userId: e.target.value }))} placeholder="User ID *" className="rounded-md" /> : null}
+          {!editingId ? (
+            <select title="Notification user" value={form.userId} onChange={(e) => setForm((f) => ({ ...f, userId: e.target.value }))} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">Select user</option>
+              {userOptions.map((user) => (
+                <option key={user.id} value={String(user.id)}>
+                  {user.fullName || user.username}
+                  {user.fullName && user.username ? ` (${user.username})` : ""}
+                </option>
+              ))}
+            </select>
+          ) : null}
           <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Title *" className="rounded-md" />
           <textarea
             value={form.message}
@@ -282,18 +313,7 @@ export default function AdminNotificationsPage() {
             <Input value={form.referenceType} onChange={(e) => setForm((f) => ({ ...f, referenceType: e.target.value }))} placeholder="Reference type" className="rounded-md" />
           </div>
           <Input value={form.referenceId} onChange={(e) => setForm((f) => ({ ...f, referenceId: e.target.value }))} placeholder="Reference ID" className="rounded-md" />
-          {editingId ? (
-            <div className="flex flex-wrap gap-6 text-sm">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" checked={form.isRead} onChange={(e) => setForm((f) => ({ ...f, isRead: e.target.checked }))} />
-                Read
-              </label>
-              <label className="flex items-center gap-2">
-                <input type="checkbox" checked={form.isHidden} onChange={(e) => setForm((f) => ({ ...f, isHidden: e.target.checked }))} />
-                Hidden
-              </label>
-            </div>
-          ) : null}
+          {editingId ? <div className="text-sm text-muted-foreground">Read and hidden states are controlled by the user flow.</div> : null}
           <div className="mt-2 flex justify-end gap-2">
             <Button variant="outline" className="rounded-md" onClick={() => setIsFormOpen(false)}>
               Cancel
@@ -307,4 +327,5 @@ export default function AdminNotificationsPage() {
     </>
   );
 }
+
 

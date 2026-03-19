@@ -275,7 +275,7 @@ export default function AdminVouchersPage() {
                         <td className="px-4 py-3">
                           <div className="font-medium">{getString(v, "name") ?? "-"}</div>
                           <div className="text-sm text-muted-foreground">
-                            {getString(v, "code") ?? "-"} • #{id}
+                            {getString(v, "code") ?? "-"}
                           </div>
                         </td>
                         <td className="px-4 py-3">{discountTypeLabel[getString(v, "discountType") ?? ""] ?? "-"}</td>
@@ -339,7 +339,7 @@ export default function AdminVouchersPage() {
         </CardContent>
       </Card>
 
-      <Modal isOpen={isFormOpen} title={editingId ? `Edit voucher #${editingId}` : "New voucher"} onClose={() => setIsFormOpen(false)}>
+      <Modal isOpen={isFormOpen} title={editingId ? `Edit voucher ${form.name || form.code || ""}`.trim() : "New voucher"} onClose={() => setIsFormOpen(false)}>
         <div className="grid gap-3">
           {!editingId ? <Input value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))} placeholder="Code *" className="rounded-md" /> : null}
           <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Name *" className="rounded-md" />
@@ -389,12 +389,12 @@ export default function AdminVouchersPage() {
         </div>
       </Modal>
 
-      <Modal isOpen={isDetailsOpen} title={detailsId ? `Voucher #${detailsId}` : "Voucher"} onClose={() => setIsDetailsOpen(false)}>
+      <Modal isOpen={isDetailsOpen} title={getString(details ?? {}, "name") ?? (detailsId ? "Voucher details" : "Voucher")} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
           <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">{getString(details ?? {}, "name") ?? "-"}</div>
             <div className="mt-1 text-sm text-muted-foreground">
-              Code: {getString(details ?? {}, "code") ?? "-"} • Status: {getVoucherStatusMeta(getString(details ?? {}, "status") ?? "").label}
+              Code: {getString(details ?? {}, "code") ?? "-"} � Status: {getVoucherStatusMeta(getString(details ?? {}, "status") ?? "").label}
             </div>
           </div>
           <div className="rounded-md border bg-background p-4 text-sm text-muted-foreground">
@@ -424,4 +424,5 @@ export default function AdminVouchersPage() {
     </>
   );
 }
+
 

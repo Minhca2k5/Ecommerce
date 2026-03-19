@@ -252,7 +252,7 @@ export default function CartPage() {
               className="h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => navigate("/checkout")}
             >
-              {isGuest ? "Guest checkout" : "Checkout"}
+              {isGuest ? "Checkout as guest" : "Checkout"}
             </Button>
           </div>
         </div>
@@ -311,7 +311,7 @@ export default function CartPage() {
 
                       <div className="flex gap-2">
                         <Button asChild variant="outline" className="rounded-md bg-background">
-                          <Link to={`/products/${item.productId ?? ""}`}>Details</Link>
+                          <Link to={`/products/${item.productId ?? ""}`}>View details</Link>
                         </Button>
                         <Button variant="outline" className="rounded-md border-rose-500/20 bg-background text-rose-700 hover:bg-rose-500/10" onClick={() => setDeleteTarget(item)}>
                           Remove
@@ -356,7 +356,7 @@ export default function CartPage() {
               className="h-10 w-full rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => navigate("/checkout")}
             >
-              {isGuest ? "Guest checkout" : "Checkout"} · {money(summary.total, currency)}
+              {isGuest ? "Checkout as guest" : "Checkout"} - {money(summary.total, currency)}
             </Button>
           </CardContent>
         </Card>
@@ -385,4 +385,3 @@ export default function CartPage() {
     </div>
   );
 }
-

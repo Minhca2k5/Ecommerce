@@ -15,11 +15,13 @@ type PageResponse<T> = {
 };
 
 type AdminAddress = Record<string, unknown>;
+type AdminUser = Record<string, unknown>;
 
 export default function AdminAddressesPage() {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<AdminAddress[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -35,6 +37,18 @@ export default function AdminAddressesPage() {
   const [defaultUserId, setDefaultUserId] = useState("");
   const [defaultAddress, setDefaultAddress] = useState<AdminAddress | null>(null);
 
+  const userOptions = useMemo(
+    () =>
+      users
+        .map((user) => ({
+          id: getNumber(user, "id") ?? 0,
+          username: getString(user, "username") ?? "",
+          fullName: getString(user, "fullName") ?? "",
+        }))
+        .filter((user) => user.id > 0),
+    [users],
+  );
+
   const query = useMemo(() => {
     return buildQuery({
       page,
@@ -49,8 +63,14 @@ export default function AdminAddressesPage() {
   async function load() {
     setIsLoading(true);
     try {
-      const res = await adminGet<PageResponse<AdminAddress>>(`/api/admin/addresses${query}`);
+      const [res, userRes] = await Promise.all([
+        adminGet<PageResponse<AdminAddress>>(`/api/admin/addresses${query}`),
+        users.length
+          ? Promise.resolve({ content: users } as PageResponse<AdminUser>)
+          : adminGet<PageResponse<AdminUser>>(`/api/admin/users${buildQuery({ page: 0, size: 200, sort: "id,desc" })}`),
+      ]);
       setItems(asArray(res?.content) as AdminAddress[]);
+      setUsers(asArray(userRes?.content) as AdminUser[]);
       setTotalPages(Number(res?.totalPages ?? 1) || 1);
     } catch (e) {
       toast.push({ variant: "error", title: "Load failed", message: getErrorMessage(e, "Failed to load addresses.") });
@@ -94,6 +114,16 @@ export default function AdminAddressesPage() {
     return parts.length ? parts.join(", ") : "-";
   }
 
+  function getUserLabel(userId: number | null | undefined) {
+    const user = userOptions.find((item) => item.id === Number(userId ?? 0));
+    return user ? user.fullName || user.username || "-" : "-";
+  }
+
+  function getUsername(userId: number | null | undefined) {
+    const user = userOptions.find((item) => item.id === Number(userId ?? 0));
+    return user?.username || "-";
+  }
+
   return (
     <>
       <Card className="border bg-background shadow-sm">
@@ -107,7 +137,15 @@ export default function AdminAddressesPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={qUserId} onChange={(e) => setQUserId(e.target.value)} placeholder="User ID" className="rounded-md" />
+            <select title="Filter by user" value={qUserId} onChange={(e) => setQUserId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">All users</option>
+              {userOptions.map((user) => (
+                <option key={user.id} value={String(user.id)}>
+                  {user.fullName || user.username}
+                  {user.fullName && user.username ? ` (${user.username})` : ""}
+                </option>
+              ))}
+            </select>
             <Input value={qCity} onChange={(e) => setQCity(e.target.value)} placeholder="Filter by city" className="rounded-md" />
             <Input value={qCountry} onChange={(e) => setQCountry(e.target.value)} placeholder="Filter by country" className="rounded-md" />
           </div>
@@ -115,11 +153,19 @@ export default function AdminAddressesPage() {
           <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">Default address lookup</div>
             <div className="mt-3 grid gap-2 md:grid-cols-3">
-              <Input value={defaultUserId} onChange={(e) => setDefaultUserId(e.target.value)} placeholder="User ID" className="rounded-md" />
+              <select title="Default address user" value={defaultUserId} onChange={(e) => setDefaultUserId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+                <option value="">Select user</option>
+                {userOptions.map((user) => (
+                  <option key={user.id} value={String(user.id)}>
+                    {user.fullName || user.username}
+                    {user.fullName && user.username ? ` (${user.username})` : ""}
+                  </option>
+                ))}
+              </select>
               <Button variant="outline" className="h-10 rounded-md md:col-span-1" onClick={() => void loadDefault()}>
                 Find default address
               </Button>
-              <div className="md:col-span-1 text-sm text-muted-foreground">{defaultAddress ? renderLine(defaultAddress) : "—"}</div>
+              <div className="md:col-span-1 text-sm text-muted-foreground">{defaultAddress ? renderLine(defaultAddress) : "-"}</div>
             </div>
           </div>
 
@@ -157,7 +203,10 @@ export default function AdminAddressesPage() {
                           <div className="font-medium">#{id}</div>
                           <div className="text-sm text-muted-foreground">{renderLine(a)}</div>
                         </td>
-                        <td className="px-4 py-3">{userId ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium">{getUserLabel(userId)}</div>
+                          <div className="text-sm text-muted-foreground">{getUsername(userId)}</div>
+                        </td>
                         <td className="px-4 py-3 text-right">
                           <Button variant="outline" className="h-9 rounded-md" onClick={() => openDetails(id)} disabled={!id}>
                             Details
@@ -199,11 +248,11 @@ export default function AdminAddressesPage() {
         </CardContent>
       </Card>
 
-      <Modal isOpen={isDetailsOpen} title={detailsId ? `Address #${detailsId}` : "Address"} onClose={() => setIsDetailsOpen(false)}>
+      <Modal isOpen={isDetailsOpen} title={detailsId ? "Address details" : "Address"} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
           <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">{renderLine(details)}</div>
-            <div className="mt-1 text-sm text-muted-foreground">User: {getNumber(details ?? {}, "userId") ?? "-"}</div>
+            <div className="mt-1 text-sm text-muted-foreground">User: {getUserLabel(getNumber(details ?? {}, "userId"))}</div>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             {[

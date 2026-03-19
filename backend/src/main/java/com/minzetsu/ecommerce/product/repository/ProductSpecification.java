@@ -28,6 +28,7 @@ public class ProductSpecification {
         return (root, query, cb) -> {
             query.distinct(true);
             var predicates = cb.conjunction();
+            var effectivePrice = root.<BigDecimal>get("price");
 
             if (categoryId != null) {
                 predicates = cb.and(predicates,
@@ -47,11 +48,11 @@ public class ProductSpecification {
             }
             if (minPrice != null) {
                 predicates = cb.and(predicates,
-                        cb.greaterThanOrEqualTo(root.get("price"), minPrice));
+                        cb.greaterThanOrEqualTo(effectivePrice, minPrice));
             }
             if (maxPrice != null) {
                 predicates = cb.and(predicates,
-                        cb.lessThanOrEqualTo(root.get("price"), maxPrice));
+                        cb.lessThanOrEqualTo(effectivePrice, maxPrice));
             }
             if (warehouseLocation != null && !warehouseLocation.isBlank()) {
                 String term = "%" + warehouseLocation.toLowerCase() + "%";

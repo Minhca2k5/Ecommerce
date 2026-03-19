@@ -24,6 +24,8 @@ public interface InventoryMapper {
     Inventory toEntity(InventoryRequest request);
 
     @Mapping(target = "productId", source = "product.id")
+    @Mapping(target = "productName", source = "product.name")
+    @Mapping(target = "productSlug", source = "product.slug")
     @Mapping(target = "warehouseId", source = "warehouse.id")
     @Mapping(target = "warehouseCode", source = "warehouse.code")
     @Mapping(target = "warehouseName", source = "warehouse.name")

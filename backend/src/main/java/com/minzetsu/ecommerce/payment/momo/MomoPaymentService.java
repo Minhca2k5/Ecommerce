@@ -5,7 +5,6 @@ import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.common.exception.InvalidObjectException;
 import com.minzetsu.ecommerce.common.utils.OutboundRetryExecutor;
 import com.minzetsu.ecommerce.order.entity.Order;
-import com.minzetsu.ecommerce.order.entity.OrderStatus;
 import com.minzetsu.ecommerce.order.service.OrderService;
 import com.minzetsu.ecommerce.payment.dto.request.PaymentRequest;
 import com.minzetsu.ecommerce.payment.dto.response.PaymentResponse;
@@ -104,8 +103,6 @@ public class MomoPaymentService {
         if (paymentId == null) throw new NotFoundException("Payment id not found");
         if (Integer.valueOf(0).equals(ipn.getResultCode())) {
             paymentService.updatePaymentStatusById(PaymentStatus.SUCCEEDED, paymentId);
-            PaymentResponse payment = paymentService.getPaymentResponseById(paymentId, null);
-            orderService.updateOrderStatus(payment.getOrderId(), OrderStatus.PAID);
         } else {
             paymentService.updatePaymentStatusById(PaymentStatus.FAILED, paymentId);
         }

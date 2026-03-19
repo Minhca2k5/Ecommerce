@@ -103,7 +103,7 @@ export default function CategoryDetailPage() {
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
         </div>
         <Button asChild variant="outline">
-          <Link to="/products">Shop products</Link>
+          <Link to="/products">Browse all products</Link>
         </Button>
       </div>
 
@@ -162,7 +162,7 @@ export default function CategoryDetailPage() {
                         <path d="M6 12h12" />
                         <path d="M10 18h4" />
                       </svg>
-                      Shop this category
+                      Browse this category
                     </span>
                   </Link>
                 </Button>
@@ -202,7 +202,7 @@ export default function CategoryDetailPage() {
                   <option value="18">18</option>
                 </select>
                 <Button asChild variant="ghost">
-                  <Link to={`/products?categoryId=${resolvedCategoryId}`}>See all</Link>
+                  <Link to={`/products?categoryId=${resolvedCategoryId}`}>Browse all</Link>
                 </Button>
               </div>
             </div>

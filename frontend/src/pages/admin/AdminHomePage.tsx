@@ -21,6 +21,7 @@ const statusLabels: Record<string, string> = {
   PROCESSING: "Preparing",
   SHIPPED: "On delivery",
   DELIVERED: "Delivered",
+  CANCELLED: "Canceled",
   CANCELED: "Canceled",
   FAILED: "Payment failed",
   UNKNOWN: "Unknown",
@@ -381,4 +382,3 @@ export default function AdminHomePage() {
     </div>
   );
 }
-

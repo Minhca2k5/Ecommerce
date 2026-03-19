@@ -27,5 +27,7 @@
     <include file="db/changelog/v18__refresh_seed_images.xml"/>
     <include file="db/changelog/v19__replace_source_unsplash_urls.xml"/>
     <include file="db/changelog/v20__catalog_boost_and_minimums.xml"/>
+    <include file="db/changelog/v21__expand_order_status_constraint.xml"/>
 
 </databaseChangeLog>
+

@@ -16,6 +16,7 @@ type PageResponse<T> = {
 };
 
 type AdminOrder = Record<string, unknown>;
+type AdminUser = Record<string, unknown>;
 
 function dedupeOrders(rows: AdminOrder[]) {
   const map = new Map<number, AdminOrder>();
@@ -27,7 +28,7 @@ function dedupeOrders(rows: AdminOrder[]) {
   return Array.from(map.values());
 }
 
-const orderStatuses = ["PENDING", "PAID", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELED", "FAILED"] as const;
+const orderStatuses = ["PENDING", "PAID", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "FAILED"] as const;
 
 const orderStatusMeta: Record<string, { label: string; badgeClass: string }> = {
   PENDING: { label: "Awaiting payment", badgeClass: "border-amber-500/30 bg-amber-500/10 text-amber-700" },
@@ -35,6 +36,7 @@ const orderStatusMeta: Record<string, { label: string; badgeClass: string }> = {
   PROCESSING: { label: "Preparing", badgeClass: "border-sky-500/30 bg-sky-500/10 text-sky-700" },
   SHIPPED: { label: "On delivery", badgeClass: "border-indigo-500/30 bg-indigo-500/10 text-indigo-700" },
   DELIVERED: { label: "Delivered", badgeClass: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" },
+  CANCELLED: { label: "Canceled", badgeClass: "border-slate-500/30 bg-slate-500/10 text-slate-700" },
   CANCELED: { label: "Canceled", badgeClass: "border-slate-500/30 bg-slate-500/10 text-slate-700" },
   FAILED: { label: "Payment failed", badgeClass: "border-rose-500/30 bg-rose-500/10 text-rose-700" },
 };
@@ -43,10 +45,16 @@ function getOrderStatusMeta(status: string) {
   return orderStatusMeta[status] ?? { label: "Unknown", badgeClass: "border bg-background text-muted-foreground" };
 }
 
+function normalizeOrderStatus(status: string) {
+  const value = status.toUpperCase();
+  return value === "CANCELED" ? "CANCELLED" : value;
+}
+
 export default function AdminOrdersPage() {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<AdminOrder[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -61,6 +69,18 @@ export default function AdminOrdersPage() {
   const [details, setDetails] = useState<AdminOrder | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [editCurrency, setEditCurrency] = useState("");
+
+  const userOptions = useMemo(
+    () =>
+      users
+        .map((user) => ({
+          id: getNumber(user, "id") ?? 0,
+          username: getString(user, "username") ?? "",
+          fullName: getString(user, "fullName") ?? "",
+        }))
+        .filter((user) => user.id > 0),
+    [users],
+  );
 
   const query = useMemo(() => {
     return buildQuery({
@@ -78,8 +98,14 @@ export default function AdminOrdersPage() {
   async function load() {
     setIsLoading(true);
     try {
-      const res = await adminGet<PageResponse<AdminOrder>>(`/api/admin/orders${query}`);
+      const [res, userRes] = await Promise.all([
+        adminGet<PageResponse<AdminOrder>>(`/api/admin/orders${query}`),
+        users.length
+          ? Promise.resolve({ content: users } as PageResponse<AdminUser>)
+          : adminGet<PageResponse<AdminUser>>(`/api/admin/users${buildQuery({ page: 0, size: 200, sort: "id,desc" })}`),
+      ]);
       setItems(dedupeOrders(asArray(res?.content) as AdminOrder[]));
+      setUsers(asArray(userRes?.content) as AdminUser[]);
       setTotalPages(Number(res?.totalPages ?? 1) || 1);
     } catch (e) {
       toast.push({ variant: "error", title: "Load failed", message: getErrorMessage(e, "Failed to load orders.") });
@@ -144,7 +170,15 @@ export default function AdminOrdersPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-5">
-            <Input value={qUserId} onChange={(e) => setQUserId(e.target.value)} placeholder="User ID" className="rounded-md" />
+            <select title="Filter by user" value={qUserId} onChange={(e) => setQUserId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">All users</option>
+              {userOptions.map((user) => (
+                <option key={user.id} value={String(user.id)}>
+                  {user.fullName || user.username}
+                  {user.fullName && user.username ? ` (${user.username})` : ""}
+                </option>
+              ))}
+            </select>
             <select aria-label="Filter order status" title="Filter order status" value={qStatus} onChange={(e) => setQStatus(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
               <option value="">All statuses</option>
               {orderStatuses.map((s) => (
@@ -187,8 +221,9 @@ export default function AdminOrdersPage() {
                 ) : (
                   items.map((o) => {
                     const id = getNumber(o, "id") ?? 0;
-                    const userId = getNumber(o, "userId");
-                    const status = (getString(o, "status") ?? "").toUpperCase();
+                    const fullName = getString(o, "fullName");
+                    const username = getString(o, "username");
+                    const status = normalizeOrderStatus(getString(o, "status") ?? "");
                     const statusMeta = getOrderStatusMeta(status);
                     const currency = getString(o, "currency") ?? "VND";
                     const total = Number(o["totalAmount"] ?? o["total"] ?? 0);
@@ -198,7 +233,10 @@ export default function AdminOrdersPage() {
                           <div className="font-medium">#{id}</div>
                           <div className="text-sm text-muted-foreground">{getString(o, "createdAt") ?? ""}</div>
                         </td>
-                        <td className="px-4 py-3">{userId ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium">{fullName ?? username ?? "-"}</div>
+                          <div className="text-sm text-muted-foreground">{username ?? "-"}</div>
+                        </td>
                         <td className="px-4 py-3">
                           <span className={["rounded-full border px-3 py-1 text-sm", statusMeta.badgeClass].join(" ")}>{statusMeta.label}</span>
                         </td>
@@ -294,7 +332,7 @@ export default function AdminOrdersPage() {
               <select
                 aria-label="Order status quick update"
                 title="Order status quick update"
-                value={getString(details ?? {}, "status") ?? ""}
+                value={normalizeOrderStatus(getString(details ?? {}, "status") ?? "")}
                 onChange={(e) => {
                   if (detailsId) void updateStatus(detailsId, e.target.value);
                 }}
@@ -358,4 +396,5 @@ export default function AdminOrdersPage() {
     </>
   );
 }
+
 

@@ -196,7 +196,7 @@ export default function AdminBannersPage() {
                         <td className="px-4 py-3">
                           <div className="font-medium">{getString(b, "title") ?? "-"}</div>
                           <div className="text-sm text-muted-foreground">
-                            #{id} • position: {getNumber(b, "position") ?? "-"}
+                            Position: {getNumber(b, "position") ?? "-"}
                           </div>
                         </td>
                         <td className="px-4 py-3">
@@ -258,7 +258,7 @@ export default function AdminBannersPage() {
         </CardContent>
       </Card>
 
-      <Modal isOpen={isFormOpen} title={editingId ? `Edit banner #${editingId}` : "New banner"} onClose={() => setIsFormOpen(false)}>
+      <Modal isOpen={isFormOpen} title={editingId ? `Edit banner ${form.title || ""}`.trim() : "New banner"} onClose={() => setIsFormOpen(false)}>
         <div className="grid gap-3">
           <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Title *" className="rounded-md" />
           <Input value={form.imageUrl} onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))} placeholder="Image URL *" className="rounded-md" />
@@ -301,4 +301,5 @@ export default function AdminBannersPage() {
     </>
   );
 }
+
 

@@ -21,12 +21,12 @@ type PageResponse<T> = {
 type AdminProduct = Record<string, unknown>;
 type AdminCategory = Record<string, unknown>;
 
-const productStatuses = ["ACTIVE", "INACTIVE", "OUT_OF_STOCK"] as const;
+const productStatuses = ["ACTIVE", "DRAFT", "ARCHIVED"] as const;
 
 const productStatusMeta: Record<string, string> = {
   ACTIVE: "Active",
-  INACTIVE: "Inactive",
-  OUT_OF_STOCK: "Out of stock",
+  DRAFT: "Draft",
+  ARCHIVED: "Archived",
 };
 
 function getProductStatusLabel(status: string) {
@@ -414,4 +414,3 @@ export default function AdminProductsPage() {
     </>
   );
 }
-

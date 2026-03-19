@@ -17,9 +17,12 @@ public interface NotificationMapper {
     @Mapping(target = "user", ignore = true)
     Notification toEntity(NotificationCreateRequest request);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(@MappingTarget Notification entity, NotificationUpdateRequest request);
 
     @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "username", source = "user.username")
+    @Mapping(target = "fullName", source = "user.fullName")
     @Mapping(target = "referenceUrl", ignore = true)
     NotificationResponse toResponse(Notification entity);
 

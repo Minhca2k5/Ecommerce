@@ -231,7 +231,7 @@ export default function AdminWarehousesPage() {
                         <td className="px-4 py-3">
                           <div className="font-medium">{getString(w, "name") ?? "-"}</div>
                           <div className="text-sm text-muted-foreground">
-                            {getString(w, "code") ?? "-"} • #{id}
+                            {getString(w, "code") ?? "-"}
                           </div>
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">{formatAddress(w)}</td>
@@ -297,7 +297,7 @@ export default function AdminWarehousesPage() {
         </CardContent>
       </Card>
 
-      <Modal isOpen={isFormOpen} title={editingId ? `Edit warehouse #${editingId}` : "New warehouse"} onClose={() => setIsFormOpen(false)}>
+      <Modal isOpen={isFormOpen} title={editingId ? `Edit warehouse ${form.name || ""}`.trim() : "New warehouse"} onClose={() => setIsFormOpen(false)}>
         <div className="grid gap-3">
           <div className="grid gap-3 md:grid-cols-2">
             <Input value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))} placeholder="Code *" className="rounded-md" disabled={Boolean(editingId)} />
@@ -328,7 +328,7 @@ export default function AdminWarehousesPage() {
         </div>
       </Modal>
 
-      <Modal isOpen={isDetailsOpen} title={detailsId ? `Warehouse #${detailsId}` : "Warehouse"} onClose={() => setIsDetailsOpen(false)}>
+      <Modal isOpen={isDetailsOpen} title={getString(details ?? {}, "name") ?? (detailsId ? "Warehouse details" : "Warehouse")} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
           <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">{getString(details ?? {}, "name") ?? "-"}</div>
@@ -362,4 +362,5 @@ export default function AdminWarehousesPage() {
     </>
   );
 }
+
 

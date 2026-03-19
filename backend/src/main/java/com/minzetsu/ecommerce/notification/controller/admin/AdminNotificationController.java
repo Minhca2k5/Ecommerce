@@ -34,6 +34,8 @@ public class AdminNotificationController {
             @PathVariable("notificationId") Long notificationId,
             @Valid @RequestBody NotificationUpdateRequest request
     ) {
+        request.setIsRead(null);
+        request.setIsHidden(null);
         NotificationResponse updatedNotification = notificationService.updateNotificationResponse(request, notificationId);
         return ResponseEntity.ok(updatedNotification);
     }

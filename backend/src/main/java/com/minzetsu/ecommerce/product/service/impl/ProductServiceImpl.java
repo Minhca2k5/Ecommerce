@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Comparator;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -361,6 +362,9 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public Page<ProductResponse> searchProductResponses(ProductFilter filter, Pageable pageable) {
         filter.setStatus("ACTIVE");
+        if (requiresDerivedSorting(filter)) {
+            return searchProductResponsesWithDerivedSorting(filter, pageable);
+        }
         Pageable sortedPageable = PageableUtils.applySorting(pageable, filter);
         boolean canUseKeywordSearchOnly = filter.getName() != null
                 && !filter.getName().isBlank()
@@ -383,6 +387,54 @@ public class ProductServiceImpl implements ProductService {
         Page<Product> page = productRepository.findAll(ProductSpecification.filter(filter), sortedPageable);
         List<ProductResponse> responses = toUserResponseListWithUrls(page.getContent());
         return new PageImpl<>(responses, sortedPageable, page.getTotalElements());
+    }
+
+    private boolean requiresDerivedSorting(ProductFilter filter) {
+        if (filter == null || filter.getSortBy() == null || filter.getSortBy().isBlank()) {
+            return false;
+        }
+        String sortBy = filter.getSortBy().trim();
+        return "recentlyAverageRating".equalsIgnoreCase(sortBy)
+                || "recentlyTotalSoldQuantity".equalsIgnoreCase(sortBy);
+    }
+
+    private Page<ProductResponse> searchProductResponsesWithDerivedSorting(ProductFilter filter, Pageable pageable) {
+        List<Product> products = productRepository.findAll(ProductSpecification.filter(filter));
+        List<ProductResponse> responses = toUserResponseListWithUrls(products);
+        responses.forEach(response -> handleFields(response.getId(), response));
+
+        Comparator<ProductResponse> comparator = buildDerivedComparator(filter);
+        responses.sort(comparator);
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), responses.size());
+        List<ProductResponse> pageContent = start >= responses.size()
+                ? List.of()
+                : responses.subList(start, end);
+
+        return new PageImpl<>(pageContent, pageable, responses.size());
+    }
+
+    private Comparator<ProductResponse> buildDerivedComparator(ProductFilter filter) {
+        String sortBy = filter.getSortBy().trim();
+        boolean desc = !"asc".equalsIgnoreCase(filter.getSortDirection());
+
+        Comparator<ProductResponse> comparator;
+        if ("recentlyAverageRating".equalsIgnoreCase(sortBy)) {
+            comparator = Comparator.comparing(
+                    ProductResponse::getRecentlyAverageRating,
+                    Comparator.nullsLast(Double::compareTo));
+        } else {
+            comparator = Comparator.comparing(
+                    ProductResponse::getRecentlyTotalSoldQuantity,
+                    Comparator.nullsLast(Integer::compareTo));
+        }
+
+        if (desc) {
+            comparator = comparator.reversed();
+        }
+
+        return comparator.thenComparing(ProductResponse::getId, Comparator.nullsLast(Long::compareTo));
     }
 
     @Override

@@ -37,6 +37,7 @@ export default function AdminUsersPage() {
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartUserId, setCartUserId] = useState<number | null>(null);
+  const [cartUserLabel, setCartUserLabel] = useState("");
   const [cart, setCart] = useState<Record<string, unknown> | null>(null);
   const [cartItems, setCartItems] = useState<Record<string, unknown>[]>([]);
   const [isCartLoading, setIsCartLoading] = useState(false);
@@ -96,10 +97,11 @@ export default function AdminUsersPage() {
     }
   }
 
-  async function openCart(userId: number) {
+  async function openCart(userId: number, userLabel: string) {
     if (!userId) return;
     setIsCartOpen(true);
     setCartUserId(userId);
+    setCartUserLabel(userLabel);
     setCart(null);
     setCartItems([]);
     setCartError(null);
@@ -236,13 +238,14 @@ export default function AdminUsersPage() {
                   items.map((u) => {
                     const id = getNumber(u, "id") ?? 0;
                     const username = getString(u, "username") ?? "-";
+                    const fullName = getString(u, "fullName") ?? "";
                     const email = getString(u, "email") ?? "-";
                     const enabled = getBoolean(u, "enabled");
                     return (
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
-                          <div className="font-medium">{username}</div>
-                          <div className="text-sm text-muted-foreground">#{id}</div>
+                          <div className="font-medium">{fullName || username}</div>
+                          <div className="text-sm text-muted-foreground">{username}</div>
                         </td>
                         <td className="px-4 py-3">{email}</td>
                         <td className="px-4 py-3">
@@ -255,7 +258,7 @@ export default function AdminUsersPage() {
                             <Button variant="outline" className="h-9 rounded-md" onClick={() => openDetails(id)} disabled={!id}>
                               Details
                             </Button>
-                            <Button variant="outline" className="h-9 rounded-md" onClick={() => void openCart(id)} disabled={!id}>
+                            <Button variant="outline" className="h-9 rounded-md" onClick={() => void openCart(id, fullName || username)} disabled={!id}>
                               Cart
                             </Button>
                             <Button
@@ -340,7 +343,7 @@ export default function AdminUsersPage() {
         </div>
       </Modal>
 
-      <Modal isOpen={isDetailsOpen} title={detailsId ? `User #${detailsId}` : "User"} onClose={() => setIsDetailsOpen(false)}>
+      <Modal isOpen={isDetailsOpen} title={getString(details ?? {}, "fullName") ?? getString(details ?? {}, "username") ?? (detailsId ? "User details" : "User")} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
           <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">{getString(details ?? {}, "username") ?? "-"}</div>
@@ -378,7 +381,7 @@ export default function AdminUsersPage() {
         </div>
       </Modal>
 
-      <Modal isOpen={isCartOpen} title={cartUserId ? `User #${cartUserId} cart` : "Cart"} onClose={() => setIsCartOpen(false)}>
+      <Modal isOpen={isCartOpen} title={cartUserLabel ? `${cartUserLabel} cart` : cartUserId ? "User cart" : "Cart"} onClose={() => setIsCartOpen(false)}>
         <div className="space-y-3">
           {isCartLoading ? <div className="text-sm text-muted-foreground">Loading...</div> : null}
           {cartError ? (
@@ -406,7 +409,7 @@ export default function AdminUsersPage() {
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold">{getString(it, "productName") ?? "Item"}</div>
                     <div className="mt-1 text-sm text-muted-foreground">
-                      productId: {getNumber(it, "productId") ?? "-"}  -  qty: {getNumber(it, "quantity") ?? "-"}
+                      Qty: {getNumber(it, "quantity") ?? "-"}
                     </div>
                   </div>
                   <div className="text-sm font-semibold">{getNumber(it, "lineTotal") ?? "-"}</div>
@@ -441,5 +444,4 @@ export default function AdminUsersPage() {
     </>
   );
 }
-
 

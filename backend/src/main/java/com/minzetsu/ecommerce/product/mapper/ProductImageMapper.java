@@ -21,6 +21,8 @@ public interface ProductImageMapper {
     ProductImage toEntity(ProductImageRequest request);
 
     @Mapping(target = "productId", source = "product.id")
+    @Mapping(target = "productName", source = "product.name")
+    @Mapping(target = "productSlug", source = "product.slug")
     AdminProductImageResponse toAdminResponse(ProductImage image);
 
     List<AdminProductImageResponse> toAdminResponseList(List<ProductImage> images);

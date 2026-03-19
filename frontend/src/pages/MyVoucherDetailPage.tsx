@@ -84,7 +84,7 @@ export default function MyVoucherDetailPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="bg-background lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Details</CardTitle>
+            <CardTitle className="text-base">Voucher details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="text-muted-foreground">{item.description || "No description."}</div>

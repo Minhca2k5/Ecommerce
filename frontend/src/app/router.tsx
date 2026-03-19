@@ -26,7 +26,6 @@ const MyVouchersPage = lazy(() => import("@/pages/MyVouchersPage"));
 const MyVoucherDetailPage = lazy(() => import("@/pages/MyVoucherDetailPage"));
 const VoucherUsesPage = lazy(() => import("@/pages/VoucherUsesPage"));
 const WishlistPage = lazy(() => import("@/pages/WishlistPage"));
-const SearchLogsPage = lazy(() => import("@/pages/SearchLogsPage"));
 const NotificationsPage = lazy(() => import("@/pages/NotificationsPage"));
 const OrdersPage = lazy(() => import("@/pages/OrdersPage"));
 const OrderDetailPage = lazy(() => import("@/pages/OrderDetailPage"));
@@ -93,7 +92,6 @@ export const router = createBrowserRouter([
           { path: "me/vouchers/:voucherId", element: lazyElement(<MyVoucherDetailPage />) },
           { path: "me/voucher-uses", element: lazyElement(<VoucherUsesPage />) },
           { path: "me/wishlist", element: lazyElement(<WishlistPage />) },
-          { path: "me/search-logs", element: lazyElement(<SearchLogsPage />) },
           { path: "notifications", element: lazyElement(<NotificationsPage />) },
           { path: "orders", element: lazyElement(<OrdersPage />) },
           { path: "orders/:orderId", element: lazyElement(<OrderDetailPage />) },

@@ -16,11 +16,15 @@ type PageResponse<T> = {
 };
 
 type AdminReview = Record<string, unknown>;
+type AdminProduct = Record<string, unknown>;
+type AdminUser = Record<string, unknown>;
 
 export default function AdminReviewsPage() {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<AdminReview[]>([]);
+  const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -32,6 +36,30 @@ export default function AdminReviewsPage() {
   const [detailsId, setDetailsId] = useState<number | null>(null);
   const [details, setDetails] = useState<AdminReview | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  const productOptions = useMemo(
+    () =>
+      products
+        .map((product) => ({
+          id: getNumber(product, "id") ?? 0,
+          name: getString(product, "name") ?? "Product",
+          slug: getString(product, "slug") ?? "",
+        }))
+        .filter((product) => product.id > 0),
+    [products],
+  );
+
+  const userOptions = useMemo(
+    () =>
+      users
+        .map((user) => ({
+          id: getNumber(user, "id") ?? 0,
+          username: getString(user, "username") ?? "",
+          fullName: getString(user, "fullName") ?? "",
+        }))
+        .filter((user) => user.id > 0),
+    [users],
+  );
 
   const query = useMemo(() => {
     return buildQuery({
@@ -47,8 +75,18 @@ export default function AdminReviewsPage() {
   async function load() {
     setIsLoading(true);
     try {
-      const res = await adminGet<PageResponse<AdminReview>>(`/api/admin/reviews${query}`);
+      const [res, productRes, userRes] = await Promise.all([
+        adminGet<PageResponse<AdminReview>>(`/api/admin/reviews${query}`),
+        products.length
+          ? Promise.resolve({ content: products } as PageResponse<AdminProduct>)
+          : adminGet<PageResponse<AdminProduct>>(`/api/admin/products${buildQuery({ page: 0, size: 200, sort: "id,desc" })}`),
+        users.length
+          ? Promise.resolve({ content: users } as PageResponse<AdminUser>)
+          : adminGet<PageResponse<AdminUser>>(`/api/admin/users${buildQuery({ page: 0, size: 200, sort: "id,desc" })}`),
+      ]);
       setItems(asArray(res?.content) as AdminReview[]);
+      setProducts(asArray(productRes?.content) as AdminProduct[]);
+      setUsers(asArray(userRes?.content) as AdminUser[]);
       setTotalPages(Number(res?.totalPages ?? 1) || 1);
     } catch (e) {
       toast.push({ variant: "error", title: "Load failed", message: getErrorMessage(e, "Failed to load reviews.") });
@@ -86,8 +124,23 @@ export default function AdminReviewsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={qProductId} onChange={(e) => setQProductId(e.target.value)} placeholder="Product ID" className="rounded-md" />
-            <Input value={qUserId} onChange={(e) => setQUserId(e.target.value)} placeholder="User ID" className="rounded-md" />
+            <select title="Filter by product" value={qProductId} onChange={(e) => setQProductId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">All products</option>
+              {productOptions.map((product) => (
+                <option key={product.id} value={String(product.id)}>
+                  {product.name}{product.slug ? ` (${product.slug})` : ""}
+                </option>
+              ))}
+            </select>
+            <select title="Filter by user" value={qUserId} onChange={(e) => setQUserId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">All users</option>
+              {userOptions.map((user) => (
+                <option key={user.id} value={String(user.id)}>
+                  {user.fullName || user.username}
+                  {user.fullName && user.username ? ` (${user.username})` : ""}
+                </option>
+              ))}
+            </select>
             <Input value={qMinRating} onChange={(e) => setQMinRating(e.target.value)} placeholder="Minimum rating" className="rounded-md" />
           </div>
 
@@ -121,14 +174,24 @@ export default function AdminReviewsPage() {
                   items.map((r) => {
                     const id = getNumber(r, "id") ?? 0;
                     const rating = Number(r["rating"] ?? 0);
+                    const productName = getString(r, "productName") ?? getString(r, "productSlug") ?? "-";
+                    const productSlug = getString(r, "productSlug") ?? "";
+                    const userLabel = getString(r, "fullName") ?? getString(r, "username") ?? "-";
+                    const username = getString(r, "username") ?? "";
                     return (
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
                           <div className="font-medium">#{id}</div>
                           <div className="text-sm text-muted-foreground line-clamp-1">{getString(r, "comment") ?? getString(r, "commentSnapshot") ?? ""}</div>
                         </td>
-                        <td className="px-4 py-3">{getNumber(r, "productId") ?? "-"}</td>
-                        <td className="px-4 py-3">{getNumber(r, "userId") ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium">{productName}</div>
+                          <div className="text-sm text-muted-foreground">{productSlug || "-"}</div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium">{userLabel}</div>
+                          <div className="text-sm text-muted-foreground">{username || "-"}</div>
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <RatingStars rating={rating} />
@@ -176,11 +239,11 @@ export default function AdminReviewsPage() {
         </CardContent>
       </Card>
 
-      <Modal isOpen={isDetailsOpen} title={detailsId ? `Review #${detailsId}` : "Review"} onClose={() => setIsDetailsOpen(false)}>
+      <Modal isOpen={isDetailsOpen} title={getString(details ?? {}, "productName") ?? getString(details ?? {}, "productSlug") ?? (detailsId ? "Review details" : "Review")} onClose={() => setIsDetailsOpen(false)}>
         <div className="space-y-3">
           <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">
-              Product: {getNumber(details ?? {}, "productId") ?? "-"} â€¢ User: {getNumber(details ?? {}, "userId") ?? "-"}
+              Product: {getString(details ?? {}, "productName") ?? getString(details ?? {}, "productSlug") ?? "-"} · User: {getString(details ?? {}, "fullName") ?? getString(details ?? {}, "username") ?? "-"}
             </div>
             <div className="mt-2 flex items-center gap-2">
               <RatingStars rating={Number((details ?? {})["rating"] ?? 0)} />

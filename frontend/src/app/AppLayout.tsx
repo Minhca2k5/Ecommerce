@@ -257,7 +257,7 @@ export default function AppLayout() {
                             </div>
                             <div className="mt-1 text-xs text-muted-foreground line-clamp-2">
                               {isInviteNotification(n) && n.isRead
-                                ? "Lời mời này đã được xử lý."
+                                ? "This invite has already been handled."
                                 : n.message}
                             </div>
                             {isInviteNotification(n) && !n.isRead ? (
@@ -269,7 +269,7 @@ export default function AppLayout() {
                                     e.stopPropagation();
                                     try {
                                       await acceptGroupInvite(Number(n.referenceId));
-                                      toast.push({ variant: "success", title: "Invite accepted", message: "Bạn đã chấp nhận lời mời." });
+                                      toast.push({ variant: "success", title: "Invite accepted", message: "You accepted the invite." });
                                       const id = Number(n.id ?? 0);
                                       if (id) notifications.markRead(id);
                                     } catch (err) {
@@ -453,16 +453,6 @@ export default function AppLayout() {
                           >
                             Voucher uses
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsMenuOpen(false);
-                              navigate("/me/search-logs");
-                            }}
-                            className="w-full rounded-md px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                          >
-                            Search logs
-                          </button>
                         </>
                       ) : null}
                       <button
@@ -511,6 +501,4 @@ export default function AppLayout() {
     </div>
   );
 }
-
-
 

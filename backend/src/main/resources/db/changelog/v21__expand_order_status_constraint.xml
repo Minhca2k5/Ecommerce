@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="v21-001-expand-order-status-constraint" author="codex">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="orders"/>
+        </preConditions>
+
+        <sql dbms="mysql">
+            ALTER TABLE orders DROP CHECK ck_orders_status;
+        </sql>
+        <sql dbms="h2">
+            ALTER TABLE orders DROP CONSTRAINT ck_orders_status;
+        </sql>
+
+        <sql>
+            ALTER TABLE orders ADD CONSTRAINT ck_orders_status
+            CHECK (status IN ('PENDING','PAID','PROCESSING','SHIPPED','DELIVERED','CANCELLED','FAILED'));
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

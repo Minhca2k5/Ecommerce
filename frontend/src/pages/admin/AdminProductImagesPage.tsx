@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { getErrorMessage } from "@/lib/errors";
 import { asArray, getBoolean, getNumber, getString } from "@/lib/safe";
 
 type AdminProductImage = Record<string, unknown>;
+type AdminProduct = Record<string, unknown>;
 
 export default function AdminProductImagesPage() {
   const toast = useToast();
@@ -19,6 +20,7 @@ export default function AdminProductImagesPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [items, setItems] = useState<AdminProductImage[]>([]);
   const [primary, setPrimary] = useState<AdminProductImage | null>(null);
+  const [products, setProducts] = useState<AdminProduct[]>([]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -52,9 +54,25 @@ export default function AdminProductImagesPage() {
   }
 
   useEffect(() => {
+    adminGet<{ content?: AdminProduct[] }>(`/api/admin/products${buildQuery({ page: 0, size: 200, sort: "id,desc" })}`)
+      .then((res) => setProducts(asArray(res?.content) as AdminProduct[]))
+      .catch(() => setProducts([]));
+  }, []);
+
+  useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [productId]);
+
+  const productOptions = useMemo(() => {
+    return products
+      .map((product) => ({
+        id: getNumber(product, "id") ?? 0,
+        name: getString(product, "name") ?? "Product",
+        slug: getString(product, "slug") ?? "",
+      }))
+      .filter((product) => product.id > 0);
+  }, [products]);
 
   function openCreate() {
     setForm({ url: "", isPrimary: false });
@@ -65,7 +83,7 @@ export default function AdminProductImagesPage() {
     const pid = productId.trim() ? Number(productId) : 0;
     const payload = { productId: pid, url: form.url.trim(), isPrimary: Boolean(form.isPrimary) };
     if (!payload.productId || !payload.url) {
-      toast.push({ variant: "error", title: "Invalid form", message: "Product ID and URL are required." });
+      toast.push({ variant: "error", title: "Invalid form", message: "Product and URL are required." });
       return;
     }
     try {
@@ -139,7 +157,14 @@ export default function AdminProductImagesPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Input value={productId} onChange={(e) => setProductId(e.target.value)} placeholder="Product ID" className="rounded-md" />
+          <select title="Product" value={productId} onChange={(e) => setProductId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+            <option value="">Select product</option>
+            {productOptions.map((product) => (
+              <option key={product.id} value={String(product.id)}>
+                {product.name}{product.slug ? ` (${product.slug})` : ""}
+              </option>
+            ))}
+          </select>
           <div className="rounded-md border bg-background p-4">
             <div className="text-sm font-semibold">Primary</div>
             <div className="mt-3 flex items-center gap-3">
@@ -147,7 +172,9 @@ export default function AdminProductImagesPage() {
                 <>
                   <SafeImage src={getString(primary, "url") ?? ""} alt="primary" fallbackKey={getNumber(primary, "id") ?? "primary"} className="h-14 w-28 rounded-md border object-cover" />
                   <div className="text-sm">
-                    <div className="font-medium">#{getNumber(primary, "id") ?? "-"}</div>
+                    <div className="font-medium">{getString(primary, "productName") ?? getString(primary, "productSlug") ?? "Product"}</div>
+                    <div className="text-sm text-muted-foreground">{getString(primary, "productSlug") ?? ""}</div>
+                    <div className="mt-1 font-medium">#{getNumber(primary, "id") ?? "-"}</div>
                     <div className="text-sm text-muted-foreground line-clamp-1">{getString(primary, "url") ?? ""}</div>
                   </div>
                 </>
@@ -179,7 +206,7 @@ export default function AdminProductImagesPage() {
                 ) : !items.length ? (
                   <tr className="border-t">
                     <td className="px-4 py-6 text-center text-muted-foreground" colSpan={4}>
-                      Enter a productId to list images.
+                      Select a product to list images.
                     </td>
                   </tr>
                 ) : (
@@ -190,14 +217,15 @@ export default function AdminProductImagesPage() {
                     return (
                       <tr key={String(id)} className="border-t">
                         <td className="px-4 py-3">
-                          <div className="font-medium">#{id}</div>
+                          <div className="font-medium">{getString(img, "productName") ?? getString(img, "productSlug") ?? `Image #${id}`}</div>
+                          <div className="text-sm text-muted-foreground">{getString(img, "productSlug") ?? ""}</div>
                           <div className="text-sm text-muted-foreground line-clamp-1">{url}</div>
                         </td>
                         <td className="px-4 py-3">
                           <SafeImage src={url} alt="img" fallbackKey={id} className="h-12 w-24 rounded-md border object-cover" />
                         </td>
                         <td className="px-4 py-3">
-                          <span className="rounded-full border bg-background px-3 py-1 text-sm">{isPrimary ? "Primary" : "—"}</span>
+                          <span className="rounded-full border bg-background px-3 py-1 text-sm">{isPrimary ? "Primary" : "-"}</span>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
@@ -275,4 +303,5 @@ export default function AdminProductImagesPage() {
     </>
   );
 }
+
 

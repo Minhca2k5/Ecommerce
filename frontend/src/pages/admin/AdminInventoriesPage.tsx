@@ -8,7 +8,7 @@ import { adminDelete, adminGet, adminPatch, adminPost } from "@/lib/adminApi";
 import { buildQuery } from "@/lib/apiClient";
 import { useToast } from "@/app/ToastProvider";
 import { getErrorMessage } from "@/lib/errors";
-import { asArray, getBoolean, getNumber } from "@/lib/safe";
+import { asArray, getBoolean, getNumber, getString } from "@/lib/safe";
 
 type PageResponse<T> = {
   content?: T[];
@@ -16,11 +16,15 @@ type PageResponse<T> = {
 };
 
 type AdminInventory = Record<string, unknown>;
+type AdminProduct = Record<string, unknown>;
+type AdminWarehouse = Record<string, unknown>;
 
 export default function AdminInventoriesPage() {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<AdminInventory[]>([]);
+  const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [warehouses, setWarehouses] = useState<AdminWarehouse[]>([]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -58,9 +62,19 @@ export default function AdminInventoriesPage() {
   async function load() {
     setIsLoading(true);
     try {
-      const res = await adminGet<PageResponse<AdminInventory>>(`/api/admin/inventories${query}`);
+      const [res, productRes, warehouseRes] = await Promise.all([
+        adminGet<PageResponse<AdminInventory>>(`/api/admin/inventories${query}`),
+        products.length
+          ? Promise.resolve({ content: products } as PageResponse<AdminProduct>)
+          : adminGet<PageResponse<AdminProduct>>(`/api/admin/products${buildQuery({ page: 0, size: 200, sort: "id,desc" })}`),
+        warehouses.length
+          ? Promise.resolve({ content: warehouses } as PageResponse<AdminWarehouse>)
+          : adminGet<PageResponse<AdminWarehouse>>(`/api/admin/warehouses${buildQuery({ page: 0, size: 200, sort: "id,asc" })}`),
+      ]);
       setItems(asArray(res?.content) as AdminInventory[]);
       setTotalPages(Number(res?.totalPages ?? 1) || 1);
+      setProducts(asArray(productRes?.content) as AdminProduct[]);
+      setWarehouses(asArray(warehouseRes?.content) as AdminWarehouse[]);
     } catch (e) {
       toast.push({ variant: "error", title: "Load failed", message: getErrorMessage(e, "Failed to load inventories.") });
     } finally {
@@ -72,6 +86,25 @@ export default function AdminInventoriesPage() {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
+
+  const productOptions = useMemo(() => {
+    return products
+      .map((product) => ({
+        id: getNumber(product, "id") ?? 0,
+        name: getString(product, "name") ?? "Product",
+        slug: getString(product, "slug") ?? "",
+      }))
+      .filter((product) => product.id > 0);
+  }, [products]);
+
+  const warehouseOptions = useMemo(() => {
+    return warehouses
+      .map((warehouse) => ({
+        id: getNumber(warehouse, "id") ?? 0,
+        name: getString(warehouse, "name") ?? "Warehouse",
+      }))
+      .filter((warehouse) => warehouse.id > 0);
+  }, [warehouses]);
 
   function openCreate() {
     setForm({ productId: "", warehouseId: "", stockQty: "0", reservedQty: "0" });
@@ -86,7 +119,7 @@ export default function AdminInventoriesPage() {
       reservedQty: Number(form.reservedQty),
     };
     if (!payload.productId || !payload.warehouseId || payload.stockQty < 0 || payload.reservedQty < 0) {
-      toast.push({ variant: "error", title: "Invalid form", message: "Product ID, warehouse ID, and non-negative quantities are required." });
+      toast.push({ variant: "error", title: "Invalid form", message: "Product, warehouse, and non-negative quantities are required." });
       return;
     }
     try {
@@ -153,8 +186,22 @@ export default function AdminInventoriesPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
-            <Input value={qProductId} onChange={(e) => setQProductId(e.target.value)} placeholder="Product ID" className="rounded-md" />
-            <Input value={qWarehouseId} onChange={(e) => setQWarehouseId(e.target.value)} placeholder="Warehouse ID" className="rounded-md" />
+            <select title="Filter by product" value={qProductId} onChange={(e) => setQProductId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">All products</option>
+              {productOptions.map((product) => (
+                <option key={product.id} value={String(product.id)}>
+                  {product.name}{product.slug ? ` (${product.slug})` : ""}
+                </option>
+              ))}
+            </select>
+            <select title="Filter by warehouse" value={qWarehouseId} onChange={(e) => setQWarehouseId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">All warehouses</option>
+              {warehouseOptions.map((warehouse) => (
+                <option key={warehouse.id} value={String(warehouse.id)}>
+                  {warehouse.name}
+                </option>
+              ))}
+            </select>
             <select title="Select option" value={qHasAvailable} onChange={(e) => setQHasAvailable(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
               <option value="">All availability states</option>
               <option value="true">In stock</option>
@@ -192,8 +239,9 @@ export default function AdminInventoriesPage() {
                 ) : (
                   items.map((inv) => {
                     const id = getNumber(inv, "id") ?? 0;
-                    const productId = getNumber(inv, "productId");
-                    const warehouseId = getNumber(inv, "warehouseId");
+                    const productName = getString(inv, "productName") ?? getString(inv, "productSlug") ?? "-";
+                    const productSlug = getString(inv, "productSlug") ?? "";
+                    const warehouseName = getString(inv, "warehouseName") ?? "-";
                     const stockQty = Number(inv["stockQty"] ?? 0);
                     const reservedQty = Number(inv["reservedQty"] ?? 0);
                     const hasAvailable = getBoolean(inv, "hasAvailableStock");
@@ -203,8 +251,11 @@ export default function AdminInventoriesPage() {
                           <div className="font-medium">#{id}</div>
                           <div className="text-sm text-muted-foreground">{hasAvailable === undefined ? "" : hasAvailable ? "In stock" : "Out of stock"}</div>
                         </td>
-                        <td className="px-4 py-3">{productId ?? "-"}</td>
-                        <td className="px-4 py-3">{warehouseId ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium">{productName}</div>
+                          <div className="text-sm text-muted-foreground">{productSlug}</div>
+                        </td>
+                        <td className="px-4 py-3">{warehouseName}</td>
                         <td className="px-4 py-3">
                           <button className="rounded-md border bg-background px-3 py-1 text-sm hover:bg-muted" onClick={() => openQty(inv, "stock")}>
                             {stockQty}
@@ -266,8 +317,22 @@ export default function AdminInventoriesPage() {
       <Modal isOpen={isFormOpen} title="New inventory" onClose={() => setIsFormOpen(false)}>
         <div className="grid gap-3">
           <div className="grid gap-3 md:grid-cols-2">
-            <Input value={form.productId} onChange={(e) => setForm((f) => ({ ...f, productId: e.target.value }))} placeholder="Product ID *" className="rounded-md" />
-            <Input value={form.warehouseId} onChange={(e) => setForm((f) => ({ ...f, warehouseId: e.target.value }))} placeholder="Warehouse ID *" className="rounded-md" />
+            <select title="Product" value={form.productId} onChange={(e) => setForm((f) => ({ ...f, productId: e.target.value }))} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">Select product</option>
+              {productOptions.map((product) => (
+                <option key={product.id} value={String(product.id)}>
+                  {product.name}{product.slug ? ` (${product.slug})` : ""}
+                </option>
+              ))}
+            </select>
+            <select title="Warehouse" value={form.warehouseId} onChange={(e) => setForm((f) => ({ ...f, warehouseId: e.target.value }))} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">Select warehouse</option>
+              {warehouseOptions.map((warehouse) => (
+                <option key={warehouse.id} value={String(warehouse.id)}>
+                  {warehouse.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             <Input value={form.stockQty} onChange={(e) => setForm((f) => ({ ...f, stockQty: e.target.value }))} placeholder="Stock qty" className="rounded-md" />
@@ -314,4 +379,3 @@ export default function AdminInventoriesPage() {
     </>
   );
 }
-

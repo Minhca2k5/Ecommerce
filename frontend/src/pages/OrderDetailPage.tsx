@@ -439,7 +439,7 @@ export default function OrderDetailPage() {
           ) : null}
           {paymentDetail ? (
             <div className="grid gap-2 text-sm">
-              <div className="flex items-center justify-between"><span className="text-muted-foreground">Payment</span><span className="font-medium">Details</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Payment</span><span className="font-medium">Payment details</span></div>
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Method</span><span className="font-medium">{paymentDetail.method || "-"}</span></div>
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Status</span><span className="font-medium">{String(paymentDetail.status || "-").toUpperCase()}</span></div>
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Amount</span><span className="font-medium">{formatCurrency(Number(paymentDetail.amount ?? 0), paymentDetail.orderCurrency || currency)}</span></div>

@@ -24,10 +24,18 @@ public final class PageableUtils {
         if (filter.getSortBy() != null && filter.getSortDirection() != null) {
             Sort.Direction direction = filter.getSortDirection().equalsIgnoreCase("desc")
                     ? Sort.Direction.DESC : Sort.Direction.ASC;
+            String sortBy = normalizeSortField(filter.getSortBy());
             return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
-                    Sort.by(direction, filter.getSortBy()));
+                    Sort.by(direction, sortBy));
         }
         return pageable;
+    }
+
+    private static String normalizeSortField(String sortBy) {
+        if (sortBy == null) {
+            return null;
+        }
+        return "salePrice".equalsIgnoreCase(sortBy) ? "price" : sortBy;
     }
 
     public static <E, R, F extends SortableFilter> Page<R> search(

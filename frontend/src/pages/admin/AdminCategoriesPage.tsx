@@ -38,6 +38,15 @@ export default function AdminCategoriesPage() {
 
   const [form, setForm] = useState({ name: "", slug: "", parentId: "" });
 
+  const categoryOptions = useMemo(() => {
+    return items
+      .map((c) => ({
+        id: getNumber(c, "id") ?? 0,
+        name: getString(c, "name") ?? "Category",
+      }))
+      .filter((c) => c.id > 0);
+  }, [items]);
+
   const query = useMemo(() => {
     return buildQuery({
       page,
@@ -142,7 +151,14 @@ export default function AdminCategoriesPage() {
           <div className="grid gap-3 md:grid-cols-3">
             <Input value={qName} onChange={(e) => setQName(e.target.value)} placeholder="Search category name" className="rounded-md" />
             <Input value={qSlug} onChange={(e) => setQSlug(e.target.value)} placeholder="Search slug" className="rounded-md" />
-            <Input value={qParentId} onChange={(e) => setQParentId(e.target.value)} placeholder="Filter by parent ID" className="rounded-md" />
+            <select title="Filter by parent" value={qParentId} onChange={(e) => setQParentId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+              <option value="">All parents</option>
+              {categoryOptions.map((category) => (
+                <option key={category.id} value={String(category.id)}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="table-shell">
@@ -173,14 +189,14 @@ export default function AdminCategoriesPage() {
                     const id = getNumber(c, "id") ?? 0;
                     const name = getString(c, "name") ?? "Category";
                     const slug = getString(c, "slug") ?? "";
-                    const parentId = getNumber(c, "parentId");
+                    const parentName = getString(c, "parentName");
                     return (
                       <tr key={String(id)} className="border-t hover:bg-muted/20">
                         <td className="px-4 py-3">
                           <div className="font-medium">{name}</div>
                         </td>
                         <td className="px-4 py-3">{slug}</td>
-                        <td className="px-4 py-3">{parentId ? `#${parentId}` : "-"}</td>
+                        <td className="px-4 py-3">{parentName ?? "-"}</td>
                         <td className="px-4 py-3 text-right">
                           <div className="inline-flex gap-2">
                             <Button variant="outline" className="h-9 rounded-md" onClick={() => openDetails(id)}>
@@ -238,7 +254,16 @@ export default function AdminCategoriesPage() {
         <div className="grid gap-3">
           <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Name *" className="rounded-md" />
           <Input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="Slug *" className="rounded-md" />
-          <Input value={form.parentId} onChange={(e) => setForm((f) => ({ ...f, parentId: e.target.value }))} placeholder="Parent ID (optional)" className="rounded-md" />
+          <select title="Parent category" value={form.parentId} onChange={(e) => setForm((f) => ({ ...f, parentId: e.target.value }))} className="h-10 rounded-md border bg-background px-3 text-sm">
+            <option value="">No parent</option>
+            {categoryOptions
+              .filter((category) => !editingId || category.id !== editingId)
+              .map((category) => (
+                <option key={category.id} value={String(category.id)}>
+                  {category.name}
+                </option>
+              ))}
+          </select>
           <div className="mt-2 flex justify-end gap-2">
             <Button variant="outline" className="rounded-md" onClick={() => setIsFormOpen(false)}>
               Cancel
@@ -298,4 +323,3 @@ export default function AdminCategoriesPage() {
     </>
   );
 }
-

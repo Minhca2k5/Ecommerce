@@ -66,7 +66,7 @@ function getFeaturedTitle(rawTitle: string, targetPath: string, categories: Cate
     const category = categories.find((c) => (getNumber(c, "id") ?? 0) === categoryId);
     const categoryName = getString(category, "name");
     if (categoryName) {
-      return `Top picks: ${categoryName}`;
+      return `Best sellers in ${categoryName}`;
     }
   }
 
@@ -205,8 +205,8 @@ export default function HomePage() {
     dealProducts.slice(6, 12),
   ];
   const dealTitles = [
-    "Top picks in Electronics",
-    "Fresh styles for you",
+    "Best sellers in Electronics",
+    "Fresh style drops",
   ];
 
   const preparedBanners = useMemo<PreparedBanner[]>(() => {
@@ -477,7 +477,7 @@ export default function HomePage() {
                             {hero.isInternal ? (
                               <Button asChild className="h-10 rounded-md bg-primary text-primary-foreground">
                                 <Link to={hero.targetPath} onClick={() => trackBannerClick(hero.key, "hero", hero.targetPath)}>
-                                  Grab the deal
+                                  Shop now
                                 </Link>
                               </Button>
                             ) : (
@@ -486,7 +486,7 @@ export default function HomePage() {
                                 className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground"
                                 onClick={() => trackBannerClick(hero.key, "hero", hero.targetPath)}
                               >
-                                Grab the deal
+                                Shop now
                               </a>
                             )}
                             <Button asChild variant="outline" className="h-10 rounded-md bg-white/90">
@@ -515,7 +515,7 @@ export default function HomePage() {
                     className="market-hero-slider__arrow market-hero-slider__arrow--left"
                     onClick={goToPrevHero}
                   >
-                    <span aria-hidden>‹</span>
+                    <span aria-hidden>{"<"}</span>
                   </button>
                   <button
                     type="button"
@@ -523,7 +523,7 @@ export default function HomePage() {
                     className="market-hero-slider__arrow market-hero-slider__arrow--right"
                     onClick={goToNextHero}
                   >
-                    <span aria-hidden>›</span>
+                    <span aria-hidden>{">"}</span>
                   </button>
                   <div className="market-hero-slider__dots">
                     {heroBanners.map((hero, idx) => (
@@ -589,7 +589,7 @@ export default function HomePage() {
             if (!group.length) return null;
             return (
               <div key={`deal-${idx}`} className="market-card rounded-md border bg-card p-4 sm:p-5">
-                <div className="text-base font-semibold">{dealTitles[idx] ?? "Top picks"}</div>
+                <div className="text-base font-semibold">{dealTitles[idx] ?? "Best sellers"}</div>
                 <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
                   {group.map((p, subIdx) => {
                     const id = getNumber(p, "id") ?? subIdx + 1;
@@ -614,7 +614,7 @@ export default function HomePage() {
                   })}
                 </div>
                 <Link to="/products" className="mt-3 inline-flex text-sm font-semibold text-primary">
-                  Explore deals
+                  Shop all deals
                 </Link>
               </div>
             );
@@ -671,7 +671,7 @@ export default function HomePage() {
                   to="/categories"
                   className="text-sm text-primary underline-offset-4 hover:underline"
                 >
-                  See all
+                  Browse all
                 </Link>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -730,7 +730,7 @@ export default function HomePage() {
                     const name = getString(featuredTop, "name", "title") ?? "Product";
                     const price = getNumber(featuredTop, "salePrice", "price");
                     const currency = getString(featuredTop, "currency") ?? "VND";
-                    const desc = getString(featuredTop, "description") ?? "Limited-time deal. Grab it before it is gone.";
+                    const desc = getString(featuredTop, "description") ?? "Limited-time deal. Shop it before it is gone.";
                     const imageUrl =
                       getString(featuredTop, "primaryImageUrl", "imageUrl", "thumbnailUrl") ??
                       getString(featuredTop, "url") ??
@@ -752,7 +752,7 @@ export default function HomePage() {
                             <div className="text-sm text-muted-foreground line-clamp-3">{desc}</div>
                             <div className="text-lg font-bold text-primary">{formatCurrency(price, currency)}</div>
                             <div className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground">
-                              Grab the deal
+                              Shop now
                             </div>
                           </div>
                         </div>
@@ -914,4 +914,3 @@ export default function HomePage() {
     </div>
   );
 }
-

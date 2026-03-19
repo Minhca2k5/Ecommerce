@@ -31,10 +31,6 @@
     <include file="db/changelog/v3/v3-022-idx-recent-views-user-updated.xml"/>
     <include file="db/changelog/v3/v3-023-idx-wishlists-product-created.xml"/>
     <include file="db/changelog/v3/v3-024-idx-wishlists-user-updated.xml"/>
-    <include file="db/changelog/v3/v3-025-idx-search-logs-keyword.xml"/>
-    <include file="db/changelog/v3/v3-026-idx-search-logs-created.xml"/>
-    <include file="db/changelog/v3/v3-027-idx-search-logs-user.xml"/>
-    <include file="db/changelog/v3/v3-028-idx-search-logs-user-updated.xml"/>
     <include file="db/changelog/v3/v3-029-idx-voucher-uses-voucher.xml"/>
     <include file="db/changelog/v3/v3-030-idx-voucher-uses-user.xml"/>
     <include file="db/changelog/v3/v3-031-idx-voucher-uses-order.xml"/>
@@ -46,3 +42,5 @@
     <include file="db/changelog/v3/v3-037-idx-refresh-tokens-user.xml"/>
 
 </databaseChangeLog>
+
+

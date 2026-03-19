@@ -9,10 +9,12 @@ import { useToast } from "@/app/ToastProvider";
 import { asArray, getBoolean, getNumber, getString } from "@/lib/safe";
 
 type AuditLog = Record<string, unknown>;
+type AdminUser = Record<string, unknown>;
 
 export default function AdminAuditLogsPage() {
   const toast = useToast();
   const [items, setItems] = useState<AuditLog[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(20);
@@ -24,6 +26,18 @@ export default function AdminAuditLogsPage() {
   const [qSuccess, setQSuccess] = useState("");
   const [qFrom, setQFrom] = useState("");
   const [qTo, setQTo] = useState("");
+
+  const userOptions = useMemo(
+    () =>
+      users
+        .map((user) => ({
+          id: getNumber(user, "id") ?? 0,
+          username: getString(user, "username") ?? "",
+          fullName: getString(user, "fullName") ?? "",
+        }))
+        .filter((user) => user.id > 0),
+    [users],
+  );
 
   const query = useMemo(
     () =>
@@ -44,8 +58,14 @@ export default function AdminAuditLogsPage() {
   async function load() {
     setIsLoading(true);
     try {
-      const res = await adminGet<PageResponse<AuditLog>>(`/api/admin/audit-logs${query}`);
+      const [res, userRes] = await Promise.all([
+        adminGet<PageResponse<AuditLog>>(`/api/admin/audit-logs${query}`),
+        users.length
+          ? Promise.resolve({ content: users } as PageResponse<AdminUser>)
+          : adminGet<PageResponse<AdminUser>>(`/api/admin/users${buildQuery({ page: 0, size: 200, sort: "id,desc" })}`),
+      ]);
       setItems(asArray(res?.content) as AuditLog[]);
+      setUsers(asArray(userRes?.content) as AdminUser[]);
       setTotalPages(Number(res?.totalPages ?? 1) || 1);
     } catch (e) {
       toast.push({ variant: "error", title: "Load failed", message: getErrorMessage(e, "Failed to load audit logs.") });
@@ -71,7 +91,15 @@ export default function AdminAuditLogsPage() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-3 md:grid-cols-3">
-          <Input value={qUserId} onChange={(e) => setQUserId(e.target.value)} placeholder="User ID" inputMode="numeric" className="rounded-md" />
+          <select title="Filter by user" value={qUserId} onChange={(e) => setQUserId(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
+            <option value="">All users</option>
+            {userOptions.map((user) => (
+              <option key={user.id} value={String(user.id)}>
+                {user.fullName || user.username}
+                {user.fullName && user.username ? ` (${user.username})` : ""}
+              </option>
+            ))}
+          </select>
           <Input value={qAction} onChange={(e) => setQAction(e.target.value)} placeholder="Action (e.g. ORDER_CREATED)" className="rounded-md" />
           <Input value={qEntityType} onChange={(e) => setQEntityType(e.target.value)} placeholder="Entity type (e.g. ORDER)" className="rounded-md" />
           <select title="Select option" value={qSuccess} onChange={(e) => setQSuccess(e.target.value)} className="h-10 rounded-md border bg-background px-3 text-sm">
@@ -120,7 +148,20 @@ export default function AdminAuditLogsPage() {
                         <div className="font-medium">{getString(it, "action") || "-"}</div>
                         <div className="text-sm text-muted-foreground">#{id ?? "-"}</div>
                       </td>
-                      <td className="px-4 py-3">{getNumber(it, "userId") ?? "-"}</td>
+                      <td className="px-4 py-3">
+                        <div className="font-medium">
+                          {(() => {
+                            const user = userOptions.find((item) => item.id === Number(getNumber(it, "userId") ?? 0));
+                            return user ? user.fullName || user.username || "-" : "-";
+                          })()}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {(() => {
+                            const user = userOptions.find((item) => item.id === Number(getNumber(it, "userId") ?? 0));
+                            return user?.username || "-";
+                          })()}
+                        </div>
+                      </td>
                       <td className="px-4 py-3">
                         {getString(it, "entityType") || "-"} / {getNumber(it, "entityId") ?? "-"}
                       </td>

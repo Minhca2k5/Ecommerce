@@ -179,7 +179,7 @@ export default function OrdersPage() {
         description="Your orders will show up here after checkout."
         action={
           <Button asChild className="h-10 rounded-md bg-primary text-primary-foreground">
-            <Link to="/products">Shop products</Link>
+            <Link to="/products">Browse all products</Link>
           </Button>
         }
       />
@@ -204,7 +204,7 @@ export default function OrdersPage() {
               <Link to="/cart">Go to cart</Link>
             </Button>
             <Button asChild className="h-10 rounded-md bg-primary text-primary-foreground">
-              <Link to="/products">Shop products</Link>
+              <Link to="/products">Browse all products</Link>
             </Button>
           </div>
         </div>

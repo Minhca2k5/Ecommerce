@@ -347,7 +347,7 @@ export default function CheckoutPage() {
         description="Your cart is empty."
         action={
           <Button asChild className="h-10 rounded-md bg-primary text-primary-foreground">
-            <Link to="/products">Shop products</Link>
+            <Link to="/products">Browse all products</Link>
           </Button>
         }
       />

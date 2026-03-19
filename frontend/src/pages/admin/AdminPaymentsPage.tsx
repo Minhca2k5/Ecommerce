@@ -47,6 +47,10 @@ function normalizePaymentStatus(raw: string) {
   return paymentStatuses.includes(value as (typeof paymentStatuses)[number]) ? value : "INITIATED";
 }
 
+function canAdminChangePaymentStatus(status: string) {
+  return normalizePaymentStatus(status) === "INITIATED";
+}
+
 export default function AdminPaymentsPage() {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(true);
@@ -201,7 +205,7 @@ export default function AdminPaymentsPage() {
                               value={status}
                               onChange={(e) => void updateStatus(id, e.target.value)}
                               className="h-9 rounded-md border bg-background px-3 text-sm"
-                              disabled={!id}
+                              disabled={!id || !canAdminChangePaymentStatus(status)}
                             >
                               {paymentStatuses.map((s) => (
                                 <option key={s} value={s}>
@@ -277,7 +281,7 @@ export default function AdminPaymentsPage() {
                   if (detailsId) void updateStatus(detailsId, e.target.value);
                 }}
                 className="h-10 rounded-md border bg-background px-3 text-sm"
-                disabled={!detailsId}
+                disabled={!detailsId || !canAdminChangePaymentStatus(getString(details ?? {}, "status") ?? "")}
               >
                 {paymentStatuses.map((s) => (
                   <option key={s} value={s}>
@@ -285,7 +289,11 @@ export default function AdminPaymentsPage() {
                   </option>
                 ))}
               </select>
-              <div className="text-sm text-muted-foreground">Updated at: {getString(details ?? {}, "updatedAt") ?? "-"}</div>
+              <div className="text-sm text-muted-foreground">
+                {canAdminChangePaymentStatus(getString(details ?? {}, "status") ?? "")
+                  ? `Updated at: ${getString(details ?? {}, "updatedAt") ?? "-"}`
+                  : "Only pending payments can be changed."}
+              </div>
             </div>
           </div>
 
@@ -299,4 +307,3 @@ export default function AdminPaymentsPage() {
     </>
   );
 }
-

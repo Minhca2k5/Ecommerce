@@ -11,7 +11,6 @@ import { useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/app/AuthProvider";
 import { useToast } from "@/app/ToastProvider";
-import { addSearchLog } from "@/lib/searchLogApi";
 import { getErrorMessage } from "@/lib/errors";
 import { createAuthedEventSource } from "@/lib/sse";
 
@@ -50,6 +49,19 @@ function soldBarWidthClass(percent: number) {
   return "w-0";
 }
 
+function parsePriceInput(value: string) {
+  const normalized = value.replace(/,/g, "").trim();
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
+function getPriceSortIndicator(sortKey: string) {
+  if (sortKey === "price-low") return "up";
+  if (sortKey === "price-high") return "down";
+  return "";
+}
+
 export default function ProductsPage() {
   const auth = useAuth();
   const toast = useToast();
@@ -71,8 +83,6 @@ export default function ProductsPage() {
   const [hasNewProducts, setHasNewProducts] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [sortKey, setSortKey] = useState("best-match");
-  const [rankedProducts, setRankedProducts] = useState<ProductSummary[]>([]);
-  const [isRankLoading, setIsRankLoading] = useState(false);
   const [flashSale, setFlashSale] = useState<FlashSaleSummary | null>(null);
   const [dealFilters, setDealFilters] = useState({
     topRated: false,
@@ -85,6 +95,30 @@ export default function ProductsPage() {
   const hasDealFilter = dealFilters.topRated || dealFilters.bestSeller;
   const requestPage = hasDealFilter ? 0 : page;
   const requestSize = hasDealFilter ? 240 : size;
+  const requestSortBy =
+    sortKey === "price-low" || sortKey === "price-high"
+      ? "salePrice"
+      : sortKey === "rating"
+        ? "recentlyAverageRating"
+        : sortKey === "sold"
+          ? "recentlyTotalSoldQuantity"
+          : undefined;
+  const requestSortDirection =
+    sortKey === "price-low"
+      ? "asc"
+      : sortKey === "price-high" || sortKey === "rating" || sortKey === "sold"
+        ? "desc"
+        : undefined;
+  const parsedMinPrice = parsePriceInput(minPrice);
+  const parsedMaxPrice = parsePriceInput(maxPrice);
+  const normalizedMinPrice =
+    parsedMinPrice !== null && parsedMaxPrice !== null
+      ? Math.min(parsedMinPrice, parsedMaxPrice)
+      : parsedMinPrice;
+  const normalizedMaxPrice =
+    parsedMinPrice !== null && parsedMaxPrice !== null
+      ? Math.max(parsedMinPrice, parsedMaxPrice)
+      : parsedMaxPrice;
 
   const queryString = useMemo(
     () =>
@@ -93,11 +127,13 @@ export default function ProductsPage() {
         size: requestSize,
         name: name.trim() ? name.trim() : undefined,
         categoryId: categoryId.trim() ? categoryId.trim() : undefined,
-        minPrice: minPrice.trim() ? minPrice.trim() : undefined,
-        maxPrice: maxPrice.trim() ? maxPrice.trim() : undefined,
+        minPrice: normalizedMinPrice !== null ? String(normalizedMinPrice) : undefined,
+        maxPrice: normalizedMaxPrice !== null ? String(normalizedMaxPrice) : undefined,
         warehouseLocation: warehouseLocation.trim() ? warehouseLocation.trim() : undefined,
+        sortBy: requestSortBy,
+        sortDirection: requestSortDirection,
       }),
-    [requestPage, requestSize, name, categoryId, minPrice, maxPrice, warehouseLocation]
+    [requestPage, requestSize, name, categoryId, normalizedMinPrice, normalizedMaxPrice, warehouseLocation, requestSortBy, requestSortDirection]
   );
 
   useEffect(() => {
@@ -193,9 +229,6 @@ export default function ProductsPage() {
     const keyword = name.trim();
     if (!keyword) return;
     const handle = window.setTimeout(() => {
-      addSearchLog({ keyword }).catch(() => {
-        // ignore
-      });
     }, 700);
     return () => window.clearTimeout(handle);
   }, [auth.isAuthenticated, name]);
@@ -208,64 +241,11 @@ export default function ProductsPage() {
     }
   }, [dealFilters, searchParams, setSearchParams]);
 
-  useEffect(() => {
-    const rankedMode = sortKey === "rating" || sortKey === "sold";
-    if (!rankedMode) {
-      setRankedProducts([]);
-      return;
-    }
-
-    let alive = true;
-    setIsRankLoading(true);
-    const endpoint = sortKey === "rating" ? "/api/public/products/top-rating" : "/api/public/products/best-selling";
-
-    apiGet<ProductSummary[]>(endpoint)
-      .then((rows) => {
-        if (!alive) return;
-        setRankedProducts(Array.isArray(rows) ? rows : []);
-      })
-      .catch(() => {
-        if (!alive) return;
-        setRankedProducts([]);
-      })
-      .finally(() => {
-        if (!alive) return;
-        setIsRankLoading(false);
-      });
-
-    return () => {
-      alive = false;
-    };
-  }, [sortKey]);
-
   const products = data?.content ?? [];
-  const isRankedMode = sortKey === "rating" || sortKey === "sold";
-  const sourceProducts = isRankedMode ? rankedProducts : products;
-
-  const normalizedName = name.trim().toLowerCase();
-  const selectedCategoryId = categoryId.trim();
-
-  const queryFilteredProducts = useMemo(() => {
-    if (!isRankedMode) return sourceProducts;
-    return sourceProducts.filter((p) => {
-      if (normalizedName) {
-        const productName = (getString(p, "name", "title") ?? "").toLowerCase();
-        if (!productName.includes(normalizedName)) return false;
-      }
-      if (selectedCategoryId) {
-        const catId =
-          getNumber(p, "categoryId") ??
-          (typeof p === "object" && p !== null ? getNumber((p as any)["category"], "id") : undefined) ??
-          undefined;
-        if (String(catId ?? "") !== selectedCategoryId) return false;
-      }
-      return true;
-    });
-  }, [isRankedMode, normalizedName, selectedCategoryId, sourceProducts]);
 
   const filteredProducts = useMemo(() => {
-    if (!dealFilters.topRated && !dealFilters.bestSeller) return queryFilteredProducts;
-    return queryFilteredProducts.filter((p) => {
+    if (!dealFilters.topRated && !dealFilters.bestSeller) return products;
+    return products.filter((p) => {
       const id = getNumber(p, "id") ?? -1;
       const rating = getNumber(p, "recentlyAverageRating", "averageRating", "rating") ?? 0;
       const reviewCount = getNumber(p, "recentlyReviewCount", "reviewCount", "totalReviews") ?? 0;
@@ -280,25 +260,16 @@ export default function ProductsPage() {
       if (dealFilters.bestSeller && !bestSeller) return false;
       return true;
     });
-  }, [dealFilters, queryFilteredProducts, topRatedDealIds, bestSellerDealIds]);
+  }, [dealFilters, products, topRatedDealIds, bestSellerDealIds]);
 
   const sortedProducts = useMemo(() => {
-    const list = [...filteredProducts];
-    switch (sortKey) {
-      case "price-low":
-        return list.sort((a, b) => (getNumber(a, "salePrice", "price") ?? 0) - (getNumber(b, "salePrice", "price") ?? 0));
-      case "price-high":
-        return list.sort((a, b) => (getNumber(b, "salePrice", "price") ?? 0) - (getNumber(a, "salePrice", "price") ?? 0));
-      case "rating":
-        return list;
-      case "sold":
-        return list;
-      default:
-        return list;
+    if (sortKey === "price-low" || sortKey === "price-high" || sortKey === "rating" || sortKey === "sold") {
+      return filteredProducts;
     }
+    return filteredProducts;
   }, [filteredProducts, sortKey]);
 
-  const useClientPagination = isRankedMode || hasDealFilter;
+  const useClientPagination = hasDealFilter;
   const totalPagesForClient = Math.max(1, Math.ceil(sortedProducts.length / Math.max(1, size)));
   const pagedProducts = useMemo(() => {
     if (!useClientPagination) return sortedProducts;
@@ -306,7 +277,7 @@ export default function ProductsPage() {
     return sortedProducts.slice(start, start + size);
   }, [useClientPagination, page, size, sortedProducts]);
 
-  const isBusy = isLoading || isRankLoading;
+  const isBusy = isLoading;
   const isNextDisabled = isBusy || (useClientPagination ? page + 1 >= totalPagesForClient : Boolean(data?.last));
   const totalPagesDisplay = useClientPagination ? totalPagesForClient : Math.max(1, Number(data?.totalPages ?? 1));
   const currentPageDisplay = Math.min(Math.max(1, page + 1), totalPagesDisplay);
@@ -355,7 +326,7 @@ export default function ProductsPage() {
       <section className="page-section">
         <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Shop products</h1>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Browse all products</h1>
             {name.trim() ? (
               <div className="mt-1 text-sm text-muted-foreground">Results for "{name.trim()}"</div>
             ) : null}
@@ -548,14 +519,26 @@ export default function ProductsPage() {
                 className="h-9 w-full"
                 onClick={() => {
                   const next = new URLSearchParams(searchParams);
-                  const min = priceDraft.min.trim();
-                  const max = priceDraft.max.trim();
-                  if (min) next.set("minPrice", min);
+                  const parsedDraftMin = parsePriceInput(priceDraft.min);
+                  const parsedDraftMax = parsePriceInput(priceDraft.max);
+                  const min =
+                    parsedDraftMin !== null && parsedDraftMax !== null
+                      ? Math.min(parsedDraftMin, parsedDraftMax)
+                      : parsedDraftMin;
+                  const max =
+                    parsedDraftMin !== null && parsedDraftMax !== null
+                      ? Math.max(parsedDraftMin, parsedDraftMax)
+                      : parsedDraftMax;
+                  if (min !== null) next.set("minPrice", String(min));
                   else next.delete("minPrice");
-                  if (max) next.set("maxPrice", max);
+                  if (max !== null) next.set("maxPrice", String(max));
                   else next.delete("maxPrice");
                   next.set("page", "0");
                   setSearchParams(next, { replace: true });
+                  setPriceDraft({
+                    min: min !== null ? String(min) : "",
+                    max: max !== null ? String(max) : "",
+                  });
                 }}
               >
                 Apply price
@@ -682,31 +665,31 @@ export default function ProductsPage() {
                   className={`h-9 rounded-md border px-3 text-sm font-semibold transition ${sortKey === "best-match" ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border bg-background hover:bg-white"}`}
                   onClick={() => setSort("best-match")}
                 >
-                  Liên quan
+                  Relevant
                 </button>
                 <button
                   type="button"
                   className={`h-9 rounded-md border px-3 text-sm font-semibold transition ${sortKey === "rating" ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border bg-background hover:bg-white"}`}
                   onClick={() => setSort("rating")}
                 >
-                  Mới nhất
+                  Top rated
                 </button>
                 <button
                   type="button"
                   className={`h-9 rounded-md border px-3 text-sm font-semibold transition ${sortKey === "sold" ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border bg-background hover:bg-white"}`}
                   onClick={() => setSort("sold")}
                 >
-                  Bán chạy
+                  Best sellers
                 </button>
                 <button
                   type="button"
                   className={`h-9 rounded-md border px-3 text-sm font-semibold transition ${(sortKey === "price-low" || sortKey === "price-high") ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border bg-background hover:bg-white"}`}
                   onClick={togglePriceSort}
                 >
-                  Giá {sortKey === "price-low" ? "↑" : sortKey === "price-high" ? "↓" : ""}
+                  Price {getPriceSortIndicator(sortKey)}
                 </button>
                 <div className="ml-1 rounded-md border border-border bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-600">
-                  Trang {currentPageDisplay}/{totalPagesDisplay}
+                  Page {currentPageDisplay}/{totalPagesDisplay}
                 </div>
               </div>
             </div>
@@ -763,4 +746,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-

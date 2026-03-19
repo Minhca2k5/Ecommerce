@@ -2,6 +2,7 @@ package com.minzetsu.ecommerce.payment.service.impl;
 
 import com.minzetsu.ecommerce.common.exception.AlreadyExistException;
 import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
+import com.minzetsu.ecommerce.common.exception.AppException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.exception.UnAuthorizedException;
 import com.minzetsu.ecommerce.common.utils.DatabaseRetryExecutor;
@@ -13,6 +14,7 @@ import com.minzetsu.ecommerce.mongo.service.ClickstreamEventService;
 import com.minzetsu.ecommerce.notification.dto.request.NotificationCreateRequest;
 import com.minzetsu.ecommerce.notification.service.NotificationService;
 import com.minzetsu.ecommerce.order.entity.Order;
+import com.minzetsu.ecommerce.order.entity.OrderStatus;
 import com.minzetsu.ecommerce.order.service.OrderService;
 import com.minzetsu.ecommerce.payment.dto.filter.PaymentFilter;
 import com.minzetsu.ecommerce.payment.dto.request.PaymentRequest;
@@ -29,6 +31,7 @@ import com.minzetsu.ecommerce.realtime.service.SseEmitterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -67,7 +70,12 @@ public class PaymentServiceImpl implements PaymentService {
     @AuditAction(action = "PAYMENT_STATUS_UPDATED", entityType = "PAYMENT", idParamIndex = 1)
     public void updatePaymentStatusById(PaymentStatus status, Long id) {
         Payment payment = getExistingPayment(id);
+        if (payment.getStatus() != PaymentStatus.INITIATED) {
+            throw new AppException("Only pending payments can be updated by admin", HttpStatus.BAD_REQUEST);
+        }
         paymentRepository.updateByStatusAndId(status, id);
+        payment.setStatus(status);
+        syncOrderStatusFromPayment(payment, status);
         eventPublisher.publishEvent(new WebhookEvent(
                 "PAYMENT_STATUS_UPDATED",
                 "PAYMENT",
@@ -82,6 +90,26 @@ public class PaymentServiceImpl implements PaymentService {
             clickstreamEventService.recordPaymentSuccess(userId);
         }
         notifyPaymentStatus(payment, status);
+    }
+
+    private void syncOrderStatusFromPayment(Payment payment, PaymentStatus paymentStatus) {
+        Order order = payment.getOrder();
+        if (order == null || order.getId() == null) {
+            return;
+        }
+
+        OrderStatus targetStatus = switch (paymentStatus) {
+            case SUCCEEDED -> OrderStatus.PAID;
+            case FAILED -> OrderStatus.FAILED;
+            default -> null;
+        };
+
+        if (targetStatus == null || order.getStatus() == targetStatus) {
+            return;
+        }
+
+        orderService.updateOrderStatus(order.getId(), targetStatus);
+        order.setStatus(targetStatus);
     }
 
     @Override

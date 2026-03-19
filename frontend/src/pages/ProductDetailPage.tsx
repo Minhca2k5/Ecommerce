@@ -348,7 +348,7 @@ export default function ProductDetailPage() {
             onClick={() => addToCart(resolvedId, 1)}
             disabled={!resolvedId || isWorking || Boolean(error) || isLoading}
           >
-            Add to cart
+            Shop now
           </Button>
           {auth.isAuthenticated ? (
             <Button
@@ -357,7 +357,7 @@ export default function ProductDetailPage() {
               onClick={onAddWishlist}
               disabled={!resolvedId || isWishlistWorking || Boolean(error) || isLoading}
             >
-              Wishlist
+              Save item
             </Button>
           ) : null}
           <Button asChild variant="outline" className="h-10 rounded-md bg-background">
@@ -373,7 +373,7 @@ export default function ProductDetailPage() {
                   <path d="M4 6h7v7H4z" />
                   <path d="M13 6h7v7h-7z" />
                 </svg>
-                Category
+                Browse category
               </span>
             </Link>
           </Button>
@@ -413,7 +413,7 @@ export default function ProductDetailPage() {
                     onClick={() => void openImageDetails()}
                     disabled={!activeImageId}
                   >
-                    Image details
+                    View image info
                   </Button>
                 </div>
                 <div className="flex gap-2 overflow-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
@@ -484,7 +484,7 @@ export default function ProductDetailPage() {
                               onClick={() => setMyRating(v)}
                               aria-label={`Rate ${v}`}
                             >
-                              ★
+                              {"★"}
                             </button>
                           );
                         })}
@@ -511,7 +511,7 @@ export default function ProductDetailPage() {
                 ) : null}
                 {asArray(reviews).length === 0 ? (
                   <div className="text-sm text-muted-foreground">
-                    Chưa có đánh giá nào. Hãy là người đầu tiên review sản phẩm này.
+                    No reviews yet. Be the first to review this product.
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -577,7 +577,7 @@ export default function ProductDetailPage() {
                                       onClick={() => setEditDraftRating(v)}
                                       aria-label={`Rate ${v}`}
                                     >
-                                      ★
+                                      {"★"}
                                     </button>
                                   );
                                 })}
@@ -664,7 +664,7 @@ export default function ProductDetailPage() {
             <div className="rounded-md border bg-background p-3 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Image</span>
-                <span className="font-medium">Details</span>
+                <span className="font-medium">Image details</span>
               </div>
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-muted-foreground">Primary</span>
@@ -681,4 +681,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-

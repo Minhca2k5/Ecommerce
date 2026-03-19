@@ -13,6 +13,8 @@ import lombok.*;
 public class InventoryResponse extends BaseDTO {
 
     private Long productId;
+    private String productName;
+    private String productSlug;
     private Long warehouseId;
     private String warehouseCode;
     private String warehouseName;

@@ -117,7 +117,7 @@ export default function ProductCard({
 
         <div>
           <Button className="w-full rounded-md bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => addToCart(id, 1)} disabled={!id || isWorking}>
-            Add to cart
+            Shop now
           </Button>
         </div>
       </CardContent>

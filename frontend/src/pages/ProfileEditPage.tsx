@@ -137,7 +137,7 @@ export default function ProfileEditPage() {
 
       <Card className="overflow-hidden bg-background">
         <CardHeader className="relative">
-          <CardTitle>Details</CardTitle>
+          <CardTitle>Account details</CardTitle>
         </CardHeader>
         <CardContent className="relative">
           <form onSubmit={onSave} className="space-y-4">

@@ -10,7 +10,11 @@ import java.util.List;
 public interface VoucherUseMapper {
 
     @Mapping(target = "voucherId", source = "voucher.id")
+    @Mapping(target = "voucherCode", source = "voucher.code")
+    @Mapping(target = "voucherName", source = "voucher.name")
     @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "username", source = "user.username")
+    @Mapping(target = "fullName", source = "user.fullName")
     @Mapping(target = "orderId", source = "order.id")
     VoucherUseResponse toResponse(VoucherUse use);
 

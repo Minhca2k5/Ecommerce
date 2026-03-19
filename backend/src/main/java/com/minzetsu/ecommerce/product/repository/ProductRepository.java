@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
@@ -21,6 +22,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     Optional<Product> findBySlug(String slug);
     @EntityGraph(attributePaths = {"category"})
     Page<Product> findAll(Specification<Product> spec, Pageable pageable);
+    @EntityGraph(attributePaths = {"category"})
+    List<Product> findAll(Specification<Product> spec);
     @EntityGraph(attributePaths = {"category"})
     @Query("SELECT p FROM Product p WHERE p.id IN :ids")
     java.util.List<Product> findAllByIdInWithCategory(java.util.List<Long> ids);

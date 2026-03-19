@@ -13,6 +13,8 @@ import lombok.*;
 public class AdminProductImageResponse extends BaseDTO {
 
     private Long productId;
+    private String productName;
+    private String productSlug;
     private String url;
     private Boolean isPrimary;
 }
