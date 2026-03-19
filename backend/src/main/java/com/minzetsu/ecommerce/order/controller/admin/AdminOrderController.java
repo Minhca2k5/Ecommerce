@@ -52,7 +52,7 @@ public class AdminOrderController {
             @PathVariable("orderId") Long orderId,
             @RequestParam OrderStatus status
     ) {
-        orderService.updateOrderStatus(orderId, status);
+        orderService.updateAdminOrderStatus(orderId, status);
         return ResponseEntity.noContent().build();
     }
 

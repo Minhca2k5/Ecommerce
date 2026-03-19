@@ -5,17 +5,13 @@ import LoadingCard from "@/components/LoadingCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getErrorMessage } from "@/lib/errors";
-import { formatCurrency } from "@/lib/format";
+import { money } from "@/lib/format";
 import { getMyVoucherById, type VoucherResponse } from "@/lib/voucherApi";
 
 function toNumber(value: number | string | undefined) {
   if (value === undefined || value === null) return 0;
   const n = typeof value === "string" ? Number(value) : value;
   return Number.isFinite(n) ? n : 0;
-}
-
-function money(value: number | string | undefined, currency = "VND") {
-  return formatCurrency(toNumber(value), currency);
 }
 
 export default function MyVoucherDetailPage() {

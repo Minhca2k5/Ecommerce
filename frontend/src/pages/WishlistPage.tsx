@@ -10,13 +10,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/app/ToastProvider";
 import { useNotifications } from "@/app/NotificationProvider";
 import { getErrorMessage } from "@/lib/errors";
-import { formatCurrency } from "@/lib/format";
+import { money } from "@/lib/format";
 import { clearWishlist, listMyWishlists, removeWishlist, type WishlistResponse } from "@/lib/wishlistApi";
-
-function money(value: number | string | undefined, currency: string | undefined) {
-  const n = typeof value === "string" ? Number(value) : value ?? 0;
-  return formatCurrency(Number.isFinite(n) ? n : 0, currency || "VND");
-}
 
 export default function WishlistPage() {
   const toast = useToast();

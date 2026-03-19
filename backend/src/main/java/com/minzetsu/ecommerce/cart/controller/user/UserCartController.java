@@ -21,30 +21,21 @@ public class UserCartController {
 
     private final CartService cartService;
 
-    @Operation(
-            summary = "Lấy giỏ hàng của người dùng hiện tại",
-            description = "Trả về thông tin đầy đủ giỏ hàng của người dùng đang đăng nhập (bao gồm chi tiết sản phẩm)."
-    )
+    @Operation(summary = "Lấy giỏ hàng của người dùng hiện tại", description = "Trả về thông tin đầy đủ giỏ hàng của người dùng đang đăng nhập (bao gồm chi tiết sản phẩm).")
     @GetMapping
     public ResponseEntity<CartResponse> getCurrentUserCart() {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(cartService.getFullCartResponseByUserId(userId));
     }
 
-    @Operation(
-            summary = "Tạo giỏ hàng mới cho người dùng hiện tại",
-            description = "Khởi tạo giỏ hàng mới cho người dùng đang đăng nhập nếu chưa có."
-    )
+    @Operation(summary = "Tạo giỏ hàng mới cho người dùng hiện tại", description = "Khởi tạo giỏ hàng mới cho người dùng đang đăng nhập nếu chưa có.")
     @PostMapping
     public ResponseEntity<CartResponse> createCurrentUserCart() {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(cartService.createCartResponse(userId));
     }
 
-    @Operation(
-            summary = "Merge guest cart into current user cart",
-            description = "Merge guest cart items into the logged-in user's cart by guestId."
-    )
+    @Operation(summary = "Merge guest cart into current user cart", description = "Merge guest cart items into the logged-in user's cart by guestId.")
     @PostMapping("/merge")
     public ResponseEntity<CartResponse> mergeGuestCart(@RequestParam String guestId) {
         Long userId = getCurrentUserId();
@@ -54,7 +45,7 @@ public class UserCartController {
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthenticated");
+            throw new com.minzetsu.ecommerce.common.exception.UnAuthorizedException("Unauthenticated");
         }
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }

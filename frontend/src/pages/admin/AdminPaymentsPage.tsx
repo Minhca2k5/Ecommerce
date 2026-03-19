@@ -258,7 +258,7 @@ export default function AdminPaymentsPage() {
               {formatCurrency(Number((details ?? {})["amount"] ?? 0), getString(details ?? {}, "currency") ?? "VND")}
             </div>
             <div className="mt-1 text-sm text-muted-foreground">
-              Order: {getNumber(details ?? {}, "orderId") ?? "-"} • Method: {getString(details ?? {}, "method") ?? "-"}
+              Order: {getNumber(details ?? {}, "orderId") ?? "-"} · Method: {getString(details ?? {}, "method") ?? "-"}
             </div>
           </div>
 
@@ -307,3 +307,4 @@ export default function AdminPaymentsPage() {
     </>
   );
 }
+

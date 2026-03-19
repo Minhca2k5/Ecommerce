@@ -50,6 +50,25 @@ function normalizeOrderStatus(status: string) {
   return value === "CANCELED" ? "CANCELLED" : value;
 }
 
+function getAdminOrderStatusOptions(rawStatus: string) {
+  const status = normalizeOrderStatus(rawStatus);
+  switch (status) {
+    case "PAID":
+      return ["PAID", "PROCESSING"];
+    case "PROCESSING":
+      return ["PROCESSING", "SHIPPED"];
+    case "SHIPPED":
+      return ["SHIPPED", "DELIVERED"];
+    default:
+      return [status];
+  }
+}
+
+function canAdminChangeOrderStatus(rawStatus: string) {
+  const status = normalizeOrderStatus(rawStatus);
+  return status === "PAID" || status === "PROCESSING" || status === "SHIPPED";
+}
+
 export default function AdminOrdersPage() {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(true);
@@ -225,6 +244,7 @@ export default function AdminOrdersPage() {
                     const username = getString(o, "username");
                     const status = normalizeOrderStatus(getString(o, "status") ?? "");
                     const statusMeta = getOrderStatusMeta(status);
+                    const statusOptions = getAdminOrderStatusOptions(status);
                     const currency = getString(o, "currency") ?? "VND";
                     const total = Number(o["totalAmount"] ?? o["total"] ?? 0);
                     return (
@@ -252,9 +272,9 @@ export default function AdminOrdersPage() {
                               value={status}
                               onChange={(e) => void updateStatus(id, e.target.value)}
                               className="h-9 rounded-md border bg-background px-3 text-sm"
-                              disabled={!id}
+                              disabled={!id || !canAdminChangeOrderStatus(status)}
                             >
-                              {orderStatuses.map((s) => (
+                              {statusOptions.map((s) => (
                                 <option key={s} value={s}>
                                   {getOrderStatusMeta(s).label}
                                 </option>
@@ -337,9 +357,9 @@ export default function AdminOrdersPage() {
                   if (detailsId) void updateStatus(detailsId, e.target.value);
                 }}
                 className="h-10 rounded-md border bg-background px-3 text-sm"
-                disabled={!detailsId}
+                disabled={!detailsId || !canAdminChangeOrderStatus(getString(details ?? {}, "status") ?? "")}
               >
-                {orderStatuses.map((s) => (
+                {getAdminOrderStatusOptions(getString(details ?? {}, "status") ?? "").map((s) => (
                   <option key={s} value={s}>
                     {getOrderStatusMeta(s).label}
                   </option>
@@ -360,6 +380,7 @@ export default function AdminOrdersPage() {
                 </Button>
               </div>
             </div>
+            <div className="mt-2 text-sm text-muted-foreground">Admin can only move orders through Paid &gt; Processing &gt; Shipped &gt; Delivered.</div>
           </div>
 
           <div className="rounded-md border bg-background p-4">

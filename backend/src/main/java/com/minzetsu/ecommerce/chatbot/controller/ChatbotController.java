@@ -33,15 +33,12 @@ import org.springframework.http.MediaType;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.minzetsu.ecommerce.chatbot.service.ChatbotService;
 
-
 @RestController
 @RequestMapping("/api/users/me/chatbot")
 @PreAuthorize("hasRole('USER')")
 @RequiredArgsConstructor
 public class ChatbotController {
     private final ChatbotService chatbotService;
-
-    
 
     @PostMapping
     public ChatResponse chat(@Valid @RequestBody ChatRequest request) {
@@ -67,20 +64,20 @@ public class ChatbotController {
 
     @PostMapping("/conversations")
     public ChatConversationResponse createConversation(@RequestParam(required = false) String title,
-                                                       @RequestParam(required = false) Long projectId,
-                                                       @RequestParam(required = false) Long groupId) {
+            @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) Long groupId) {
         return chatbotService.createConversation(getCurrentUserId(), title, projectId, groupId);
     }
 
     @PutMapping("/conversations/{conversationId}")
     public ChatConversationResponse renameConversation(@PathVariable Long conversationId,
-                                                       @Valid @RequestBody ChatConversationUpdateRequest request) {
+            @Valid @RequestBody ChatConversationUpdateRequest request) {
         return chatbotService.renameConversation(getCurrentUserId(), conversationId, request.getTitle());
     }
 
     @GetMapping("/conversations/{conversationId}/messages")
     public java.util.List<ChatMessageResponse> history(@PathVariable Long conversationId,
-                                                       @RequestParam(defaultValue = "20") int limit) {
+            @RequestParam(defaultValue = "20") int limit) {
         return chatbotService.listHistory(getCurrentUserId(), conversationId, limit);
     }
 
@@ -101,7 +98,7 @@ public class ChatbotController {
 
     @PutMapping("/projects/{projectId}")
     public ChatProjectResponse renameProject(@PathVariable Long projectId,
-                                             @Valid @RequestBody ChatProjectCreateRequest request) {
+            @Valid @RequestBody ChatProjectCreateRequest request) {
         return chatbotService.renameProject(getCurrentUserId(), projectId, request.getName());
     }
 
@@ -114,8 +111,6 @@ public class ChatbotController {
     public java.util.List<ChatConversationResponse> conversationsByProject(@PathVariable Long projectId) {
         return chatbotService.listConversationsByProject(getCurrentUserId(), projectId);
     }
-
-
 
     @GetMapping("/groups")
     public java.util.List<ChatGroupResponse> groups() {
@@ -145,7 +140,6 @@ public class ChatbotController {
     public void removeMember(@PathVariable Long groupId, @PathVariable Long userId) {
         chatbotService.removeMember(getCurrentUserId(), groupId, userId);
     }
-
 
     @GetMapping("/groups/invites")
     public java.util.List<ChatGroupInviteResponse> pendingInvites() {
@@ -178,12 +172,14 @@ public class ChatbotController {
     }
 
     @PutMapping("/messages/{messageId}")
-    public ChatMessageResponse editMessage(@PathVariable Long messageId, @Valid @RequestBody ChatMessageUpdateRequest request) {
+    public ChatMessageResponse editMessage(@PathVariable Long messageId,
+            @Valid @RequestBody ChatMessageUpdateRequest request) {
         return chatbotService.editMessage(getCurrentUserId(), messageId, request.getContent());
     }
 
     @PostMapping("/translate")
-    public java.util.Map<String, String> translate(@RequestParam String text, @RequestParam(defaultValue = "en") String target) {
+    public java.util.Map<String, String> translate(@RequestParam String text,
+            @RequestParam(defaultValue = "en") String target) {
         return java.util.Map.of("text", chatbotService.translateText(text, target));
     }
 
@@ -191,23 +187,18 @@ public class ChatbotController {
     public java.util.Map<String, String> transcribe(@RequestParam("audio") MultipartFile audio) {
         return java.util.Map.of("text", chatbotService.transcribeAudio(audio));
     }
+
     @PostMapping("/media/file")
     public java.util.Map<String, String> readFile(@RequestParam("file") MultipartFile file,
-                                                  @RequestParam(required = false) String question) {
+            @RequestParam(required = false) String question) {
         return java.util.Map.of("reply", chatbotService.readFileAndAnswer(file, question));
     }
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthenticated");
+            throw new com.minzetsu.ecommerce.common.exception.UnAuthorizedException("Unauthenticated");
         }
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }
 }
-
-
-
-
-
-

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getErrorMessage } from "@/lib/errors";
-import { formatCurrency } from "@/lib/format";
+import { money } from "@/lib/format";
 import { listMyVoucherUses, listMyVoucherUsesByOrder, listMyVoucherUsesByVoucher, type VoucherUseResponse } from "@/lib/voucherUseApi";
 
 function voucherUseKey(item: VoucherUseResponse) {
@@ -16,13 +16,6 @@ function voucherUseKey(item: VoucherUseResponse) {
   if (orderId > 0 && voucherId > 0) return `order-${orderId}-voucher-${voucherId}-user-${userId}`;
   if (Number(item.id ?? 0) > 0) return `id-${item.id}`;
   return `${orderId}-${voucherId}-${userId}-${item.createdAt ?? ""}-${item.discountAmount ?? ""}`;
-}
-
-function money(value: number | string | undefined) {
-  if (value === undefined || value === null) return "-";
-  const n = typeof value === "string" ? Number(value) : value;
-  if (!Number.isFinite(n)) return "-";
-  return formatCurrency(n, "VND");
 }
 
 export default function VoucherUsesPage() {
@@ -164,7 +157,7 @@ export default function VoucherUsesPage() {
                   <CardTitle className="text-base">Voucher use</CardTitle>
                   <div className="mt-1 text-sm text-muted-foreground">Discount: {money(u.discountAmount)}</div>
                   <div className="mt-1 text-xs text-muted-foreground">
-                    Order #{u.orderId ?? "-"} · {u.voucherName ?? u.voucherCode ?? `Voucher #${u.voucherId ?? "-"}`}
+                    Order #{u.orderId ?? "-"} ï¿½ {u.voucherName ?? u.voucherCode ?? `Voucher #${u.voucherId ?? "-"}`}
                   </div>
                 </div>
                 {u.orderId ? (

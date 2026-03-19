@@ -10,15 +10,11 @@ import { useToast } from "@/app/ToastProvider";
 import { useNotifications } from "@/app/NotificationProvider";
 import { ApiError } from "@/lib/apiError";
 import { getErrorMessage } from "@/lib/errors";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, money } from "@/lib/format";
 import { getOrCreateCart, getOrCreateGuestCart, getStoredGuestId, type CartResponse } from "@/lib/cartApi";
 import { createGuestOrder, createMyOrder, getMyVoucherDiscount } from "@/lib/orderApi";
 import { getDefaultAddress, listAddresses, type AddressResponse } from "@/lib/userApi";
 import { filterMyVouchersByMinOrderAmount, getMyVouchersByCode, type VoucherResponse } from "@/lib/voucherApi";
-
-function money(value: number, currency: string) {
-  return formatCurrency(Number.isFinite(value) ? value : 0, currency || "VND");
-}
 
 function toNumber(value: number | string | undefined) {
   if (value === undefined || value === null) return 0;

@@ -22,9 +22,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Value("${public-endpoint}")
     private String publicEndpoint;
 
-    void existsById(Long id) {
+    private void requireExistsById(Long id) {
         if (!notificationRepository.existsById(id)) {
             throw new RuntimeException("Notification not found with id: " + id);
         }
@@ -52,15 +52,11 @@ public class NotificationServiceImpl implements NotificationService {
             "REVIEW", "reviews",
             "VOUCHER", "vouchers",
             "PRODUCT", "products",
-            "CATEGORY", "categories"
-    );
+            "CATEGORY", "categories");
 
-    private final List<NotificationType> publicKeys = new ArrayList<>(
-            List.of(
-                    NotificationType.PRODUCT,
-                    NotificationType.CATEGORY
-            )
-    );
+    private static final Set<NotificationType> PUBLIC_TYPES = Set.of(
+            NotificationType.PRODUCT,
+            NotificationType.CATEGORY);
 
     private String resolveEndpoint(NotificationType type, String referenceType) {
         if (referenceType == null || referenceType.isBlank()) {
@@ -74,7 +70,7 @@ public class NotificationServiceImpl implements NotificationService {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         String baseEndpoint;
-        if (publicKeys.contains(notification.getType())) {
+        if (PUBLIC_TYPES.contains(notification.getType())) {
             baseEndpoint = publicEndpoint;
         } else if (isAdmin) {
             baseEndpoint = adminEndpoint;
@@ -121,7 +117,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     @AuditAction(action = "NOTIFICATION_READ_UPDATED", entityType = "NOTIFICATION", idParamIndex = 0)
     public void updateNotificationReadStatus(Long id, Boolean isRead) {
-        existsById(id);
+        requireExistsById(id);
         notificationRepository.updateIsReadById(id, isRead);
     }
 
@@ -129,7 +125,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     @AuditAction(action = "NOTIFICATION_HIDDEN_UPDATED", entityType = "NOTIFICATION", idParamIndex = 0)
     public void updateNotificationHiddenStatus(Long id, Boolean isHidden) {
-        existsById(id);
+        requireExistsById(id);
         notificationRepository.updateIsHiddenById(id, isHidden);
     }
 
@@ -149,8 +145,7 @@ public class NotificationServiceImpl implements NotificationService {
                 pageable,
                 notificationRepository,
                 NotificationSpecification.filter(filter),
-                this::toResponse
-        );
+                this::toResponse);
     }
 
     @Override
@@ -167,4 +162,3 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.updateIsHiddenByUserId(userId, isHidden);
     }
 }
-

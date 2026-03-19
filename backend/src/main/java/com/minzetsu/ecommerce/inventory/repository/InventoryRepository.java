@@ -28,6 +28,10 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long>, Jpa
     void updateStockQuantityById(Integer quantity, Long id);
 
     @Modifying
+    @Query("UPDATE Inventory i SET i.stockQty = :quantity WHERE i.id = :id")
+    void setStockQuantityById(Integer quantity, Long id);
+
+    @Modifying
     @Query("UPDATE Inventory i SET i.reservedQty = i.reservedQty + :quantity WHERE i.id = :id")
     void updateReservedQuantityById(Integer quantity, Long id);
 

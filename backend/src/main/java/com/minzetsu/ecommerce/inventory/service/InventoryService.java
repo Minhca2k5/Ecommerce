@@ -23,6 +23,7 @@ public interface InventoryService {
     Integer getAvailableStockQuantityByProductId(Long productId);
     void updateQuantityByCartItemAmountBorrowed(Long productId, Integer amount);
     void updateQuantityByCartItemAmountReturnedOrCheckouted(Long productId, Integer amount, boolean isCheckout);
+    void setAdminStockQuantityById(Integer quantity, Long id);
     void updateStockQuantityById(Integer quantity, Long id);
     void updateReservedQuantityById(Integer quantity, Long id);
     List<InventoryResponse> getAdminInventoryResponsesByProductId(Long productId);

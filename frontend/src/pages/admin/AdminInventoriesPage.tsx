@@ -37,7 +37,6 @@ export default function AdminInventoriesPage() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const [editQtyId, setEditQtyId] = useState<number | null>(null);
-  const [editQtyType, setEditQtyType] = useState<"stock" | "reserved">("stock");
   const [editQtyValue, setEditQtyValue] = useState("");
   const [isQtyOpen, setIsQtyOpen] = useState(false);
 
@@ -45,7 +44,6 @@ export default function AdminInventoriesPage() {
     productId: "",
     warehouseId: "",
     stockQty: "0",
-    reservedQty: "0",
   });
 
   const query = useMemo(() => {
@@ -107,7 +105,7 @@ export default function AdminInventoriesPage() {
   }, [warehouses]);
 
   function openCreate() {
-    setForm({ productId: "", warehouseId: "", stockQty: "0", reservedQty: "0" });
+    setForm({ productId: "", warehouseId: "", stockQty: "0" });
     setIsFormOpen(true);
   }
 
@@ -116,10 +114,9 @@ export default function AdminInventoriesPage() {
       productId: Number(form.productId),
       warehouseId: Number(form.warehouseId),
       stockQty: Number(form.stockQty),
-      reservedQty: Number(form.reservedQty),
     };
-    if (!payload.productId || !payload.warehouseId || payload.stockQty < 0 || payload.reservedQty < 0) {
-      toast.push({ variant: "error", title: "Invalid form", message: "Product, warehouse, and non-negative quantities are required." });
+    if (!payload.productId || !payload.warehouseId || payload.stockQty < 0) {
+      toast.push({ variant: "error", title: "Invalid form", message: "Product, warehouse, and a non-negative stock quantity are required." });
       return;
     }
     try {
@@ -132,12 +129,11 @@ export default function AdminInventoriesPage() {
     }
   }
 
-  function openQty(inv: AdminInventory, type: "stock" | "reserved") {
+  function openQty(inv: AdminInventory) {
     const id = getNumber(inv, "id") ?? 0;
     if (!id) return;
     setEditQtyId(id);
-    setEditQtyType(type);
-    setEditQtyValue(String(type === "stock" ? inv["stockQty"] ?? "" : inv["reservedQty"] ?? ""));
+    setEditQtyValue(String(inv["stockQty"] ?? ""));
     setIsQtyOpen(true);
   }
 
@@ -149,8 +145,8 @@ export default function AdminInventoriesPage() {
       return;
     }
     try {
-      await adminPatch(`/api/admin/inventories/${id}/${editQtyType}${buildQuery({ quantity: qty })}`);
-      toast.push({ variant: "success", title: "Updated", message: "Quantity updated." });
+      await adminPatch(`/api/admin/inventories/${id}/stock${buildQuery({ quantity: qty })}`);
+      toast.push({ variant: "success", title: "Updated", message: "Stock quantity updated." });
       setIsQtyOpen(false);
       await load();
     } catch (e) {
@@ -257,15 +253,11 @@ export default function AdminInventoriesPage() {
                         </td>
                         <td className="px-4 py-3">{warehouseName}</td>
                         <td className="px-4 py-3">
-                          <button className="rounded-md border bg-background px-3 py-1 text-sm hover:bg-muted" onClick={() => openQty(inv, "stock")}>
+                          <button className="rounded-md border bg-background px-3 py-1 text-sm hover:bg-muted" onClick={() => openQty(inv)}>
                             {stockQty}
                           </button>
                         </td>
-                        <td className="px-4 py-3">
-                          <button className="rounded-md border bg-background px-3 py-1 text-sm hover:bg-muted" onClick={() => openQty(inv, "reserved")}>
-                            {reservedQty}
-                          </button>
-                        </td>
+                        <td className="px-4 py-3">{reservedQty}</td>
                         <td className="px-4 py-3">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -334,9 +326,8 @@ export default function AdminInventoriesPage() {
               ))}
             </select>
           </div>
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-1">
             <Input value={form.stockQty} onChange={(e) => setForm((f) => ({ ...f, stockQty: e.target.value }))} placeholder="Stock qty" className="rounded-md" />
-            <Input value={form.reservedQty} onChange={(e) => setForm((f) => ({ ...f, reservedQty: e.target.value }))} placeholder="Reserved qty" className="rounded-md" />
           </div>
           <div className="mt-2 flex justify-end gap-2">
             <Button variant="outline" className="rounded-md" onClick={() => setIsFormOpen(false)}>
@@ -349,9 +340,10 @@ export default function AdminInventoriesPage() {
         </div>
       </Modal>
 
-      <Modal isOpen={isQtyOpen} title={editQtyId ? `Update ${editQtyType} quantity for #${editQtyId}` : "Update quantity"} onClose={() => setIsQtyOpen(false)}>
+      <Modal isOpen={isQtyOpen} title={editQtyId ? `Update stock quantity for #${editQtyId}` : "Update stock quantity"} onClose={() => setIsQtyOpen(false)}>
         <div className="grid gap-3">
           <Input value={editQtyValue} onChange={(e) => setEditQtyValue(e.target.value)} placeholder="Quantity" className="rounded-md" />
+          <div className="text-sm text-muted-foreground">Reserved quantity is system-managed and cannot be edited here.</div>
           <div className="mt-2 flex justify-end gap-2">
             <Button variant="outline" className="rounded-md" onClick={() => setIsQtyOpen(false)}>
               Cancel

@@ -6,18 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getErrorMessage } from "@/lib/errors";
-import { formatCurrency } from "@/lib/format";
+import { money } from "@/lib/format";
 import { filterMyVouchersByMinOrderAmount, getMyVouchersByCode, type VoucherResponse } from "@/lib/voucherApi";
 
 function toNumber(value: number | string | undefined) {
   if (value === undefined || value === null) return 0;
   const n = typeof value === "string" ? Number(value) : value;
   return Number.isFinite(n) ? n : 0;
-}
-
-function money(value: number | string | undefined, currency = "VND") {
-  const n = toNumber(value);
-  return formatCurrency(n, currency);
 }
 
 function badgeForUses(remaining?: number) {

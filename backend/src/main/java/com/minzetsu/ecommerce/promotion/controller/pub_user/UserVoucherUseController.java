@@ -26,10 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserVoucherUseController {
     private final VoucherUseService voucherUseService;
 
-    @Operation(
-            summary = "Lấy các bản ghi sử dụng voucher của người dùng hiện tại",
-            description = "Lấy các bản ghi sử dụng voucher của người dùng hiện tại với khả năng phân trang và sắp xếp."
-    )
+    @Operation(summary = "Lấy các bản ghi sử dụng voucher của người dùng hiện tại", description = "Lấy các bản ghi sử dụng voucher của người dùng hiện tại với khả năng phân trang và sắp xếp.")
     @ApiResponse(responseCode = "200", description = "Lấy các bản ghi sử dụng voucher của người dùng hiện tại thành công")
     @GetMapping("/user/me")
     public ResponseEntity<Page<VoucherUseResponse>> getVoucherUseResponses(Pageable pageable) {
@@ -38,39 +35,34 @@ public class UserVoucherUseController {
         return ResponseEntity.ok(voucherUses);
     }
 
-    @Operation(
-            summary = "Lấy các bản ghi sử dụng voucher theo orderId của người dùng hiện tại",
-            description = "Lấy các bản ghi sử dụng voucher theo orderId của người dùng hiện tại với khả năng phân trang và sắp xếp."
-    )
+    @Operation(summary = "Lấy các bản ghi sử dụng voucher theo orderId của người dùng hiện tại", description = "Lấy các bản ghi sử dụng voucher theo orderId của người dùng hiện tại với khả năng phân trang và sắp xếp.")
     @ApiResponse(responseCode = "200", description = "Lấy các bản ghi sử dụng voucher theo orderId của người dùng hiện tại thành công")
     @GetMapping("/order/{orderId}")
     public ResponseEntity<Page<VoucherUseResponse>> getVoucherUseResponsesByOrderId(
             @PathVariable Long orderId,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         Long userId = getCurrentUserId();
-        Page<VoucherUseResponse> voucherUses = voucherUseService.getVoucherUseResponseByOrderIdAndUserId(orderId, userId, pageable);
+        Page<VoucherUseResponse> voucherUses = voucherUseService.getVoucherUseResponseByOrderIdAndUserId(orderId,
+                userId, pageable);
         return ResponseEntity.ok(voucherUses);
     }
 
-    @Operation(
-            summary = "Lấy các bản ghi sử dụng voucher theo voucherId của người dùng hiện tại",
-            description = "Lấy các bản ghi sử dụng voucher theo voucherId của người dùng hiện tại với khả năng phân trang và sắp xếp.")
+    @Operation(summary = "Lấy các bản ghi sử dụng voucher theo voucherId của người dùng hiện tại", description = "Lấy các bản ghi sử dụng voucher theo voucherId của người dùng hiện tại với khả năng phân trang và sắp xếp.")
     @ApiResponse(responseCode = "200", description = "Lấy các bản ghi sử dụng voucher theo voucherId của người dùng hiện tại thành công")
     @GetMapping("/voucher/{voucherId}")
     public ResponseEntity<Page<VoucherUseResponse>> getVoucherUseResponsesByVoucherId(
             @PathVariable Long voucherId,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         Long userId = getCurrentUserId();
-        Page<VoucherUseResponse> voucherUses = voucherUseService.getVoucherUseResponseByVoucherIdAndUserId(voucherId, userId, pageable);
+        Page<VoucherUseResponse> voucherUses = voucherUseService.getVoucherUseResponseByVoucherIdAndUserId(voucherId,
+                userId, pageable);
         return ResponseEntity.ok(voucherUses);
     }
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthenticated");
+            throw new com.minzetsu.ecommerce.common.exception.UnAuthorizedException("Unauthenticated");
         }
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }

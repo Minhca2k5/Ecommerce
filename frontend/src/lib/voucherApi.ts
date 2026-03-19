@@ -34,8 +34,3 @@ export function filterMyVouchersByMinOrderAmount(minOrderAmount: number, params?
 export function getMyVoucherById(voucherId: number) {
   return apiJson<VoucherResponse>(`/api/users/me/vouchers/${voucherId}`, { method: "GET", auth: true });
 }
-
-// Backward-compatible exports (older code paths)
-export const getVouchersByCode = getMyVouchersByCode;
-export const filterVouchersByMinOrderAmount = filterMyVouchersByMinOrderAmount;
-export const getVoucherById = getMyVoucherById;

@@ -28,16 +28,12 @@ public class UserRecentViewController {
 
     private final RecentViewService recentViewService;
 
-    @Operation(
-            summary = "Lấy danh sách recent views",
-            description = "Trả về danh sách sản phẩm người dùng đã xem gần đây. Hỗ trợ tìm kiếm theo tên sản phẩm và phân trang."
-    )
+    @Operation(summary = "Lấy danh sách recent views", description = "Trả về danh sách sản phẩm người dùng đã xem gần đây. Hỗ trợ tìm kiếm theo tên sản phẩm và phân trang.")
     @ApiResponse(responseCode = "200", description = "Lấy danh sách recent views thành công")
     @GetMapping
     public ResponseEntity<Page<RecentViewResponse>> getUserRecentViews(
             @RequestParam(required = false) String productName,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         Long userId = getCurrentUserId();
         if (productName != null && !productName.isEmpty()) {
             List<RecentViewResponse> list = recentViewService.getRecentViewsByProductName(productName, userId);
@@ -46,10 +42,7 @@ public class UserRecentViewController {
         return ResponseEntity.ok(recentViewService.getRecentViewsByUserId(userId, pageable));
     }
 
-    @Operation(
-            summary = "Thêm sản phẩm vào recent views",
-            description = "Thêm sản phẩm vào danh sách recent views của người dùng. Nếu đã tồn tại record, hệ thống sẽ cập nhật lại thời gian xem."
-    )
+    @Operation(summary = "Thêm sản phẩm vào recent views", description = "Thêm sản phẩm vào danh sách recent views của người dùng. Nếu đã tồn tại record, hệ thống sẽ cập nhật lại thời gian xem.")
     @ApiResponse(responseCode = "200", description = "Thêm hoặc cập nhật recent view thành công")
     @PostMapping
     public ResponseEntity<RecentViewResponse> addUserRecentView(@Valid @RequestBody RecentViewRequest request) {
@@ -57,10 +50,7 @@ public class UserRecentViewController {
         return ResponseEntity.ok(recentViewService.addRecentView(request, userId));
     }
 
-    @Operation(
-            summary = "Xóa một recent view",
-            description = "Xóa một mục recent view theo ID. Người dùng chỉ có thể xóa mục của chính họ."
-    )
+    @Operation(summary = "Xóa một recent view", description = "Xóa một mục recent view theo ID. Người dùng chỉ có thể xóa mục của chính họ.")
     @ApiResponse(responseCode = "200", description = "Xóa recent view thành công")
     @ApiResponse(responseCode = "404", description = "Không tìm thấy recent view")
     @DeleteMapping("/{recentViewId}")
@@ -70,10 +60,7 @@ public class UserRecentViewController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(
-            summary = "Xóa toàn bộ recent views",
-            description = "Xóa toàn bộ lịch sử xem sản phẩm của người dùng."
-    )
+    @Operation(summary = "Xóa toàn bộ recent views", description = "Xóa toàn bộ lịch sử xem sản phẩm của người dùng.")
     @ApiResponse(responseCode = "200", description = "Xóa toàn bộ recent views thành công")
     @DeleteMapping
     public ResponseEntity<Void> clearUserRecentViews() {
@@ -85,7 +72,7 @@ public class UserRecentViewController {
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthenticated");
+            throw new com.minzetsu.ecommerce.common.exception.UnAuthorizedException("Unauthenticated");
         }
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }

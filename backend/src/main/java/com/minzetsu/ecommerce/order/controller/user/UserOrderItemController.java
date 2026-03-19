@@ -25,39 +25,27 @@ public class UserOrderItemController {
 
     private final OrderItemService orderItemService;
 
-    @Operation(
-            summary = "Lấy thông tin chi tiết của một sản phẩm trong đơn hàng",
-            description = "Trả về thông tin chi tiết của một mục đơn hàng (sản phẩm) thuộc đơn hàng của người dùng hiện tại."
-    )
+    @Operation(summary = "Lấy thông tin chi tiết của một sản phẩm trong đơn hàng", description = "Trả về thông tin chi tiết của một mục đơn hàng (sản phẩm) thuộc đơn hàng của người dùng hiện tại.")
     @GetMapping("/{orderItemId}")
     public ResponseEntity<OrderItemResponse> getCurrentUserOrderItemById(
-            @PathVariable("orderItemId") Long orderItemId
-    ) {
+            @PathVariable("orderItemId") Long orderItemId) {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(orderItemService.getOrderItemResponseByIdAndUserId(orderItemId, userId));
     }
 
-    @Operation(
-            summary = "Lấy toàn bộ danh sách sản phẩm trong đơn hàng",
-            description = "Trả về danh sách tất cả các sản phẩm trong đơn hàng của người dùng hiện tại (không phân trang)."
-    )
+    @Operation(summary = "Lấy toàn bộ danh sách sản phẩm trong đơn hàng", description = "Trả về danh sách tất cả các sản phẩm trong đơn hàng của người dùng hiện tại (không phân trang).")
     @GetMapping("/all")
     public ResponseEntity<List<OrderItemResponse>> getAllCurrentUserOrderItems(
-            @PathVariable("orderId") Long orderId
-    ) {
+            @PathVariable("orderId") Long orderId) {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(orderItemService.getOrderItemResponsesByOrderIdAndUserId(orderId, userId));
     }
 
-    @Operation(
-            summary = "Lấy danh sách sản phẩm trong đơn hàng (phân trang)",
-            description = "Trả về danh sách các sản phẩm trong đơn hàng của người dùng hiện tại, hỗ trợ phân trang."
-    )
+    @Operation(summary = "Lấy danh sách sản phẩm trong đơn hàng (phân trang)", description = "Trả về danh sách các sản phẩm trong đơn hàng của người dùng hiện tại, hỗ trợ phân trang.")
     @GetMapping
     public ResponseEntity<Page<OrderItemResponse>> getPagedCurrentUserOrderItems(
             @PathVariable("orderId") Long orderId,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(orderItemService.getOrderItemResponsesByOrderIdAndUserId(orderId, userId, pageable));
     }
@@ -65,7 +53,7 @@ public class UserOrderItemController {
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthenticated");
+            throw new com.minzetsu.ecommerce.common.exception.UnAuthorizedException("Unauthenticated");
         }
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }

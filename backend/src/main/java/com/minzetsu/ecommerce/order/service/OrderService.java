@@ -17,6 +17,7 @@ public interface OrderService {
     Order getOrderById(Long id);
     Order getOrderByIdAndUserId(Long id, Long userId);
     void updateOrderStatus(Long id, OrderStatus status);
+    void updateAdminOrderStatus(Long id, OrderStatus status);
     void updateOrderCurrency(Long id, String currency);
     Page<OrderResponse> searchOrderResponses(OrderFilter filter, Pageable pageable);
     List<OrderResponse> getOrderResponsesByUserId(Long userId);

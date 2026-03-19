@@ -22,16 +22,11 @@ import java.util.List;
 @RequestMapping("/api/users/me/vouchers")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('USER')")
-@Tag(
-        name = "User - Vouchers", description = "Quản lý voucher của người dùng"
-)
+@Tag(name = "User - Vouchers", description = "Quản lý voucher của người dùng")
 public class UserVoucherController {
     private final VoucherService voucherService;
 
-    @Operation(
-            summary = "Lấy danh sách voucher của người dùng theo code",
-            description = "Lấy danh sách voucher với khả năng lọc theo mã voucher."
-    )
+    @Operation(summary = "Lấy danh sách voucher của người dùng theo code", description = "Lấy danh sách voucher với khả năng lọc theo mã voucher.")
     @ApiResponse(responseCode = "200", description = "Lấy danh sách voucher thành công")
     @GetMapping
     public ResponseEntity<List<UserVoucherResponse>> getVouchersByCode(@RequestParam String code) {
@@ -40,30 +35,23 @@ public class UserVoucherController {
         return ResponseEntity.ok(vouchers);
     }
 
-    @Operation(
-            summary = "Lấy danh sách voucher của người dùng theo số tiền đơn hàng tối thiểu",
-            description = "Lấy danh sách voucher với khả năng lọc, phân trang và sắp xếp."
-    )
+    @Operation(summary = "Lấy danh sách voucher của người dùng theo số tiền đơn hàng tối thiểu", description = "Lấy danh sách voucher với khả năng lọc, phân trang và sắp xếp.")
     @ApiResponse(responseCode = "200", description = "Lấy danh sách voucher thành công")
     @GetMapping("/filter")
     public ResponseEntity<Page<UserVoucherResponse>> getVouchersByMinOrderAmount(
             @RequestParam BigDecimal minOrderAmount,
-            Pageable pageable
-            ) {
+            Pageable pageable) {
         Long userId = getCurrentUserId();
-        Page<UserVoucherResponse> vouchers = voucherService.searchVoucherResponsesByMinOrderTotal(minOrderAmount, userId, pageable);
+        Page<UserVoucherResponse> vouchers = voucherService.searchVoucherResponsesByMinOrderTotal(minOrderAmount,
+                userId, pageable);
         return ResponseEntity.ok(vouchers);
     }
 
-    @Operation(
-            summary = "Lấy thông tin voucher của người dùng theo ID",
-            description = "Trả về thông tin cơ bản của một voucher (chỉ dữ liệu chính, không có chi tiết liên kết)."
-    )
+    @Operation(summary = "Lấy thông tin voucher của người dùng theo ID", description = "Trả về thông tin cơ bản của một voucher (chỉ dữ liệu chính, không có chi tiết liên kết).")
     @ApiResponse(responseCode = "200", description = "Lấy thông tin voucher thành công")
     @GetMapping("/{voucherId}")
     public ResponseEntity<UserVoucherResponse> getVoucherById(
-            @PathVariable("voucherId") Long voucherId
-    ) {
+            @PathVariable("voucherId") Long voucherId) {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(voucherService.getVoucherResponseById(voucherId, userId));
     }
@@ -71,7 +59,7 @@ public class UserVoucherController {
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthenticated");
+            throw new com.minzetsu.ecommerce.common.exception.UnAuthorizedException("Unauthenticated");
         }
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }

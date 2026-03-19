@@ -24,54 +24,37 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(
-            summary = "Lấy thông tin cá nhân cơ bản",
-            description = "Trả về thông tin cơ bản của người dùng hiện tại như tên, email, vai trò, trạng thái, v.v."
-    )
+    @Operation(summary = "Lấy thông tin cá nhân cơ bản", description = "Trả về thông tin cơ bản của người dùng hiện tại như tên, email, vai trò, trạng thái, v.v.")
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getProfile() {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(userService.getUserResponseById(userId));
     }
 
-    @Operation(
-            summary = "Lấy thông tin cá nhân chi tiết",
-            description = "Trả về thông tin chi tiết của người dùng hiện tại, bao gồm địa chỉ, đơn hàng, giỏ hàng, v.v."
-    )
+    @Operation(summary = "Lấy thông tin cá nhân chi tiết", description = "Trả về thông tin chi tiết của người dùng hiện tại, bao gồm địa chỉ, đơn hàng, giỏ hàng, v.v.")
     @GetMapping("/me/details")
     public ResponseEntity<UserResponse> getFullProfile() {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(userService.getFullUserResponseById(userId));
     }
 
-    @Operation(
-            summary = "Cập nhật thông tin cá nhân",
-            description = "Cho phép người dùng cập nhật thông tin hồ sơ như tên, số điện thoại, địa chỉ email (nếu được phép)."
-    )
+    @Operation(summary = "Cập nhật thông tin cá nhân", description = "Cho phép người dùng cập nhật thông tin hồ sơ như tên, số điện thoại, địa chỉ email (nếu được phép).")
     @PutMapping("/me")
     public ResponseEntity<UserResponse> updateProfile(
-            @Valid @RequestBody UserUpdateRequest request
-    ) {
+            @Valid @RequestBody UserUpdateRequest request) {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(userService.updateUserResponse(request, userId));
     }
 
-    @Operation(
-            summary = "Thay đổi mật khẩu",
-            description = "Cho phép người dùng thay đổi mật khẩu bằng cách cung cấp mật khẩu hiện tại và mật khẩu mới."
-    )
+    @Operation(summary = "Thay đổi mật khẩu", description = "Cho phép người dùng thay đổi mật khẩu bằng cách cung cấp mật khẩu hiện tại và mật khẩu mới.")
     @PatchMapping("/me/password")
     public ResponseEntity<UserResponse> changePassword(
-            @Valid @RequestBody PasswordRequest request
-    ) {
+            @Valid @RequestBody PasswordRequest request) {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(userService.changeUserPassword(userId, request));
     }
 
-    @Operation(
-            summary = "Xóa tài khoản người dùng",
-            description = "Xóa vĩnh viễn tài khoản của người dùng hiện tại khỏi hệ thống (sau khi xác thực)."
-    )
+    @Operation(summary = "Xóa tài khoản người dùng", description = "Xóa vĩnh viễn tài khoản của người dùng hiện tại khỏi hệ thống (sau khi xác thực).")
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteMyAccount() {
         Long userId = getCurrentUserId();
@@ -82,7 +65,7 @@ public class UserController {
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthenticated");
+            throw new com.minzetsu.ecommerce.common.exception.UnAuthorizedException("Unauthenticated");
         }
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/app/AuthProvider";
 import { useToast } from "@/app/ToastProvider";
 import { getErrorMessage } from "@/lib/errors";
-import { formatCurrency } from "@/lib/format";
+import { money } from "@/lib/format";
 import {
   addOrUpdateCartItem,
   addOrUpdateGuestCartItem,
@@ -27,11 +27,6 @@ import {
   type CartItemResponse,
   type CartResponse,
 } from "@/lib/cartApi";
-
-function money(value: number | undefined, currency: string | undefined) {
-  if (value === undefined || value === null) return "-";
-  return formatCurrency(value, currency || "VND");
-}
 
 export default function CartPage() {
   const auth = useAuth();

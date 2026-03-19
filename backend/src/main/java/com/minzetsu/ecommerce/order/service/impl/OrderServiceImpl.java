@@ -189,9 +189,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @AuditAction(action = "ORDER_STATUS_UPDATED", entityType = "ORDER", idParamIndex = 0)
     public void updateOrderStatus(Long id, OrderStatus status) {
-        if (!existsById(id)) {
-            throw new NotFoundException("Order not found with id: " + id);
-        }
+        Order order = getExistingOrder(id);
         orderRepository.updateStatusById(id, status);
         eventPublisher.publishEvent(new WebhookEvent(
                 "ORDER_STATUS_UPDATED",
@@ -200,12 +198,34 @@ public class OrderServiceImpl implements OrderService {
                 null
         ));
         domainEventPublisher.publish(DomainEventType.ORDER_STATUS_UPDATED, id, null, Map.of("status", status.name()));
-        orderRepository.findById(id).ifPresent(order ->
-                sseEmitterService.sendToUser(order.getUser().getId(), "order-status", Map.of(
-                        "orderId", id,
-                        "status", status.name()
-                ))
-        );
+        sseEmitterService.sendToUser(order.getUser().getId(), "order-status", Map.of(
+                "orderId", id,
+                "status", status.name()
+        ));
+    }
+
+    @Override
+    @Transactional
+    @AuditAction(action = "ORDER_STATUS_UPDATED", entityType = "ORDER", idParamIndex = 0)
+    public void updateAdminOrderStatus(Long id, OrderStatus status) {
+        Order order = getExistingOrder(id);
+        OrderStatus currentStatus = order.getStatus();
+
+        boolean allowed = switch (currentStatus) {
+            case PAID -> status == OrderStatus.PROCESSING;
+            case PROCESSING -> status == OrderStatus.SHIPPED;
+            case SHIPPED -> status == OrderStatus.DELIVERED;
+            default -> false;
+        };
+
+        if (!allowed) {
+            throw new AppException(
+                    "Admin can only move orders through PAID -> PROCESSING -> SHIPPED -> DELIVERED",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
+        updateOrderStatus(id, status);
     }
 
     @Override

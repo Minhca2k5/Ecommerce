@@ -10,15 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.minzetsu.ecommerce.realtime.service.SseEmitterService;
 
-
 @RestController
 @RequestMapping("/api/admin/realtime")
 @PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class AdminRealtimeController {
     private final SseEmitterService emitterService;
-
-    
 
     @GetMapping("/notifications")
     public SseEmitter subscribeNotifications() {
@@ -28,12 +25,8 @@ public class AdminRealtimeController {
     private String resolveAdminKey() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthenticated");
+            throw new com.minzetsu.ecommerce.common.exception.UnAuthorizedException("Unauthenticated");
         }
         return authentication.getName();
     }
 }
-
-
-
-

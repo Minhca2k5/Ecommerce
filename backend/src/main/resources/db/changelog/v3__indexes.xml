@@ -31,6 +31,7 @@
     <include file="db/changelog/v3/v3-022-idx-recent-views-user-updated.xml"/>
     <include file="db/changelog/v3/v3-023-idx-wishlists-product-created.xml"/>
     <include file="db/changelog/v3/v3-024-idx-wishlists-user-updated.xml"/>
+    <!-- Historical numbering gap: v3-025 through v3-028 are not present in this repo snapshot. Keep the include order aligned with the applied database history. -->
     <include file="db/changelog/v3/v3-029-idx-voucher-uses-voucher.xml"/>
     <include file="db/changelog/v3/v3-030-idx-voucher-uses-user.xml"/>
     <include file="db/changelog/v3/v3-031-idx-voucher-uses-order.xml"/>
@@ -42,5 +43,3 @@
     <include file="db/changelog/v3/v3-037-idx-refresh-tokens-user.xml"/>
 
 </databaseChangeLog>
-
-

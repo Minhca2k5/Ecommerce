@@ -14,7 +14,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.minzetsu.ecommerce.realtime.service.SseEmitterService;
 import com.minzetsu.ecommerce.realtime.service.ChatbotRealtimeService;
 
-
 @RestController
 @RequestMapping("/api/users/me/realtime")
 @PreAuthorize("hasRole('USER')")
@@ -40,13 +39,8 @@ public class UserRealtimeController {
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthenticated");
+            throw new com.minzetsu.ecommerce.common.exception.UnAuthorizedException("Unauthenticated");
         }
         return ((CustomUserDetails) authentication.getPrincipal()).getId();
     }
 }
-
-
-
-
-

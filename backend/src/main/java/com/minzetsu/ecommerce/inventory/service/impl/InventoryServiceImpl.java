@@ -1,6 +1,7 @@
 package com.minzetsu.ecommerce.inventory.service.impl;
 
 import com.minzetsu.ecommerce.common.audit.entity.AuditAction;
+import com.minzetsu.ecommerce.common.exception.AppException;
 import com.minzetsu.ecommerce.common.exception.InsufficientNumberException;
 import com.minzetsu.ecommerce.common.exception.NotFoundException;
 import com.minzetsu.ecommerce.common.utils.PageableUtils;
@@ -17,6 +18,7 @@ import com.minzetsu.ecommerce.product.entity.ProductStatus;
 import com.minzetsu.ecommerce.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -186,6 +188,18 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     @Transactional
     @AuditAction(action = "INVENTORY_STOCK_UPDATED", entityType = "INVENTORY", idParamIndex = 1)
+    public void setAdminStockQuantityById(Integer quantity, Long id) {
+        Inventory inventory = inventoryRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Inventory not found with id: " + id));
+        if (quantity < inventory.getReservedQty()) {
+            throw new AppException("Stock quantity cannot be lower than reserved quantity", HttpStatus.BAD_REQUEST);
+        }
+        inventoryRepository.setStockQuantityById(quantity, id);
+    }
+
+    @Override
+    @Transactional
+    @AuditAction(action = "INVENTORY_STOCK_UPDATED", entityType = "INVENTORY", idParamIndex = 1)
     public void updateStockQuantityById(Integer quantity, Long id) {
         if (!existsById(id)) {
             throw new NotFoundException("Inventory not found with id: " + id);
@@ -197,10 +211,7 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional
     @AuditAction(action = "INVENTORY_RESERVED_UPDATED", entityType = "INVENTORY", idParamIndex = 1)
     public void updateReservedQuantityById(Integer quantity, Long id) {
-        if (!existsById(id)) {
-            throw new NotFoundException("Inventory not found with id: " + id);
-        }
-        inventoryRepository.updateReservedQuantityById(quantity, id);
+        throw new AppException("Reserved quantity is system-managed and cannot be changed by admin", HttpStatus.FORBIDDEN);
     }
 
     @Override
@@ -226,6 +237,7 @@ public class InventoryServiceImpl implements InventoryService {
         Inventory inventory = inventoryMapper.toEntity(request);
         inventory.setWarehouse(warehouseService.getWarehouseById(warehouseId));
         inventory.setProduct(productService.getProductById(productId));
+        inventory.setReservedQty(0);
 
         return inventoryMapper.toAdminResponse(inventoryRepository.save(inventory));
     }
