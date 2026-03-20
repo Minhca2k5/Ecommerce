@@ -3,7 +3,7 @@
 > **Author:** Phan Dinh Minh (Minzetsu)  
 > **Last Updated:** March 20, 2026
 
-Production-style full-stack e-commerce platform with customer, admin, realtime, analytics, and chatbot workflows. The codebase is structured as a monolith with clear domain boundaries, not a tutorial scaffold.
+Backend-first, production-style e-commerce platform with customer, admin, realtime, analytics, and chatbot workflows. The codebase is structured as a monolith with explicit domain boundaries and event-driven interactions, not a tutorial scaffold.
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.7-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
@@ -11,20 +11,21 @@ Production-style full-stack e-commerce platform with customer, admin, realtime, 
 [![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
 
 
-## Snapshot
+## Core Stack
 
+- **Backend:** Spring Boot 3.5.7, Spring Security 6, JPA, Liquibase, Actuator
+- **Distributed systems:** Redis, RabbitMQ, Elasticsearch, SSE
+- **Data:** MySQL, MongoDB
 - **Frontend:** React 19, TypeScript, Vite, TailwindCSS, React Query, Zustand, React Router
-- **Backend:** Spring Boot 3.5.7, Spring Security 6, JPA, Liquibase, RabbitMQ, SSE, Actuator
-- **Data:** MySQL, Redis, Elasticsearch, MongoDB
 - **Payments:** MoMo sandbox integration with IPN handling
-- **Quality:** request IDs, structured logs, audit logs, health/metrics endpoints
+- **Quality:** request IDs, structured logs, audit logs, health and metrics endpoints
 - **Experience:** guest checkout, cart merge on login, role-based access, admin dashboard, support chatbot
 
 ## Highlights
 
 - Covers the full commerce flow from discovery to checkout, payment, and post-order tracking.
 - Separates transactional, search, cache, event, and archive storage by responsibility.
-- Includes both storefront and admin dashboards, so the app demonstrates end-user and operator workflows.
+- Includes both storefront and admin dashboards, so the app demonstrates customer and operator workflows.
 - Adds realtime notifications, async processing, analytics, and chatbot interactions on top of the core store.
 
 ## Architecture
