@@ -1,9 +1,9 @@
-# Phase 7 Ops
+# Phase 7 Ops: Deployment & Incident Readiness
 
 Status: In Progress (kickoff baseline)
 
 ## Objective
-Run the platform in a production-ready way with repeatable deploy, basic observability, and incident response readiness.
+Run the platform in a production-ready way with repeatable deploys, baseline observability, and incident response readiness.
 
 ## Runtime Scope
 - App services: `backend`, `frontend`

@@ -3,115 +3,239 @@
 > **Author:** Phan Dinh Minh (Minzetsu)  
 > **Last Updated:** March 20, 2026
 
-Full-stack e-commerce platform built with Spring Boot and React. The project focuses on a realistic production-style workflow: authentication, product discovery, cart and checkout, payment integration, asynchronous order processing, realtime updates, search, analytics, and admin operations.
+Production-style full-stack e-commerce platform with customer, admin, realtime, analytics, and chatbot workflows. The codebase is structured as a monolith with clear domain boundaries, not a tutorial scaffold.
 
-## Project Snapshot
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.7-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
 
-- **Frontend:** React + TypeScript + Vite + TailwindCSS
-- **Backend:** Spring Boot 3.5, Spring Security, JPA, Liquibase, SSE realtime, RabbitMQ
-- **Data:** MySQL as system of record, Redis for caching, Elasticsearch for product search, MongoDB for event/log/archive data
-- **Payments:** MoMo sandbox integration
-- **Observability:** structured logs, request tracing, audit logs, actuator endpoints
-- **Experience:** guest checkout, anonymous cart merge on login, role-based access, admin dashboard, chatbot assistant
+
+## Snapshot
+
+- **Frontend:** React 19, TypeScript, Vite, TailwindCSS, React Query, Zustand, React Router
+- **Backend:** Spring Boot 3.5.7, Spring Security 6, JPA, Liquibase, RabbitMQ, SSE, Actuator
+- **Data:** MySQL, Redis, Elasticsearch, MongoDB
+- **Payments:** MoMo sandbox integration with IPN handling
+- **Quality:** request IDs, structured logs, audit logs, health/metrics endpoints
+- **Experience:** guest checkout, cart merge on login, role-based access, admin dashboard, support chatbot
+
+## Highlights
+
+- Covers the full commerce flow from discovery to checkout, payment, and post-order tracking.
+- Separates transactional, search, cache, event, and archive storage by responsibility.
+- Includes both storefront and admin dashboards, so the app demonstrates end-user and operator workflows.
+- Adds realtime notifications, async processing, analytics, and chatbot interactions on top of the core store.
 
 ## Architecture
 
 ```mermaid
 flowchart TB
-    U[Customer / Admin] --> UI[React Frontend]
-    UI --> API[Spring Boot REST API]
+    Customer[Customer] --> Frontend[React storefront]
+    Admin[Admin] --> Frontend
 
-    API --> AUTH[JWT + Refresh Token + RBAC]
-    API --> MYSQL[(MySQL)]
-    API --> REDIS[(Redis Cache)]
-    API --> ES[(Elasticsearch)]
-    API --> MQ[(RabbitMQ)]
-    API --> MONGO[(MongoDB Archive / Events)]
-    API --> PAY[MoMo Payment Gateway]
-    API --> AI[Chatbot / LLM Service]
+    Frontend --> API[Spring Boot REST API]
 
-    MQ --> WORKERS[Async Consumers]
-    WORKERS --> MYSQL
-    WORKERS --> MONGO
-    WORKERS --> REDIS
+    subgraph Security[Security and Access]
+        Auth[JWT + refresh token]
+        RBAC[Role-based access control]
+        OTP[Email OTP verification]
+    end
 
-    MYSQL --> API
-    REDIS --> API
-    ES --> API
-    MONGO --> API
+    subgraph Domains[Business Domains]
+        Public[Public storefront APIs]
+        User[Authenticated user APIs]
+        AdminApi[Admin APIs]
+        Chatbot[Chatbot + SSE streaming]
+        Payment[MoMo payment integration]
+        Analytics[Analytics APIs + ETL]
+    end
+
+    subgraph Data[Data and Storage]
+        MySQL[(MySQL)]
+        Redis[(Redis)]
+        Search[(Elasticsearch)]
+        Mongo[(MongoDB)]
+    end
+
+    subgraph Async[Async and Realtime]
+        MQ[(RabbitMQ)]
+        Consumers[Async consumers]
+        SSE[SSE notifications]
+    end
+
+    subgraph External[External Integrations]
+        MoMo[MoMo sandbox + IPN]
+        LLM[LLM / chatbot provider]
+    end
+
+    API --> Auth
+    API --> RBAC
+    API --> OTP
+
+    API --> Public
+    API --> User
+    API --> AdminApi
+    API --> Chatbot
+    API --> Payment
+    API --> Analytics
+
+    Public --> MySQL
+    Public --> Redis
+    Public --> Search
+
+    User --> MySQL
+    User --> Redis
+    User --> MQ
+    User --> Mongo
+
+    AdminApi --> MySQL
+    AdminApi --> Mongo
+    AdminApi --> Search
+    AdminApi --> SSE
+
+    Chatbot --> LLM
+    Chatbot --> Mongo
+    Chatbot --> Redis
+    Chatbot --> SSE
+
+    Payment --> MoMo
+    Payment --> MySQL
+    Payment --> MQ
+
+    MQ --> Consumers
+    Consumers --> MySQL
+    Consumers --> Redis
+    Consumers --> Mongo
+
+    Analytics --> Mongo
+    Analytics --> MySQL
+    Analytics --> Redis
 ```
 
-## How It Works
+## Key Capabilities
 
-1. The user browses products through the React frontend.
-2. The frontend calls public or authenticated REST APIs depending on the page and role.
-3. Login issues access and refresh tokens; the selected role determines whether the user sees the customer or admin experience.
-4. Product search queries Elasticsearch, while transactional data stays in MySQL.
-5. Add-to-cart, checkout, and payment steps run through the backend with validation, inventory reservation, and idempotency checks.
-6. Payment confirmation and order state changes are processed asynchronously through RabbitMQ where needed.
-7. Realtime notifications and status updates are delivered through SSE endpoints for users, admins, and chatbot streaming.
-8. Analytics and log-style events are stored separately so the operational database stays focused on transactions.
-9. The chatbot can use project/database context to answer support-style questions inside the app.
+### Customer Flow
 
-Implemented entry points include:
+1. Browse the home page, categories, products, and product details.
+2. Search products with Elasticsearch-backed ranking and filtered listing.
+3. Use guest cart or authenticated cart, then checkout with voucher support.
+4. Complete payment through MoMo sandbox or guest payment flow.
+5. Track orders, payment status, notifications, wishlist, recent views, and reviews.
+6. Use the chatbot for support-style questions, conversation history, and streaming replies.
 
-- Public storefront pages: home, categories, products, product detail, cart, checkout, guest order tracking, login, register.
-- Authenticated user pages: profile, addresses, vouchers, voucher uses, wishlist, notifications, orders, MoMo QR payment.
-- Admin pages: products, categories, product images, orders, order items, payments, analytics, users, roles, addresses, warehouses, inventories, banners, vouchers, voucher uses, notifications, audit logs, reviews, profile.
+### Admin Flow
 
-## Key Features
+1. Manage products, categories, product images, banners, vouchers, and voucher usage.
+2. Manage orders, order items, payments, users, roles, addresses, warehouses, and inventories.
+3. Review analytics, audit logs, notifications, and reviews.
+4. Reindex search data when needed and inspect operational state through dashboards and APIs.
 
-- **Authentication and authorization** with JWT, refresh tokens, role-based access control, and email OTP verification.
-- **Shopping flow** with anonymous cart, merge-on-login behavior, vouchers, guest checkout, and guest order tracking.
-- **Order lifecycle** with inventory reservation, TTL-based release, payment confirmation, and status tracking.
-- **Search and discovery** with Elasticsearch-backed product search and ranking endpoints.
-- **Realtime interactions** for notifications, order status, payment status, and chatbot streaming through SSE.
-- **Admin capabilities** for catalog, orders, users, analytics, and operational dashboards.
-- **Chatbot assistant** for contextual support.
-- **Operational safety** through Liquibase migrations, structured logging, request IDs, and audit logging.
+### Domain Map
+
+| Domain | Scope |
+| --- | --- |
+| auth | Register, OTP verification, login, refresh token |
+| user | Profile, address book, account maintenance |
+| product | Product/category catalog, images, homepage data |
+| cart | Guest cart, user cart, merge-on-login behavior |
+| order | Order lifecycle, guest checkout, voucher discount, guest order access |
+| payment | Payment records, MoMo create flow, IPN callback, admin payment views |
+| inventory | Warehouses, inventories, reservation and release logic |
+| promotion | Banners, vouchers, voucher usage |
+| review | Product reviews for users and moderation views for admin |
+| activity | Wishlist and recent-view tracking |
+| search | Admin reindex support and search pipeline integration |
+| notification | User/admin notifications and realtime delivery |
+| realtime | SSE endpoints for public, user, and admin streams |
+| chatbot | Support assistant, project/group conversation model, streaming, translation, file/voice inputs |
+| analytics | Funnel and top-product reporting, ETL, realtime counters |
+| messaging | RabbitMQ domain events and consumers |
+| common | Security, caching, rate limiting, audit logging, exception handling, health checks |
+
+## Frontend Structure
+
+### Storefront Routes
+
+- Home, categories, products, product detail
+- Cart, checkout, guest order lookup
+- Login, register, role selection
+- Profile, profile edit, password, addresses
+- My vouchers, voucher details, voucher usage history
+- Wishlist, notifications, orders, order detail, MoMo QR payment
+
+### Admin Routes
+
+- Dashboard home
+- Products, categories, product images
+- Orders, order items, payments
+- Analytics, users, roles, addresses
+- Warehouses, inventories, banners, vouchers, voucher uses
+- Notifications, audit logs, reviews
+- Profile, profile edit, password
+
+## API Namespace Convention
+
+- Public storefront: `/api/public/**`
+- Authentication: `/api/auth/**`
+- User-scoped: `/api/users/me/**`
+- Admin: `/api/admin/**`
+
+Swagger / API docs:
+
+- `http://localhost:8080/docs`
+- `http://localhost:8080/swagger-ui/index.html`
+- `http://localhost:8080/v3/api-docs`
 
 ## Tech Stack
 
 ### Backend
-- Spring Boot 3.5
+
+- Spring Boot 3.5.7
 - Spring Security 6
 - Spring Data JPA
 - Liquibase
-- MySQL
+- MySQL 8
 - Redis
 - RabbitMQ
 - Elasticsearch
 - MongoDB
 - OpenAPI / Swagger
 - Testcontainers
+- Resilience4j
 
 ### Frontend
-- React
+
+- React 19
 - TypeScript
 - Vite
 - TailwindCSS
+- React Query
+- Zustand
+- React Router
 - shadcn-style UI primitives
 
-## API Namespace Convention
-
-- Public storefront: `/api/public/**`
-- Auth: `/api/auth/**`
-- User: `/api/users/me/**`
-- Admin: `/api/admin/**`
-
-## Local Setup
+## Local Development
 
 ### Prerequisites
 
 - JDK 21
 - Node.js 18+
-- MySQL 8.0
-- Redis
-- RabbitMQ
-- Elasticsearch
-- MongoDB
+- Docker and Docker Compose
 
-### Backend
+### Recommended: Docker Compose
+
+This spins up MySQL, Redis, RabbitMQ, Elasticsearch, MongoDB, backend, frontend, and ngrok.
+
+```bash
+docker compose up --build -d
+docker compose down
+```
+
+Backend: `http://localhost:8080`  
+Frontend: `http://localhost:5173`
+
+### Backend Only
 
 ```bash
 cd backend
@@ -123,13 +247,7 @@ Useful profiles:
 - `SPRING_PROFILES_ACTIVE=dev`
 - `SPRING_PROFILES_ACTIVE=prod`
 
-Swagger / API docs:
-
-- `http://localhost:8080/docs`
-- `http://localhost:8080/swagger-ui/index.html`
-- `http://localhost:8080/v3/api-docs`
-
-### Frontend
+### Frontend Only
 
 Create `frontend/.env`:
 
@@ -145,51 +263,47 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`
-
-### Docker Compose
-
-```bash
-docker compose up --build -d
-docker compose down
-```
-
 ## Environment Variables
 
-Recommended variables for deployment:
+Common deployment variables:
 
 - `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`
 - `JWT_SECRET_KEY`
 - `REDIS_HOST`, `REDIS_PORT`
 - `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USERNAME`, `RABBITMQ_PASSWORD`
 - `ELASTICSEARCH_URIS`
-- `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, `MOMO_IPN_URL`, `MOMO_REDIRECT_URL`
+- `MOMO_PARTNER_CODE`, `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, `MOMO_ENDPOINT`, `MOMO_REDIRECT_URL`, `MOMO_IPN_URL`
 - `MAIL_USERNAME`, `MAIL_PASSWORD`
-- `CHATBOT_PROVIDER`, `CHATBOT_BASE_URL`, `CHATBOT_API_KEY`, `CHATBOT_MODEL`
+- `CHATBOT_ENABLED`, `CHATBOT_PROVIDER`, `CHATBOT_BASE_URL`, `CHATBOT_API_KEY`, `CHATBOT_MODEL`
+- `GUEST_CHECKOUT_USERNAME`, `GUEST_CHECKOUT_EMAIL`, `GUEST_CHECKOUT_PASSWORD`, `GUEST_CHECKOUT_ACCESS_TOKEN_SECRET`
 
-If no local LLM service is available, disable the chatbot or point it to a compatible provider through environment variables.
+If no chatbot provider is available, keep `CHATBOT_ENABLED=false`.
 
-## Database Migration
+## Database And Runtime Notes
 
-Liquibase changelogs are managed from `backend/src/main/resources/db/changelog/db.changelog-master.xml`.
+- Liquibase master changelog: `backend/src/main/resources/db/changelog/db.changelog-master.xml`
+- Default MySQL schema is managed through migrations, not `ddl-auto`.
+- Public APIs use cache headers and Redis-backed caching where appropriate.
+- Checkout uses idempotency, inventory reservation TTL, and abuse protection.
+- Analytics ETL materializes `clickstream_events` from Mongo into `daily_product_metrics` in MySQL.
 
-Notable schema areas include:
+## Documentation Map
 
-- core authentication and user management
-- catalog, inventory, vouchers, and orders
-- notification and audit-related records
-- analytics mart tables for reporting
+- Frontend notes: `frontend/README.md`
+- Frontend endpoint coverage: `frontend/docs/ENDPOINT_COVERAGE.md`
+- Analytics docs: `docs/analytics/`
+- Performance docs: `docs/perf/`
+- Operations docs: `docs/ops/`
+- Roadmap and phase tracking: `docs/roadmaps/PROJECT_PLAN.md`
 
-## Project Highlights
+## Delivery Status
 
-- Designed as a portfolio-ready full-stack product instead of a tutorial/demo app.
-- Covers a realistic commerce lifecycle from browsing to payment and post-order tracking.
-- Separates transactional data, search, cache, and event/archive storage for clearer system boundaries.
-- Includes admin tooling and analytics so the project demonstrates both customer-facing and operational workflows.
+- Phase 1: backend and security foundation, completed.
+- Phase 2: frontend development, completed.
+- Phase 3: performance and reliability, completed.
+- Phase 4: search, realtime, messaging, chatbot, completed.
+- Phase 5: quality, testing, and advanced data work, completed.
+- Phase 6: analytics serving and ETL, completed.
+- Phase 7: DevOps, observability, and scale, in progress.
 
-## References
-
-- Frontend-specific notes: `frontend/README.md`
-- Analytics documentation: `docs/analytics/`
-- Operations notes: `docs/ops/`
-- Roadmaps: `docs/roadmaps/`
+This repository is a strong reference for production-style full-stack commerce work: transactional data in MySQL, cache/search/event storage split by responsibility, and a frontend that exercises customer and admin operations end to end.

@@ -1,80 +1,158 @@
-# Ecommerce Frontend (Phase 2 + UX Polish)
+# Ecommerce Frontend
 
-React + TypeScript + Vite + TailwindCSS (shadcn-style primitives) UI để “visualize” toàn bộ backend APIs.
+React 19 + TypeScript + Vite + TailwindCSS storefront and admin UI for the e-commerce system.
 
-> **Status:** Phase 2 Completed + ongoing UX polish (user/admin)  
-> **Last Updated:** March 18, 2026
+> **Status:** Phase 2 completed, with ongoing UX polish  
+> **Last Updated:** March 20, 2026
+
+## Overview
+
+This app visualizes the backend domains end to end:
+
+- customer storefront flows
+- authenticated user account flows
+- admin management flows
+- realtime notifications and chatbot integration
+
+## Stack
+
+- React 19
+- TypeScript
+- Vite
+- TailwindCSS
+- React Query
+- Zustand
+- React Router
+- shadcn-style UI primitives
 
 ## Requirements
+
 - Node.js 18+
 - Backend running at `http://localhost:8080`
 
 ## Environment
-Create `frontend/.env` (or copy from `frontend/.env.example`):
+
+Create `frontend/.env`:
+
 ```bash
 VITE_API_BASE_URL=http://localhost:8080
 ```
 
-## Run (Dev)
+## Run
+
+### Dev
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open `http://localhost:5173`
 
-## Build
+Open `http://localhost:5173`.
+
+### Build
+
 ```bash
 cd frontend
 npm run build
 npm run preview
 ```
 
-## Auth + Role UX
+## Routes
+
+### Storefront
+
+- `/`
+- `/categories`
+- `/products`
+- `/products/:productId`
+- `/products/slug/:slug`
+- `/cart`
+- `/checkout`
+- `/guest/orders/:orderId`
+
+### Authenticated User
+
+- `/login`
+- `/register`
+- `/choose-role`
+- `/me`
+- `/me/edit`
+- `/me/password`
+- `/me/addresses`
+- `/me/vouchers`
+- `/me/vouchers/:voucherId`
+- `/me/voucher-uses`
+- `/me/wishlist`
+- `/notifications`
+- `/orders`
+- `/orders/:orderId`
+- `/orders/:orderId/momo-qr`
+
+### Admin
+
+- `/admin`
+- `/admin/products`
+- `/admin/categories`
+- `/admin/product-images`
+- `/admin/orders`
+- `/admin/order-items`
+- `/admin/payments`
+- `/admin/analytics`
+- `/admin/users`
+- `/admin/roles`
+- `/admin/addresses`
+- `/admin/warehouses`
+- `/admin/inventories`
+- `/admin/banners`
+- `/admin/vouchers`
+- `/admin/voucher-uses`
+- `/admin/notifications`
+- `/admin/audit-logs`
+- `/admin/reviews`
+- `/admin/profile`
+- `/admin/profile/edit`
+- `/admin/profile/password`
+
+## Auth And Role UX
+
 - Tokens are stored in `localStorage`: `accessToken`, `refreshToken`, `tokenType`.
-- If account has **multiple roles**, after login user is redirected to `/choose-role`.
-- Role switcher is available in the account dropdown (no need to logout).
-- Admin routes live under `/admin/*` and require:
-  - Token contains admin authority/role, and
-  - `selectedRole === "ADMIN"` (chosen by the user).
+- Accounts with multiple roles are redirected to `/choose-role` after login.
+- The header role switcher lets users change the selected role without logging out.
+- Admin routes require an admin authority in the token and `selectedRole === "ADMIN"`.
 
-## Vouchers
-- `My vouchers`: `/me/vouchers` (browse eligible vouchers + search by code).
-- Checkout: click `Apply voucher` to open eligible list + search by code (Shopee-like picker).
+## UX Conventions
 
-## Theme
-- Light/Dark toggle is available in the header (persisted locally).
+- No raw JSON dumps in the UI.
+- Every page should have loading, empty, and error states.
+- Tables should be horizontally scrollable on mobile via `overflow-x-auto`.
+- Light/dark theme toggle is available in the header and persisted locally.
 
-Key files:
-- `src/lib/http.ts` (auth attach + refresh + retry once)
-- `src/lib/roleSelection.ts` (extract roles from JWT + selected role storage)
-- `src/pages/ChooseRolePage.tsx`
-- `src/app/RequireAuth.tsx`, `src/app/RequireAdmin.tsx`
+## Behavior Notes
 
-## UI Structure
-- `src/app/router.tsx`: route tree
-- `src/app/AppLayout.tsx`: header/nav + alerts dropdown + role switcher UI
-- `src/admin/AdminLayout.tsx`: admin layout (sidebar desktop + mobile navigate select)
-- `src/pages/*`: storefront + user pages
-- `src/pages/admin/*`: admin CRUD pages mapped to `/api/admin/**`
-- `src/lib/*Api.ts`: API wrappers per domain
+- Orders list cards use a product-first preview instead of generic order text.
+- Orders can hydrate missing item previews from `/api/users/me/orders/{orderId}/items/all`.
+- User order chips use friendly labels such as Pending, Paid, and Cancelled.
+- Product sorting uses backend-supported endpoints for Top rated and Best sellers.
+- Home page promo sections are kept stable and non-duplicated.
 
-## Conventions
-- No raw JSON dumps in UI.
-- Every page should have: loading state, empty state, error state.
-- Tables must be horizontally scrollable on mobile (wrapped with `overflow-x-auto`).
+## Key Files
+
+- `src/app/router.tsx` - route tree
+- `src/app/AppLayout.tsx` - header, nav, alerts, role switcher
+- `src/admin/AdminLayout.tsx` - admin shell and navigation
+- `src/app/RequireAuth.tsx` - authenticated route guard
+- `src/app/RequireAdmin.tsx` - admin route guard
+- `src/lib/http.ts` - auth attach, refresh, retry once
+- `src/lib/roleSelection.ts` - role extraction and selected-role storage
+- `src/lib/*Api.ts` - API wrappers by domain
 
 ## Endpoint Coverage
-See `frontend/docs/ENDPOINT_COVERAGE.md`.
 
-## Recent UX + Behavior Updates (March 2026)
-- Orders list cards now show product-first preview (name + quantity) instead of generic order text.
-- Orders list can hydrate item previews via `/api/users/me/orders/{orderId}/items/all` if item details are missing in `/api/users/me/orders`.
-- User order status chips use friendly labels (Pending/Paid/Cancelled/...).
-- Products sort behavior:
-  - `Top rated` uses `/api/public/products/top-rating`.
-  - `Best sellers` uses `/api/public/products/best-selling`.
-  - This ensures visible list changes when switching sort options.
-- Home page promo cleanup:
-  - Removed duplicated promo category image section.
-  - Featured offers use stable ordering from active banners.
+See [endpoint coverage](docs/ENDPOINT_COVERAGE.md).
+
+## Related Docs
+
+- Root project overview: [../README.md](../README.md)
+- Backend-specific docs: [../docs/roadmaps/PROJECT_PLAN.md](../docs/roadmaps/PROJECT_PLAN.md)
+

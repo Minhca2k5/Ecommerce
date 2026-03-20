@@ -156,7 +156,7 @@ Checkpoint:
 - Incident runbooks + DR drill report.
 - Capacity/cost baseline with next-quarter forecast.
 - Ops baseline runbook:
-  - `docs/ops/DEVOPS_OPS.md`
+  - `docs/ops/PHASE7_OPS.md`
 
 Success criteria:
 - Team can release predictably, detect regressions fast, and recover from incidents with documented procedures.

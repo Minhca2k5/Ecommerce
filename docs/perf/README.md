@@ -10,7 +10,7 @@ Set env vars before running:
 - K6_BASE_URL (default: http://localhost:8080)
 - K6_USER_TOKEN (JWT for user flows)
 - K6_ADMIN_TOKEN (optional)
-- ....
+- Add any extra headers or tokens required by the scenario under test.
 
 Examples (PowerShell):
 ```

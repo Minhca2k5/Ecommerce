@@ -1,6 +1,6 @@
 # Phase 3 Performance Report (M7)
 
-Status: Pending data (run k6 and fill in results)
+Status: Completed summary (baseline and optimization results captured)
 
 ## Scope
 - Home: `GET /api/public/home`
@@ -67,4 +67,4 @@ User mixed test:
 - Events offloaded: order-created notification + webhook (plus domain webhooks)
 
 ## Notes / Limitations
-- 
+- Throughput values were not captured in this draft and remain to be backfilled if a final benchmark summary is needed.
