@@ -1,143 +1,195 @@
-# E-commerce System (Phase 6 Completed, Phase 7 In Progress)
+# E-commerce System
 
-> **Branch:** `main`  
-> **Status:** Phase 6 Completed (Data Reliability & Hybrid Realtime Analytics Serving), moving to Phase 7 (DevOps, Observability & Scale)  
 > **Author:** Phan Dinh Minh (Minzetsu)  
-> **Last Updated:** March 18, 2026
+> **Last Updated:** March 20, 2026
 
-## Overview
-This repository is an end-to-end E-commerce system:
-- **Backend:** Spring Boot 3 + Spring Security 6 (JWT + Refresh Token + RBAC), Liquibase, MySQL
-- **Integrations:** RabbitMQ events, Elasticsearch product search, MoMo payment (sandbox), SSE realtime
-- **Reliability:** Idempotency keys for order/payment, inventory reservation TTL + release
-- **Observability:** Request ID + structured logs + audit logs
-- **Customer Experience:** Anonymous cart + merge on login
-- **Guest Checkout (Phase 5):** secure guest order access token + guest order tracking + guest MoMo payment
-- **Chatbot:** LLM-backed assistant with project/DB context + conversation history
-- **MongoDB Analytics/Log Sink (Phase 5):** clickstream events, chatbot transcript archive, audit event archive (Mongo is sink-only; MySQL remains system of record)
-- **Analytics Serving (Phase 6):** standardized funnel contract + hybrid serving (Redis realtime counters + daily ETL Mongo -> MySQL mart) + admin analytics APIs (`funnel`, `top-products`) + short-TTL cache + payment-success funnel metric + previous-period comparisons + today snapshot cards + `N/A` trend fallback when previous baseline is zero + attribution warning (`orders > views`)
-- **Chatbot Collaboration (Phase 4):** personal/project/group scopes, group invites (accept/refuse), member list + sender display names in group chat
-- **Auth Hardening (Phase 4):** email OTP verification for registration
-- **Frontend (Phase 2+4):** React + TypeScript (see `frontend/`), integrating with backend APIs, SSE, MoMo
+Full-stack e-commerce platform built with Spring Boot and React. The project focuses on a realistic production-style workflow: authentication, product discovery, cart and checkout, payment integration, asynchronous order processing, realtime updates, search, analytics, and admin operations.
 
-## API Namespace Convention
-- Public storefront: `/api/public/**`
-- Auth: `/api/auth/**`
-- User (requires `ROLE_USER`): `/api/users/me/**`
-- Admin (requires `ROLE_ADMIN`): `/api/admin/**`
+## Project Snapshot
 
-## How to Run (Local)
-### Prerequisites
-- JDK 17+
-- Node.js 18+ (recommended)
-- MySQL 8.0
-- RabbitMQ (Phase 4)
-- Elasticsearch (Phase 4)
-- Redis (cache)
+- **Frontend:** React + TypeScript + Vite + TailwindCSS
+- **Backend:** Spring Boot 3.5, Spring Security, JPA, Liquibase, SSE realtime, RabbitMQ
+- **Data:** MySQL as system of record, Redis for caching, Elasticsearch for product search, MongoDB for event/log/archive data
+- **Payments:** MoMo sandbox integration
+- **Observability:** structured logs, request tracing, audit logs, actuator endpoints
+- **Experience:** guest checkout, anonymous cart merge on login, role-based access, admin dashboard, chatbot assistant
+
+## Architecture
+
+```mermaid
+flowchart TB
+    U[Customer / Admin] --> UI[React Frontend]
+    UI --> API[Spring Boot REST API]
+
+    API --> AUTH[JWT + Refresh Token + RBAC]
+    API --> MYSQL[(MySQL)]
+    API --> REDIS[(Redis Cache)]
+    API --> ES[(Elasticsearch)]
+    API --> MQ[(RabbitMQ)]
+    API --> MONGO[(MongoDB Archive / Events)]
+    API --> PAY[MoMo Payment Gateway]
+    API --> AI[Chatbot / LLM Service]
+
+    MQ --> WORKERS[Async Consumers]
+    WORKERS --> MYSQL
+    WORKERS --> MONGO
+    WORKERS --> REDIS
+
+    MYSQL --> API
+    REDIS --> API
+    ES --> API
+    MONGO --> API
+```
+
+## How It Works
+
+1. The user browses products through the React frontend.
+2. The frontend calls public or authenticated REST APIs depending on the page and role.
+3. Login issues access and refresh tokens; the selected role determines whether the user sees the customer or admin experience.
+4. Product search queries Elasticsearch, while transactional data stays in MySQL.
+5. Add-to-cart, checkout, and payment steps run through the backend with validation, inventory reservation, and idempotency checks.
+6. Payment confirmation and order state changes are processed asynchronously through RabbitMQ where needed.
+7. Realtime notifications and status updates are delivered through SSE endpoints for users, admins, and chatbot streaming.
+8. Analytics and log-style events are stored separately so the operational database stays focused on transactions.
+9. The chatbot can use project/database context to answer support-style questions inside the app.
+
+Implemented entry points include:
+
+- Public storefront pages: home, categories, products, product detail, cart, checkout, guest order tracking, login, register.
+- Authenticated user pages: profile, addresses, vouchers, voucher uses, wishlist, notifications, orders, MoMo QR payment.
+- Admin pages: products, categories, product images, orders, order items, payments, analytics, users, roles, addresses, warehouses, inventories, banners, vouchers, voucher uses, notifications, audit logs, reviews, profile.
+
+## Key Features
+
+- **Authentication and authorization** with JWT, refresh tokens, role-based access control, and email OTP verification.
+- **Shopping flow** with anonymous cart, merge-on-login behavior, vouchers, guest checkout, and guest order tracking.
+- **Order lifecycle** with inventory reservation, TTL-based release, payment confirmation, and status tracking.
+- **Search and discovery** with Elasticsearch-backed product search and ranking endpoints.
+- **Realtime interactions** for notifications, order status, payment status, and chatbot streaming through SSE.
+- **Admin capabilities** for catalog, orders, users, analytics, and operational dashboards.
+- **Chatbot assistant** for contextual support.
+- **Operational safety** through Liquibase migrations, structured logging, request IDs, and audit logging.
+
+## Tech Stack
 
 ### Backend
-1. Configure services in `backend/src/main/resources/application.properties` (or environment variables).
-2. Run:
-   - `cd backend`
-   - `./mvnw spring-boot:run`
-3. Profiles:
-   - `SPRING_PROFILES_ACTIVE=dev` for local debug (`application-dev.properties`)
-   - `SPRING_PROFILES_ACTIVE=prod` for production-like settings (`application-prod.properties`)
-3. Swagger:
-   - `http://localhost:8080/docs` (or `http://localhost:8080/swagger-ui/index.html`)
-   - OpenAPI: `http://localhost:8080/v3/api-docs`
-
-### Deployment-Ready Config (Recommended)
-- Use environment variables instead of hardcoded secrets:
-  - `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`
-  - `JWT_SECRET_KEY`
-  - `REDIS_HOST`, `REDIS_PORT`
-  - `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USERNAME`, `RABBITMQ_PASSWORD`
-  - `ELASTICSEARCH_URIS`
-  - `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, `MOMO_IPN_URL`, `MOMO_REDIRECT_URL`
-  - `MAIL_USERNAME`, `MAIL_PASSWORD`
-  - `CHATBOT_PROVIDER`, `CHATBOT_BASE_URL`, `CHATBOT_API_KEY`, `CHATBOT_MODEL`
-- Use production profile on cloud:
-  - `SPRING_PROFILES_ACTIVE=prod`
-- If cloud runtime has no local Ollama service, set:
-  - `CHATBOT_ENABLED=false` (or set `CHATBOT_PROVIDER=openai-compatible` and point `CHATBOT_BASE_URL` to your cloud AI endpoint).
+- Spring Boot 3.5
+- Spring Security 6
+- Spring Data JPA
+- Liquibase
+- MySQL
+- Redis
+- RabbitMQ
+- Elasticsearch
+- MongoDB
+- OpenAPI / Swagger
+- Testcontainers
 
 ### Frontend
-1. Configure API base URL:
-   - `frontend/.env` -> `VITE_API_BASE_URL=http://localhost:8080`
-2. Run:
-   - `cd frontend`
-   - `npm install`
-   - `npm run dev`
-3. Open: `http://localhost:5173`
+- React
+- TypeScript
+- Vite
+- TailwindCSS
+- shadcn-style UI primitives
 
-### Docker Compose (Phase 7 Kickoff)
-1. Create runtime env file at project root:
-   - `Copy-Item .env.example .env` (PowerShell)
-2. Fill required secrets in `.env`:
-   - `JWT_SECRET_KEY`
-   - `MOMO_*`
-   - `MAIL_*`
-   - `GUEST_CHECKOUT_*`
-3. Build and run full stack:
-   - `docker compose up --build -d`
-   - Optional: set `SPRING_PROFILES_ACTIVE=dev` in `.env` for local dev profile
-4. Access services:
-   - Frontend: `http://localhost:5173`
-   - Backend Swagger: `http://localhost:8080/docs`
-5. Stop stack:
-   - `docker compose down`
+## API Namespace Convention
 
-### Staging Deploy (AWS via GitHub Actions)
-- Workflow: `.github/workflows/staging-deploy.yml`
-- Trigger:
-   - Push to `main` (backend/frontend/compose/workflow changes)
-  - Manual run via `workflow_dispatch` with `deploy_ref`
-- Required GitHub Environment (`staging`) secrets:
-  - `STAGING_SSH_HOST`
-  - `STAGING_SSH_USER`
-  - `STAGING_SSH_KEY`
-  - `STAGING_SSH_PORT`
-  - `STAGING_APP_DIR` (optional, defaults to `/opt/ecommerce`)
-- Server prerequisites:
-  - Docker + Docker Compose installed
-  - Repo cloned at `STAGING_APP_DIR`
-  - `.env.staging` present on server (copied to `.env` during deploy)
+- Public storefront: `/api/public/**`
+- Auth: `/api/auth/**`
+- User: `/api/users/me/**`
+- Admin: `/api/admin/**`
 
-## Database Migration Notes
-- Liquibase changelog is managed from `backend/src/main/resources/db/changelog/db.changelog-master.xml`.
-- Early files `v1__schema.xml`, `v2__seed.xml`, `v3__indexes.xml` were refactored into modular wrappers with includes:
-  - `db/changelog/v1/*.xml`
-  - `db/changelog/v2/*.xml`
-  - `db/changelog/v3/*.xml`
-- Catalog/data expansion is added in `v15__catalog_expansion.xml` (products, product_images, inventory, warehouse allocations, vouchers, notifications, and related records).
-- Analytics mart schema is added in `v16__analytics_mart.xml` (`daily_product_metrics` + indexes + constraints).
+## Local Setup
 
-## Roadmap
-- Phase 3 roadmap (performance/caching/reliability): `docs/roadmaps/PHASE3_ROADMAP.md`
-- Phase 4 roadmap (integrations/realtime/search/chatbot): `docs/roadmaps/PHASE4_ROADMAP.md`
-- Phase 5 roadmap (reliability/security/ops hardening): `docs/roadmaps/PHASE5_ROADMAP.md` 
-- Phase 6 roadmap (data reliability + analytics serving): `docs/roadmaps/PHASE6_ROADMAP.md`
-- Phase 7 roadmap (devops/observability/scale): `docs/roadmaps/DEVOPS_ROADMAP.md`
-- High-level project plan (including Phase 6/7): `docs/roadmaps/PROJECT_PLAN.md`
-- Data-engineer-aligned backend roadmap: `docs/roadmaps/DATA_ENGINEER_BACKEND_ROADMAP.md`
-- Phase 5 ops notes (runbooks + Mongo collections): `docs/ops/PHASE5_OPS.md` 
-- Phase 6 ops notes (ETL + serving + observability): `docs/ops/PHASE6_OPS.md`
-- Phase 7 ops notes (deploy + smoke + incident baseline): `docs/ops/DEVOPS_OPS.md`
-- Phase 3 report: `docs/perf/phase3_report.md`
+### Prerequisites
 
-## Notes (Current Scope)
-- Local mode currently prioritizes chatbot stability: file + voice workflows are enabled; image analysis path is disabled by default in this phase.
-- Group invites are designed as in-app first, email as best-effort notification channel.
+- JDK 21
+- Node.js 18+
+- MySQL 8.0
+- Redis
+- RabbitMQ
+- Elasticsearch
+- MongoDB
 
-## Frontend UX Updates (March 2026)
-- Home page promo cleanup:
-   - Removed duplicated promo image block and kept a single Featured offers section.
-   - Featured offers now use stable ordering (first active banners) instead of random reshuffle on each load.
-- Products page sorting:
-   - Sort modes Top rated and Best sellers now load dedicated ranking endpoints (`/api/public/products/top-rating`, `/api/public/products/best-selling`) so product order changes reliably.
-   - Existing search/category/deal filters continue to apply in ranked mode.
-- Orders page cards (user-facing):
-   - Replaced generic card title with product-first preview (product name + quantity).
-   - Added item hydration fallback from `/api/users/me/orders/{orderId}/items/all` when list endpoint does not include item details.
-   - User status badges now show friendly labels (for example: Pending, Paid, Cancelled).
+### Backend
+
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+Useful profiles:
+
+- `SPRING_PROFILES_ACTIVE=dev`
+- `SPRING_PROFILES_ACTIVE=prod`
+
+Swagger / API docs:
+
+- `http://localhost:8080/docs`
+- `http://localhost:8080/swagger-ui/index.html`
+- `http://localhost:8080/v3/api-docs`
+
+### Frontend
+
+Create `frontend/.env`:
+
+```bash
+VITE_API_BASE_URL=http://localhost:8080
+```
+
+Run:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173`
+
+### Docker Compose
+
+```bash
+docker compose up --build -d
+docker compose down
+```
+
+## Environment Variables
+
+Recommended variables for deployment:
+
+- `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`
+- `JWT_SECRET_KEY`
+- `REDIS_HOST`, `REDIS_PORT`
+- `RABBITMQ_HOST`, `RABBITMQ_PORT`, `RABBITMQ_USERNAME`, `RABBITMQ_PASSWORD`
+- `ELASTICSEARCH_URIS`
+- `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, `MOMO_IPN_URL`, `MOMO_REDIRECT_URL`
+- `MAIL_USERNAME`, `MAIL_PASSWORD`
+- `CHATBOT_PROVIDER`, `CHATBOT_BASE_URL`, `CHATBOT_API_KEY`, `CHATBOT_MODEL`
+
+If no local LLM service is available, disable the chatbot or point it to a compatible provider through environment variables.
+
+## Database Migration
+
+Liquibase changelogs are managed from `backend/src/main/resources/db/changelog/db.changelog-master.xml`.
+
+Notable schema areas include:
+
+- core authentication and user management
+- catalog, inventory, vouchers, and orders
+- notification and audit-related records
+- analytics mart tables for reporting
+
+## Project Highlights
+
+- Designed as a portfolio-ready full-stack product instead of a tutorial/demo app.
+- Covers a realistic commerce lifecycle from browsing to payment and post-order tracking.
+- Separates transactional data, search, cache, and event/archive storage for clearer system boundaries.
+- Includes admin tooling and analytics so the project demonstrates both customer-facing and operational workflows.
+
+## References
+
+- Frontend-specific notes: `frontend/README.md`
+- Analytics documentation: `docs/analytics/`
+- Operations notes: `docs/ops/`
+- Roadmaps: `docs/roadmaps/`
