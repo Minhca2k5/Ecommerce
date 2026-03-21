@@ -19,6 +19,8 @@
 | 6 | [AuthController.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/auth/controller/AuthController.java) | Endpoints: login, register, OTP verify, refresh |
 | 7 | [AuthService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/auth/service/AuthService.java) | Register → send OTP email → verify → create user → issue tokens |
 | 8 | [RefreshTokenService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/auth/service/RefreshTokenService.java) | Tạo & rotate refresh token |
+| 9 | [EmailService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/auth/service/EmailService.java) | Gửi OTP email khi register. Dùng SMTP |
+| 10 | [EmailVerificationCode.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/auth/entity/EmailVerificationCode.java) | Entity lưu OTP code + expiry. Liên kết với auth flow |
 
 ### 🧠 Tại sao dùng JWT stateless?
 - Server **không lưu session** → scale N server instances dễ dàng (không cần sticky session)
@@ -56,6 +58,7 @@
 | 3 | [RedisRateLimitService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/config/RedisRateLimitService.java) | Redis-backed rate limit cho multi-instance |
 | 4 | [CacheConfig.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/config/CacheConfig.java) | Per-cache TTL (home 60s, productDetail 5m, category 10m), custom PageImpl serializer, CacheErrorHandler |
 | 5 | [PublicHttpCacheConfig.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/config/PublicHttpCacheConfig.java) | HTTP Cache-Control + ETag cho public APIs |
+| 6 | [RequestLoggingFilter.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/config/RequestLoggingFilter.java) | Filter cuối chain: log method, URI, status, duration cho mỗi request |
 
 Sau đó tìm `@Cacheable`, `@CacheEvict` trong bất kỳ ServiceImpl nào để xem cách dùng.
 
@@ -114,6 +117,10 @@ Bucket: capacity=100, refill=10 tokens/giây
 | 9 | [CheckoutAbuseServiceImpl.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/order/service/impl/CheckoutAbuseServiceImpl.java) | Fraud/abuse rules |
 | 10 | [GuestCheckoutIdentityService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/order/service/GuestCheckoutIdentityService.java) | Resolve guest user nội bộ |
 | 11 | [GuestOrderAccessTokenService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/order/service/GuestOrderAccessTokenService.java) | JWT riêng cho guest tra cứu đơn |
+| 12 | [CreateOrderItemsService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/order/service/CreateOrderItemsService.java) | Tạo OrderItems từ CartItems, copy snapshot giá |
+| 13 | [CheckoutPricingProperties.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/order/config/CheckoutPricingProperties.java) | Config: tax rate, shipping fee, free-ship threshold |
+| 14 | [CheckoutAbuseProperties.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/order/config/CheckoutAbuseProperties.java) | Config: max orders/hour, max items/order (anti-abuse) |
+| 15 | [GuestCheckoutProperties.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/order/config/GuestCheckoutProperties.java) | Config: guest checkout limits |
 
 ### 🧠 Luồng tạo order (method [createOrderInternal](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/order/service/impl/OrderServiceImpl.java#320-359) dòng 320-358)
 ```
@@ -230,9 +237,14 @@ TopicExchange "ecommerce.events"
 | 2 | [ProductSearchService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/search/service/ProductSearchService.java) | `NativeQuery` + `multiMatch` trên name & description → get IDs → fetch MySQL |
 | 3 | [ProductIndexService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/search/service/ProductIndexService.java) | Index/delete/bulk reindex |
 | 4 | [SseEmitterService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/realtime/service/SseEmitterService.java) | ConcurrentHashMap quản lý emitters per user/admin |
-| 5 | [UserRealtimeController.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/realtime/controller/UserRealtimeController.java) | SSE subscribe endpoint |
-| 6 | [OrderNotificationListener.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/notification/listener/OrderNotificationListener.java) | `@EventListener`: OrderCreatedEvent → tạo notification |
-| 7 | [NotificationServiceImpl.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/notification/service/impl/NotificationServiceImpl.java) | CRUD notifications |
+| 5 | [UserRealtimeController.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/realtime/controller/UserRealtimeController.java) | SSE subscribe endpoint cho user |
+| 6 | [AdminRealtimeController.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/realtime/controller/AdminRealtimeController.java) | SSE subscribe endpoint cho admin (nhận order notifications) |
+| 7 | [PublicRealtimeController.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/realtime/controller/PublicRealtimeController.java) | SSE public endpoint |
+| 8 | [ChatbotRealtimeService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/realtime/service/ChatbotRealtimeService.java) | Streaming chatbot response qua SSE |
+| 9 | [OrderNotificationListener.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/notification/listener/OrderNotificationListener.java) | `@EventListener`: OrderCreatedEvent → tạo notification |
+| 10 | [WebhookEventListener.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/notification/listener/WebhookEventListener.java) | `@EventListener`: WebhookEvent → dispatch webhook |
+| 11 | [NotificationServiceImpl.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/notification/service/impl/NotificationServiceImpl.java) | CRUD notifications |
+| 12 | [NotificationWebhookService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/notification/service/NotificationWebhookService.java) | Webhook integration: gửi POST đến external URL khi có events |
 
 ### 🧠 Hybrid search pattern
 ```
@@ -274,7 +286,15 @@ User search "laptop" → ES multiMatch (name, description) → ranked IDs → fe
 | 4 | [AnalyticsRealtimeCounterService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/analytics/service/AnalyticsRealtimeCounterService.java) | Redis Hash/Set counters cho today (chưa ETL) |
 | 5 | [AdminAnalyticsServiceImpl.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/analytics/service/impl/AdminAnalyticsServiceImpl.java) | Merge: MySQL (historical) + Redis (today) |
 | 6 | [AuditLogAspect.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/audit/aop/AuditLogAspect.java) | `@Around`: intercept `@AuditAction` methods → auto log |
-| 7 | [GeneralExceptionHandler.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/exception/GeneralExceptionHandler.java) | `@ControllerAdvice`: global exception → standardized ErrorResponse |
+| 7 | [LoggingAspect.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/aop/LoggingAspect.java) | AOP performance logging: đo execution time của methods |
+| 8 | [GeneralExceptionHandler.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/exception/GeneralExceptionHandler.java) | `@ControllerAdvice`: global exception → standardized ErrorResponse |
+| 9 | [AuditLogRetentionCleanupService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/audit/service/AuditLogRetentionCleanupService.java) | Scheduled cleanup: xoá audit logs cũ theo retention policy |
+| 10 | [AuditTelemetryPublisher.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/audit/telemetry/AuditTelemetryPublisher.java) | Publish audit events qua Redis Pub/Sub |
+| 11 | [AuditTelemetrySubscriber.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/audit/telemetry/AuditTelemetrySubscriber.java) | Subscribe audit events từ Redis Pub/Sub |
+| 12 | [AuditEventDocument.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/mongo/document/AuditEventDocument.java) | MongoDB document: archive audit logs cho long-term storage |
+| 13 | [AuditEventService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/mongo/service/AuditEventService.java) | Service: archive audit events MySQL → MongoDB |
+| 14 | [ChatbotTranscriptDocument.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/mongo/document/ChatbotTranscriptDocument.java) | MongoDB document: lưu chatbot conversation transcripts |
+| 15 | [ChatbotTranscriptService.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/mongo/service/ChatbotTranscriptService.java) | Service: CRUD chatbot transcripts trong MongoDB |
 
 ### 🧠 ETL Pipeline
 ```
@@ -336,9 +356,10 @@ Redis (realtime counters today) + MySQL (historical) = Merged API response
 | 16 | [Banner.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/promotion/entity/Banner.java) | Homepage banner entity |
 | 17 | [Voucher.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/promotion/entity/Voucher.java) | Discount voucher: type (PERCENT/FIXED), min order, max discount, usage limit |
 | 18 | [VoucherDiscountType.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/promotion/entity/VoucherDiscountType.java) | Enum: PERCENTAGE, FIXED_AMOUNT |
-| 19 | [VoucherUse.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/promotion/entity/VoucherUse.java) | Track voucher usage per user |
-| 20 | [VoucherServiceImpl.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/promotion/service/impl/VoucherServiceImpl.java) | Voucher CRUD + validate + apply discount logic |
-| 21 | [BannerServiceImpl.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/promotion/service/impl/BannerServiceImpl.java) | Banner CRUD + `@Cacheable` |
+| 19 | [VoucherStatus.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/promotion/entity/VoucherStatus.java) | Enum: ACTIVE, EXPIRED, DISABLED — trạng thái voucher |
+| 20 | [VoucherUse.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/promotion/entity/VoucherUse.java) | Track voucher usage per user |
+| 21 | [VoucherServiceImpl.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/promotion/service/impl/VoucherServiceImpl.java) | Voucher CRUD + validate + apply discount logic |
+| 22 | [BannerServiceImpl.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/promotion/service/impl/BannerServiceImpl.java) | Banner CRUD + `@Cacheable` |
 
 ### 🧠 Cần hiểu sâu
 
@@ -371,9 +392,9 @@ productRepository.findAll(spec, pageable);
 **User entity liên kết với hầu hết mọi domain**: User → Orders, Cart, Reviews, Wishlist, Notifications, Addresses, Roles. Đây là central entity.
 
 ### ❓ Câu hỏi phỏng vấn
-42. **JPA Specification pattern là gì? So với query methods?** → Dynamic query builder. Compose nhiều `Predicate` từ filter DTO. Ưu điểm: 1 method thay vì 10, dễ combine conditions. Nhược điểm: khó debug hơn native SQL.
-43. **Voucher discount calculate thế nào? Edge cases?** → PERCENTAGE: [min(orderTotal * percent, maxDiscount)](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/realtime/service/SseEmitterService.java#47-59). FIXED: [min(fixedAmount, orderTotal)](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/realtime/service/SseEmitterService.java#47-59). Edge: voucher hết lượt giữa lúc user checkout → cần check lại lúc place order, không chỉ lúc hiển thị.
-44. **Slug là gì? Tại sao cần?** → URL-friendly version of name ("Laptop Gaming" → "laptop-gaming"). SEO tốt hơn, user-friendly URL. Unique constraint trong DB. Phải handle trùng slug (thêm suffix `-1`, `-2`).
+23. **JPA Specification pattern là gì? So với query methods?** → Dynamic query builder. Compose nhiều `Predicate` từ filter DTO. Ưu điểm: 1 method thay vì 10, dễ combine conditions. Nhược điểm: khó debug hơn native SQL.
+24. **Voucher discount calculate thế nào? Edge cases?** → PERCENTAGE: [min(orderTotal * percent, maxDiscount)](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/promotion/service/impl/VoucherServiceImpl.java). FIXED: [min(fixedAmount, orderTotal)](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/promotion/service/impl/VoucherServiceImpl.java). Edge: voucher hết lượt giữa lúc user checkout → cần check lại lúc place order, không chỉ lúc hiển thị.
+25. **Slug là gì? Tại sao cần?** → URL-friendly version of name ("Laptop Gaming" → "laptop-gaming"). SEO tốt hơn, user-friendly URL. Unique constraint trong DB. Phải handle trùng slug (thêm suffix `-1`, `-2`).
 
 ---
 
@@ -426,6 +447,9 @@ productRepository.findAll(spec, pageable);
 | 21 | [ChatConversation.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/chatbot/entity/ChatConversation.java) | Conversation entity |
 | 22 | [ChatMessage.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/chatbot/entity/ChatMessage.java) | Individual message entity |
 | 23 | [ChatGroup.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/chatbot/entity/ChatGroup.java) | Group chat feature |
+| 24 | [ChatGroupInvite.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/chatbot/entity/ChatGroupInvite.java) | Entity: lời mời tham gia group chat |
+| 25 | [ChatGroupMember.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/chatbot/entity/ChatGroupMember.java) | Entity: thành viên trong group chat |
+| 26 | [ChatProject.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/chatbot/entity/ChatProject.java) | Entity: liên kết chat conversation với project context |
 
 ### 🧠 Cần hiểu sâu
 
@@ -464,9 +488,9 @@ Stock = 1. User A checkout → read stock=1 → OK
 Giải pháp: `SELECT ... FOR UPDATE` (pessimistic lock) hoặc `WHERE stock >= quantity` (atomic check-and-update).
 
 ### ❓ Câu hỏi phỏng vấn
-45. **API Aggregation pattern ưu nhược điểm?** → Ưu: giảm round trips, 1 cache key. Nhược: 1 source chậm → cả response chậm, khó cache invalidation riêng từng phần. Giải pháp: `CompletableFuture.allOf()` parallel fetch + timeout.
-46. **Inventory race condition giải quyết thế nào?** → Pessimistic lock (`SELECT FOR UPDATE` → serialize queries), Optimistic lock (`@Version` → retry on conflict), hoặc atomic SQL `UPDATE SET stock = stock - :qty WHERE stock >= :qty` (rows affected = 0 → sold out).
-47. **RAG (Retrieval Augmented Generation) là gì?** → Inject relevant data (products, categories) vào LLM prompt → chatbot trả lời dựa trên data thật thay vì hallucinate. Project dùng: SchemaProvider format DB data → inject vào system prompt.
+26. **API Aggregation pattern ưu nhược điểm?** → Ưu: giảm round trips, 1 cache key. Nhược: 1 source chậm → cả response chậm, khó cache invalidation riêng từng phần. Giải pháp: `CompletableFuture.allOf()` parallel fetch + timeout.
+27. **Inventory race condition giải quyết thế nào?** → Pessimistic lock (`SELECT FOR UPDATE` → serialize queries), Optimistic lock (`@Version` → retry on conflict), hoặc atomic SQL `UPDATE SET stock = stock - :qty WHERE stock >= :qty` (rows affected = 0 → sold out).
+28. **RAG (Retrieval Augmented Generation) là gì?** → Inject relevant data (products, categories) vào LLM prompt → chatbot trả lời dựa trên data thật thay vì hallucinate. Project dùng: SchemaProvider format DB data → inject vào system prompt.
 
 ---
 
@@ -535,6 +559,16 @@ Lướt qua từng file để hiểu cách frontend gọi backend APIs:
 | 33 | [recentViewApi.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/recentViewApi.ts) | Recent views |
 | 34 | [reviewApi.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/reviewApi.ts) | Reviews |
 | 35 | [adminApi.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/adminApi.ts) | Admin-specific API calls |
+| 36 | [voucherUseApi.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/voucherUseApi.ts) | Voucher usage API calls |
+| 37 | [format.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/format.ts) | Date/currency formatting utilities |
+| 38 | [pagination.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/pagination.ts) | Pagination helper functions |
+| 39 | [utils.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/utils.ts) | General utility functions (cn, classNames) |
+| 40 | [safe.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/safe.ts) | Safe type conversion utilities |
+| 41 | [assets.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/assets.ts) | Asset path utilities |
+| 42 | [categoryMeta.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/categoryMeta.ts) | Category metadata/icon mapping |
+| 43 | [roleSelection.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/roleSelection.ts) | Role selection logic |
+| 44 | [notificationRoute.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/notificationRoute.ts) | Notification routing helpers |
+| 45 | [useCartActions.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/useCartActions.tsx) | Cart action hooks: add/remove/update cart items |
 
 ### 🧠 Điểm hay trong [http.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/http.ts)
 - **Auto token refresh**: 401/403 → gọi refresh → retry → seamless UX
@@ -570,11 +604,11 @@ Lướt qua từng file để hiểu cách frontend gọi backend APIs:
 | **shadcn/ui (project dùng)** | Component library | ✅ Copy-paste | Only what you use | Pre-built accessible components |
 
 ### ❓ Câu hỏi phỏng vấn
-23. **React Query vs Zustand: khi nào dùng cái nào?** → React Query cho server state (API data, caching, refetch). Zustand cho client state (UI flags, auth, cart). Tách 2 loại state = clean architecture.
-24. **Auto token refresh pattern hoạt động thế nào?** → 401 → check `refreshInFlight` (đang refresh chưa?) → gọi refresh → retry. Single in-flight tránh N requests cùng gọi refresh.
-25. **SPA routing vs SSR?** → SPA: client render, fast navigation, SEO kém. SSR (Next.js): server render, SEO tốt, phức tạp hơn. Project là e-commerce internal → SPA đủ.
-26. **`React.lazy()` + `Suspense` là gì?** → Code splitting: mỗi page chỉ load khi user navigate đến → initial bundle nhỏ → load nhanh hơn. `Suspense` hiển thị fallback (loading) trong khi chunk đang load.
-27. **TailwindCSS ưu nhược điểm?** → Ưu: rapid dev, consistent design, purge unused CSS. Nhược: HTML dài, learning curve, khó custom complex animations.
+29. **React Query vs Zustand: khi nào dùng cái nào?** → React Query cho server state (API data, caching, refetch). Zustand cho client state (UI flags, auth, cart). Tách 2 loại state = clean architecture.
+30. **Auto token refresh pattern hoạt động thế nào?** → 401 → check `refreshInFlight` (đang refresh chưa?) → gọi refresh → retry. Single in-flight tránh N requests cùng gọi refresh.
+31. **SPA routing vs SSR?** → SPA: client render, fast navigation, SEO kém. SSR (Next.js): server render, SEO tốt, phức tạp hơn. Project là e-commerce internal → SPA đủ.
+32. **`React.lazy()` + `Suspense` là gì?** → Code splitting: mỗi page chỉ load khi user navigate đến → initial bundle nhỏ → load nhanh hơn. `Suspense` hiển thị fallback (loading) trong khi chunk đang load.
+33. **TailwindCSS ưu nhược điểm?** → Ưu: rapid dev, consistent design, purge unused CSS. Nhược: HTML dài, learning curve, khó custom complex animations.
 
 ---
 
@@ -594,6 +628,15 @@ Lướt qua từng file để hiểu cách frontend gọi backend APIs:
 | 6 | [Modal.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/components/Modal.tsx) | Base modal component |
 | 7 | [EmptyState.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/components/EmptyState.tsx) | Empty data display |
 | 8 | [LoadingCard.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/components/LoadingCard.tsx) | Loading skeleton |
+
+### 📂 UI Primitives (shadcn/ui)
+
+| # | File | Lý do |
+|---|------|-------|
+| 9 | [ui/button.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/components/ui/button.tsx) | Base button component (shadcn/ui) — variants: default, destructive, outline, ghost |
+| 10 | [ui/input.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/components/ui/input.tsx) | Input component (shadcn/ui) |
+| 11 | [ui/card.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/components/ui/card.tsx) | Card layout component (shadcn/ui) |
+| 12 | [ui/badge.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/components/ui/badge.tsx) | Badge/tag component (shadcn/ui) |
 
 ### 📂 Thứ tự đọc — Storefront Pages (theo user journey)
 
@@ -621,7 +664,9 @@ Lướt qua từng file để hiểu cách frontend gọi backend APIs:
 | 28 | [MyVoucherDetailPage.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/pages/MyVoucherDetailPage.tsx) | 6KB | Voucher detail |
 | 29 | [VoucherUsesPage.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/pages/VoucherUsesPage.tsx) | 7KB | Voucher usage history |
 | 30 | [PasswordPage.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/pages/PasswordPage.tsx) | 6KB | Change password |
-| 31 | [ChatbotWidget.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/app/ChatbotWidget.tsx) | 33KB | Chatbot: conversations, streaming, voice, groups |
+| 31 | [ChooseRolePage.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/pages/ChooseRolePage.tsx) | - | Role selection page (chọn role khi có nhiều roles) |
+| 32 | [NotFoundPage.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/pages/NotFoundPage.tsx) | - | 404 Not Found page |
+| 33 | [ChatbotWidget.tsx](file:///d:/Projects/Web/Ecommerce/frontend/src/app/ChatbotWidget.tsx) | 33KB | Chatbot: conversations, streaming, voice, groups |
 
 ### 🧠 Khi đọc pages, tập trung vào:
 - **React Query patterns**: `useQuery` (fetch), `useMutation` (create/update/delete), `queryClient.invalidateQueries` (cache invalidation)
@@ -630,9 +675,10 @@ Lướt qua từng file để hiểu cách frontend gọi backend APIs:
 - **Pagination pattern**: page state + API params + prev/next navigation
 
 ### ❓ Câu hỏi phỏng vấn
-28. **React Query `useQuery` vs `useMutation`?** → `useQuery`: auto fetch + cache + refetch (GET). `useMutation`: manual trigger (POST/PUT/DELETE) + `onSuccess` invalidate cache.
-29. **Controlled vs Uncontrolled components?** → Controlled: React state quản lý value. Uncontrolled: DOM tự quản lý (ref). Project dùng controlled cho form validation.
-30. **Code splitting giúp gì?** → Mỗi page là 1 chunk riêng → initial page load chỉ download code cần thiết → FCP (First Contentful Paint) nhanh hơn.
+34. **React Query `useQuery` vs `useMutation`?** → `useQuery`: auto fetch + cache + refetch (GET). `useMutation`: manual trigger (POST/PUT/DELETE) + `onSuccess` invalidate cache.
+35. **Controlled vs Uncontrolled components?** → Controlled: React state quản lý value. Uncontrolled: DOM tự quản lý (ref). Project dùng controlled cho form validation.
+36. **Code splitting giúp gì?** → Mỗi page là 1 chunk riêng → initial page load chỉ download code cần thiết → FCP (First Contentful Paint) nhanh hơn.
+37. **shadcn/ui approach khác component library thông thường thế nào?** → shadcn/ui copy source code vào project (không phải npm package) → full control, custom hoàn toàn, không bị lock-in. Trade-off: tự maintain updates.
 
 ---
 
@@ -713,9 +759,9 @@ Lướt qua từng file để hiểu cách frontend gọi backend APIs:
 - **Admin pages dùng [adminApi.ts](file:///d:/Projects/Web/Ecommerce/frontend/src/lib/adminApi.ts)** → tất cả gọi `/api/admin/**` endpoints
 
 ### ❓ Câu hỏi phỏng vấn
-31. **Table pagination implement thế nào?** → State `page` + `size` → gửi query params → backend trả `Page<T>` (content + totalPages + totalElements) → render pagination controls.
-32. **Filter/Search debounce?** → User gõ → đợi 300ms không gõ thêm mới gọi API. Tránh gọi API mỗi keystroke. Dùng `setTimeout` hoặc custom hook `useDebounce`.
-33. **Component reusability trong admin?** → Shared pattern: table component, filter bar, CRUD modal → tách thành composable pieces. DRY principle.
+38. **Table pagination implement thế nào?** → State `page` + `size` → gửi query params → backend trả `Page<T>` (content + totalPages + totalElements) → render pagination controls.
+39. **Filter/Search debounce?** → User gõ → đợi 300ms không gõ thêm mới gọi API. Tránh gọi API mỗi keystroke. Dùng `setTimeout` hoặc custom hook `useDebounce`.
+40. **Component reusability trong admin?** → Shared pattern: table component, filter bar, CRUD modal → tách thành composable pieces. DRY principle.
 
 ---
 
@@ -773,10 +819,10 @@ COPY --from=build /app/dist /usr/share/nginx/html
 **Nếu không dùng Docker?** → Phải cài MySQL, Redis, RabbitMQ, ES, Mongo trên máy local → version conflicts, "works on my machine" problem. Docker = consistent environment.
 
 ### ❓ Câu hỏi phỏng vấn
-34. **Multi-stage build là gì? Lợi ích?** → Nhiều FROM statements. Stage đầu build, stage cuối chỉ copy artifact. Giảm image size, không lộ source code/build tools.
-35. **`docker compose up --build -d` là gì?** → `--build`: rebuild images nếu code thay đổi. `-d`: detached mode (chạy background).
-36. **Healthcheck trong docker compose?** → Container chưa healthy → dependent services chưa start. Tránh backend connect MySQL trước khi MySQL sẵn sàng.
-37. **Volume dùng để làm gì?** → Persist data bên ngoài container. Container bị xóa/recreate → data vẫn còn.
+41. **Multi-stage build là gì? Lợi ích?** → Nhiều FROM statements. Stage đầu build, stage cuối chỉ copy artifact. Giảm image size, không lộ source code/build tools.
+42. **`docker compose up --build -d` là gì?** → `--build`: rebuild images nếu code thay đổi. `-d`: detached mode (chạy background).
+43. **Healthcheck trong docker compose?** → Container chưa healthy → dependent services chưa start. Tránh backend connect MySQL trước khi MySQL sẵn sàng.
+44. **Volume dùng để làm gì?** → Persist data bên ngoài container. Container bị xóa/recreate → data vẫn còn.
 
 ---
 
@@ -836,10 +882,10 @@ Developer push code
 | **DAST** | Runtime vulnerabilities | After deploy | Custom smoke script |
 
 ### ❓ Câu hỏi phỏng vấn
-38. **CI vs CD là gì?** → CI (Continuous Integration): auto build + test mỗi commit. CD (Continuous Deployment/Delivery): auto deploy sau khi CI pass.
-39. **Blue-green deployment là gì?** → 2 môi trường giống hệt nhau (blue=current, green=new). Switch traffic khi green ready. Rollback = switch lại blue.
-40. **SAST vs DAST?** → SAST: phân tích source code tĩnh (không chạy app). DAST: test app đang chạy (gửi request thật). SAST tìm code-level bugs, DAST tìm runtime/config bugs.
-41. **Tại sao production deploy manual?** → Human approval trước khi deploy production. Tránh bug tự động deploy lên production. Staging auto OK vì ảnh hưởng nhỏ.
+45. **CI vs CD là gì?** → CI (Continuous Integration): auto build + test mỗi commit. CD (Continuous Deployment/Delivery): auto deploy sau khi CI pass.
+46. **Blue-green deployment là gì?** → 2 môi trường giống hệt nhau (blue=current, green=new). Switch traffic khi green ready. Rollback = switch lại blue.
+47. **SAST vs DAST?** → SAST: phân tích source code tĩnh (không chạy app). DAST: test app đang chạy (gửi request thật). SAST tìm code-level bugs, DAST tìm runtime/config bugs.
+48. **Tại sao production deploy manual?** → Human approval trước khi deploy production. Tránh bug tự động deploy lên production. Staging auto OK vì ảnh hưởng nhỏ.
 
 ---
 
@@ -852,6 +898,13 @@ Developer push code
 | [PageableUtils.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/utils/PageableUtils.java) | Specification pattern search utility |
 | [AsyncConfig.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/config/AsyncConfig.java) | Thread pool cho `@Async` |
 | [SwaggerConfig.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/config/SwaggerConfig.java) | OpenAPI config |
+| [HealthController.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/controller/HealthController.java) | Health check endpoint — Docker/CI dùng để verify service sống |
+| [CorsProperties.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/config/CorsProperties.java) | CORS config: allowed origins, methods, headers |
+| [OutboundHttpConfig.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/config/OutboundHttpConfig.java) | RestTemplate/WebClient config cho external API calls |
+| [OutboundHttpProperties.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/config/OutboundHttpProperties.java) | Config: timeout, retry cho outbound HTTP |
+| [DbRetryProperties.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/config/DbRetryProperties.java) | Config: database retry policy (max retries, backoff) |
+| [AuditTelemetryRedisConfig.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/common/config/AuditTelemetryRedisConfig.java) | Redis Pub/Sub config cho audit telemetry |
+| [EcommerceApplication.java](file:///d:/Projects/Web/Ecommerce/backend/src/main/java/com/minzetsu/ecommerce/EcommerceApplication.java) | Spring Boot main class |
 | [pom.xml](file:///d:/Projects/Web/Ecommerce/backend/pom.xml) | Tất cả dependencies |
 | [PROJECT_PLAN.md](file:///d:/Projects/Web/Ecommerce/docs/roadmaps/PROJECT_PLAN.md) | 7 phases roadmap chi tiết |
 
