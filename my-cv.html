@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Phan Dinh Minh - Backend Engineer</title>
+    <style>
+      :root {
+        --bg: #f3f6fb;
+        --paper: #ffffff;
+        --text: #0f172a;
+        --muted: #475569;
+        --line: #d7dce3;
+        --soft: #eef4ff;
+        --accent: #1d4ed8;
+        --accent-2: #0f766e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      body {
+        padding: 12px 12px 18px;
+      }
+
+      .resume {
+        max-width: 960px;
+        margin: 0 auto;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+      }
+
+      .header {
+        padding: 18px 24px 14px;
+        border-bottom: 1px solid var(--line);
+        background:
+          radial-gradient(circle at top right, rgba(29, 78, 216, 0.08), transparent 30%),
+          linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      }
+
+      .name {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+
+      .title {
+        margin: 6px 0 0;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--accent);
+      }
+
+      .contact {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .contact a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .content {
+        padding: 14px 24px 18px;
+      }
+
+      .section {
+        margin-top: 12px;
+      }
+
+      .section:first-child {
+        margin-top: 0;
+      }
+
+      .section h2 {
+        margin: 0 0 8px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 4px;
+        color: var(--accent-2);
+      }
+
+      .summary {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12.5px;
+        line-height: 1.45;
+      }
+
+      .skills-grid {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 6px 12px;
+        font-size: 12.5px;
+        line-height: 1.35;
+      }
+
+      .skill-label {
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .skill-value {
+        color: var(--muted);
+      }
+
+      .project {
+        margin-top: 12px;
+        padding: 8px 0 0;
+        border-top: 1px dashed rgba(215, 220, 227, 0.9);
+      }
+
+      .project:first-of-type {
+        border-top: 0;
+        padding-top: 0;
+      }
+
+      .project-head {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        align-items: baseline;
+      }
+
+      .project-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .project-link a {
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--soft);
+        padding: 4px 8px;
+        border-radius: 999px;
+      }
+
+      .role-tech {
+        margin: 4px 0 8px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .role-tech strong {
+        color: var(--text);
+      }
+
+      ul.bullets {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 12.4px;
+        line-height: 1.38;
+        color: var(--text);
+      }
+
+      ul.bullets li {
+        margin: 4px 0;
+      }
+
+      ul.bullets li::marker {
+        color: var(--accent);
+      }
+
+      .edu {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: baseline;
+      }
+
+      .edu h3 {
+        margin: 0;
+        font-size: 14px;
+      }
+
+      .edu .year {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .edu p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 12.5px;
+        line-height: 1.38;
+      }
+
+      @media (max-width: 760px) {
+        body {
+          padding: 12px;
+        }
+
+        .header,
+        .content {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+
+        .name {
+          font-size: 24px;
+        }
+
+        .skills-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media print {
+        body {
+          background: #fff;
+          padding: 0;
+        }
+
+        .resume {
+          border: none;
+          border-radius: 0;
+          box-shadow: none;
+          max-width: none;
+        }
+
+        .header,
+        .content {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+
+        .section {
+          margin-top: 8px;
+        }
+
+        .project {
+          margin-top: 8px;
+        }
+
+        a {
+          color: inherit !important;
+          text-decoration: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="resume">
+      <header class="header">
+        <h1 class="name">PHAN ĐÌNH MINH</h1>
+        <p class="title">Backend Developer</p>
+        <div class="contact">
+          <span>Hanoi, Vietnam</span>
+          <span>0979.650.173</span>
+          <a href="mailto:mastercode2k5@gmail.com">mastercode2k5@gmail.com</a>
+          <a href="https://github.com/Minhca2k5" target="_blank" rel="noopener noreferrer">github.com/Minhca2k5</a>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="section">
+          <h2>Professional Summary</h2>
+          <p class="summary">
+            Backend-focused Computer Science student at UET with hands-on experience building
+            production-style systems using Java, Spring Boot, React, Redis, RabbitMQ, Elasticsearch,
+            MongoDB, and Docker.
+          </p>
+        </section>
+
+        <section class="section">
+          <h2>Technical Skills</h2>
+          <div class="skills-grid">
+            <div class="skill-label">Languages</div>
+            <div class="skill-value">Java, TypeScript, JavaScript, SQL</div>
+
+            <div class="skill-label">Backend</div>
+            <div class="skill-value">Spring Boot, Spring Security, REST APIs, JPA/Hibernate</div>
+
+            <div class="skill-label">Databases & Search</div>
+            <div class="skill-value">MySQL, MongoDB, Redis, Elasticsearch</div>
+
+            <div class="skill-label">Messaging</div>
+            <div class="skill-value">RabbitMQ</div>
+
+            <div class="skill-label">DevOps & Infra</div>
+            <div class="skill-value">Docker, Git, Linux, AWS (basic)</div>
+
+            <div class="skill-label">Frontend</div>
+            <div class="skill-value">React (basic), Tailwind CSS</div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>Projects</h2>
+
+          <article class="project">
+            <div class="project-head">
+              <h3 class="project-title">1. End-to-End Ecommerce System</h3>
+              <div class="project-link">
+                <a href="https://github.com/Minhca2k5/Ecommerce" target="_blank" rel="noopener noreferrer">GitHub</a>
+              </div>
+            </div>
+            <div class="role-tech">
+              <strong>Role:</strong> Backend Developer | <strong>Tech:</strong> Java, Spring Boot, MySQL, Redis,
+              RabbitMQ, Elasticsearch, Docker
+            </div>
+            <ul class="bullets">
+                <li>Built storefront, admin, checkout, and operations flows for an end-to-end e-commerce system.</li>
+                <li>Implemented JWT/RBAC authentication with OTP verification for secure account access.</li>
+                <li>Added guest cart support, idempotent order submission, and TTL inventory reservation.</li>
+                <li>Integrated MoMo sandbox payments with IPN-based order and payment synchronization.</li>
+                <li>Designed RabbitMQ async flows for order processing, notifications, and search indexing.</li>
+                <li>Improved search and API latency with Elasticsearch and Redis caching.</li>
+                <li>Added SSE updates, rate limiting, request IDs, and audit logging.</li>
+                <li>Stored clickstream, chatbot, and audit logs in MongoDB for analytics.
+                </li>
+            </ul>
+          </article>
+
+          <article class="project">
+            <div class="project-head">
+              <h3 class="project-title">2. Summarize-with-AI</h3>
+              <div class="project-link">
+                <a href="https://github.com/toilathuc/Summarize-with-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
+              </div>
+            </div>
+            <div class="role-tech">
+              <strong>Role:</strong> Backend Developer | <strong>Tech:</strong> Java, Spring Boot, Redis, SQLite, AI APIs
+            </div>
+            <ul class="bullets">
+              <li>Designed the system with hexagonal architecture to isolate business logic, caching, and external integrations.</li>
+              <li>Used Redis distributed locking to prevent duplicate job execution and coordinate fail-fast retries.</li>
+              <li>Improved throughput under concurrency with virtual threads and async processing.</li>
+              <li>Applied Redis cache-aside to reduce redundant computations and API calls.</li>
+              <li>Added layered fallback scraping with Firecrawl, Jina AI, and local Jsoup for blocked or unavailable sources.</li>
+              <li>Introduced rate limiting and Micrometer metrics; validated stability at about 500 req/s with k6 load testing.</li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="section">
+          <h2>Education</h2>
+          <div class="edu">
+            <div>
+              <h3>VNU University of Engineering and Technology (UET)</h3>
+              <p>Major: Computer Science | GPA: 3.15 / 4.0</p>
+              <p>Relevant Coursework: Data Structures & Algorithms, Operating Systems, Database Systems, Distributed Systems</p>
+            </div>
+            <div class="year">2023 - 2027 (Expected)</div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
